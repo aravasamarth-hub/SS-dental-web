@@ -22,21 +22,54 @@ function HomePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const services = [
-    { title: 'Teeth Whitening', description: 'Professional whitening treatments for a brighter, more confident smile.', icon: Sparkles, slug: 'teeth-whitening' },
-    { title: 'Veneers', description: 'Custom porcelain veneers to transform your smile with natural-looking results.', icon: Star, slug: 'veneers' },
-    { title: 'Dental Implants', description: 'Permanent tooth replacement solutions with titanium implants.', icon: Award, slug: 'dental-implants' },
-    { title: 'Cavity Filling', description: 'Advanced composite fillings that match your natural tooth color.', icon: Zap, slug: 'cavity-filling' },
-    { title: 'Digital Dentures', description: 'Precision-crafted dentures using advanced 3D printing technology.', icon: Sparkles, slug: 'digital-dentures' },
-    { title: 'Broken Teeth', description: 'Expert restoration of damaged or broken teeth with durable materials.', icon: Star, slug: 'broken-teeth' },
-    { title: 'Aligners', description: 'Clear aligner therapy for discreet orthodontic treatment.', icon: Award, slug: 'aligners' },
-    { title: 'Smile Design', description: 'Comprehensive aesthetic treatments for your perfect smile.', icon: Zap, slug: 'smile-design' },
-    { title: 'Orthodontic Treatment', description: 'Traditional and modern braces for all ages.', icon: Sparkles, slug: 'orthodontic-treatment' },
-    { title: 'Orthodontic Surgery', description: 'Surgical orthodontic solutions for complex cases.', icon: Star, slug: 'orthodontic-surgery' },
-    { title: 'Full Mouth Implant', description: 'Complete mouth restoration with multiple implants.', icon: Award, slug: 'full-mouth-implant' },
-    { title: 'Pterygoid & Zygomatic Implant', description: 'Advanced implant solutions for challenging bone conditions.', icon: Zap, slug: 'pterygoid-zygomatic-implant' },
-    { title: 'Laser Dental Treatment', description: 'Minimally invasive procedures using advanced laser technology.', icon: Sparkles, slug: 'laser-dental-treatment' },
-    { title: 'Extraction', description: 'Safe and comfortable tooth extraction including wisdom teeth.', icon: Star, slug: 'extraction' },
-    { title: 'Gum Therapy', description: 'Comprehensive periodontal care for healthy gums.', icon: Award, slug: 'gum-therapy' },
+    {
+      title: 'Teeth Whitening',
+      description: 'Removes stains and brightens teeth safely with quick visible results.',
+      image: '/services/teeth-whitening.jpg',
+      slug: 'teeth-whitening'
+    },
+    {
+      title: 'Veneers',
+      description: 'Thin shells covering teeth to enhance appearance, fixing chips, gaps, stains.',
+      image: '/services/veneers.jpg',
+      slug: 'veneers'
+    },
+    {
+      title: 'Dental Implants',
+      description: 'Replaces missing teeth with durable implants providing natural look and strength.',
+      image: '/services/dental-implants.jpg',
+      slug: 'dental-implants'
+    },
+    {
+      title: 'Laser Dental Treatment',
+      description: 'Uses advanced laser technology for precise, painless, bloodless and faster dental procedures.',
+      image: '/services/laser-treatment.jpg',
+      slug: 'laser-dental-treatment'
+    },
+    {
+      title: 'Aligners',
+      description: 'Clear removable trays that gradually straighten teeth without visible braces.',
+      image: '/services/aligners.png',
+      slug: 'aligners'
+    },
+    {
+      title: 'Orthodontic Treatment (Braces)',
+      description: 'Corrects misaligned teeth and bite issues for improved function and appearance.',
+      image: '/services/braces.jpg',
+      slug: 'orthodontic-treatment'
+    },
+    {
+      title: 'Orthognathic Surgery',
+      description: 'Corrects jaw alignment issues improving function, bite, and overall facial balance.',
+      image: '/services/orthognathic.jpg',
+      slug: 'orthodontic-surgery'
+    },
+    {
+      title: 'Cavity Filling (Restoration)',
+      description: 'Restoring damaged teeth with comfortable, lasting fillings.',
+      image: '/services/cavity-filling.jpg',
+      slug: 'cavity-filling'
+    }
   ];
 
   const doctors = [
@@ -99,63 +132,260 @@ function HomePage() {
         <FloatingWhatsAppButton />
         <BackToTopButton />
 
-        <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-gradient-to-br from-primary/5 via-background to-accent/5">
-          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiMwMDAwMDAiIGZpbGwtb3BhY2l0eT0iMC4wMyI+PHBhdGggZD0iTTM2IDM0djItaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6bTAtNHYyaDJ2LTJoLTJ6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-50"></div>
+        <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-cover bg-center" style={{ backgroundImage: `url('/hero-bg.png')` }}>
+          {/* Transparent overlay so the background image is fully bright and visible */}
+          <div className="absolute inset-0 bg-transparent z-0"></div>
           
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-            <div className="max-w-4xl mx-auto text-center">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-              >
-                <h1 className="mb-6">
-                  Trusted Dental Care in Davangere
-                </h1>
-                <p className="text-xl md:text-2xl text-muted-foreground mb-8 leading-relaxed max-w-2xl mx-auto">
-                  Experience world-class dental treatments with advanced technology and compassionate care
-                </p>
-                
-                <div className="flex items-center justify-center gap-2 mb-8">
-                  <div className="flex items-center gap-1 bg-yellow-50 dark:bg-yellow-900/20 px-4 py-2 rounded-full">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 py-12 md:py-16">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+              {/* Left Column - Content */}
+              <div className="lg:col-span-7 flex flex-col items-start text-left text-white">
+                <motion.div
+                  initial={{ opacity: 0, x: -30 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.6 }}
+                  className="space-y-5 max-w-2xl"
+                >
+                  {/* Badge */}
+                  <div className="flex items-center gap-1.5 text-white font-bold drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
                     <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-                    <span className="font-semibold text-lg">4.8</span>
-                    <span className="text-sm text-muted-foreground ml-1">Google Rating</span>
+                    <span className="text-xl font-bold tracking-wide">SS Dental Care</span>
                   </div>
-                  <div className="bg-muted px-4 py-2 rounded-full">
-                    <span className="font-semibold">550+ Happy Patients</span>
-                  </div>
-                </div>
 
-                <Link to="/bookings">
-                  <Button size="lg" className="text-lg px-8 transition-all duration-200 active:scale-98">
-                    <Calendar className="mr-2 h-5 w-5" />
-                    Book Appointment
-                  </Button>
-                </Link>
-              </motion.div>
+                  {/* Heading */}
+                  <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white tracking-tight leading-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.85)]">
+                    Trusted <br />
+                    <span className="text-accent">Dental Care</span> <br />
+                    in Davangere
+                  </h1>
+
+                  {/* Button directly under heading */}
+                  <div className="pt-1">
+                    <Link to="/bookings">
+                      <Button variant="accent" size="lg" className="text-base font-bold px-8 h-11 rounded-full shadow-lg hover:shadow-accent/30 transition-all duration-300">
+                        Book Appointment
+                      </Button>
+                    </Link>
+                  </div>
+
+                  {/* Description below button with styled yellow first part */}
+                  <p className="text-lg md:text-xl leading-relaxed font-semibold drop-shadow-[0_2px_4px_rgba(0,0,0,0.85)]">
+                    <span className="text-yellow-300">From preventive check-ups to smile makeovers</span>
+                    <span className="text-white"> — we ensure your dental experience is gentle, comfortable, and rewarding.</span>
+                  </p>
+
+                  {/* Horizontal Line */}
+                  <hr className="w-full border-white/20 my-2" />
+
+                  {/* Google Rating line */}
+                  <div className="flex flex-wrap items-center gap-3 text-white text-sm md:text-base font-semibold drop-shadow-[0_2px_4px_rgba(0,0,0,0.85)]">
+                    <div className="flex items-center gap-1.5">
+                      <div className="flex">
+                        {[...Array(5)].map((_, i) => (
+                          <Star key={i} className="h-4.5 w-4.5 fill-yellow-400 text-yellow-400" />
+                        ))}
+                      </div>
+                      <span>Google Rating 4.8</span>
+                    </div>
+                    <span className="hidden md:inline text-white/30">•</span>
+                    <span>Trusted by over 550 happy patients</span>
+                  </div>
+                </motion.div>
+              </div>
+
+              {/* Right Column - Doctors Cutouts */}
+              <div className="lg:col-span-5 flex flex-col justify-end h-full translate-y-6 md:translate-y-10 lg:translate-y-14">
+                <motion.div
+                  initial={{ opacity: 0, y: 50 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, delay: 0.2 }}
+                  className="grid grid-cols-2 gap-4 items-end mt-8 lg:mt-0"
+                >
+                  {/* Dr. Naveen */}
+                  <div className="flex flex-col items-center text-center group">
+                    <div className="relative overflow-hidden p-2">
+                      <img
+                        src="https://horizons-cdn.hostinger.com/dc22980f-a9df-4839-96b8-627d622e799c/37a824af35a9003237db66be11bbe263.png"
+                        alt="Dr. Naveen Shamnur"
+                        className="h-36 md:h-44 object-contain drop-shadow-[0_8px_16px_rgba(0,0,0,0.6)] transform group-hover:scale-105 transition-transform duration-300"
+                      />
+                    </div>
+                    <div className="mt-2 h-20 md:h-24 flex flex-col justify-start drop-shadow-[0_2px_4px_rgba(0,0,0,0.85)]">
+                      <h3 className="text-white font-bold text-lg md:text-xl">Dr. Naveen Shamnur</h3>
+                      <p className="text-accent text-xs md:text-sm font-bold mt-0.5 tracking-wide uppercase">
+                        Dental Specialist orthodontist
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Dr. Sunitha */}
+                  <div className="flex flex-col items-center text-center group">
+                    <div className="relative overflow-hidden p-2">
+                      <img
+                        src="https://horizons-cdn.hostinger.com/dc22980f-a9df-4839-96b8-627d622e799c/478df36d82fc64b544111f8c6fd0f1dc.png"
+                        alt="Dr. Sunitha N Shamnur"
+                        className="h-36 md:h-44 object-contain drop-shadow-[0_8px_16px_rgba(0,0,0,0.6)] transform group-hover:scale-105 transition-transform duration-300"
+                      />
+                    </div>
+                    <div className="mt-2 h-20 md:h-24 flex flex-col justify-start drop-shadow-[0_2px_4px_rgba(0,0,0,0.85)]">
+                      <h3 className="text-white font-bold text-lg md:text-xl">Dr. Sunitha Shamnur</h3>
+                      <p className="text-accent text-xs md:text-sm font-bold mt-0.5 tracking-wide uppercase">
+                        Specialist Prosthodontist and Implantologist
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
+              </div>
             </div>
           </div>
         </section>
 
-        <section className="py-20 bg-muted/50">
+        <section className="py-20 bg-white dark:bg-slate-900 border-y border-slate-100 dark:border-slate-800">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            {/* Header */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="text-center mb-12"
+              className="text-center mb-6"
             >
-              <h2 className="mb-4">Meet Our Expert Doctors</h2>
-              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Highly qualified specialists dedicated to your dental health
+              <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-1">
+                Why Choose Us?
+              </h2>
+              <h3 className="text-2xl md:text-3xl font-extrabold text-slate-800 dark:text-slate-200 tracking-tight mb-3">
+                Our Care
+              </h3>
+              <p className="text-base text-muted-foreground max-w-xl mx-auto">
+                Gentle dental services tailored to keep your smile healthy and bright.
               </p>
             </motion.div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-              {doctors.map((doctor, index) => (
-                <DoctorCard key={doctor.slug} {...doctor} index={index} />
-              ))}
+            {/* Tagline */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 }}
+              className="text-center mb-16"
+            >
+              <h4 className="text-xl md:text-2xl lg:text-3xl font-bold text-slate-900 dark:text-white max-w-4xl mx-auto leading-snug">
+                Delivering Excellence Through{" "}
+                <span className="text-accent">Trust</span>,{" "}
+                <span className="text-accent">Quality</span>, and{" "}
+                <span className="text-accent">Innovation</span>
+              </h4>
+            </motion.div>
+
+            {/* Content Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center max-w-6xl mx-auto">
+              
+              {/* Left Column: 2 features */}
+              <div className="lg:col-span-4 flex flex-col gap-12 text-center lg:text-right items-center lg:items-end">
+                {/* Feature 1 */}
+                <motion.div
+                  initial={{ opacity: 0, x: -30 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  className="space-y-3 max-w-md group"
+                >
+                  <div className="flex lg:justify-end justify-center">
+                    <div className="w-12 h-12 rounded-full border border-accent bg-accent/5 text-accent flex items-center justify-center transition-all duration-300 group-hover:bg-accent group-hover:text-accent-foreground">
+                      <Star className="w-6 h-6 fill-accent text-accent group-hover:fill-accent-foreground group-hover:text-accent-foreground" />
+                    </div>
+                  </div>
+                  <h5 className="text-xl font-bold text-accent">Quality Assurance</h5>
+                  <p className="text-base text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
+                    Delivering reliable and precise results with top-quality standards.
+                  </p>
+                </motion.div>
+
+                {/* Feature 2 */}
+                <motion.div
+                  initial={{ opacity: 0, x: -30 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.1 }}
+                  className="space-y-3 max-w-md group"
+                >
+                  <div className="flex lg:justify-end justify-center">
+                    <div className="w-12 h-12 rounded-full border border-accent bg-accent/5 text-accent flex items-center justify-center transition-all duration-300 group-hover:bg-accent group-hover:text-accent-foreground">
+                      <Award className="w-6 h-6" />
+                    </div>
+                  </div>
+                  <h5 className="text-xl font-bold text-accent">Patient-Centric Care</h5>
+                  <p className="text-base text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
+                    Compassionate dental treatments focused entirely on your comfort and long-term well-being.
+                  </p>
+                </motion.div>
+              </div>
+
+              {/* Center Column: Glossy 3D Tooth Graphic */}
+              <div className="lg:col-span-4 flex justify-center py-6 lg:py-0 relative">
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  className="relative flex items-center justify-center"
+                >
+                  {/* Decorative rotating dotted circles / accent light rings */}
+                  <div className="absolute w-72 h-72 rounded-full border-2 border-dashed border-accent/20 animate-[spin_60s_linear_infinite] z-0"></div>
+                  <div className="absolute w-64 h-64 rounded-full border border-accent/10 z-0"></div>
+                  
+                  {/* Dotted indicator nodes around the circle */}
+                  <div className="absolute top-0 w-2.5 h-2.5 rounded-full bg-accent animate-pulse"></div>
+                  <div className="absolute bottom-0 w-2.5 h-2.5 rounded-full bg-accent animate-pulse"></div>
+                  <div className="absolute left-0 w-2.5 h-2.5 rounded-full bg-accent animate-pulse"></div>
+                  <div className="absolute right-0 w-2.5 h-2.5 rounded-full bg-accent animate-pulse"></div>
+                  
+                  {/* Tooth image */}
+                  <img
+                    src="/3d-tooth.png"
+                    alt="Glossy 3D Tooth Illustration"
+                    className="w-48 h-48 md:w-56 md:h-56 object-contain z-10 drop-shadow-[0_15px_30px_rgba(0,0,0,0.15)] animate-[bounce_5s_infinite_ease-in-out]"
+                  />
+                </motion.div>
+              </div>
+
+              {/* Right Column: 2 features */}
+              <div className="lg:col-span-4 flex flex-col gap-12 text-center lg:text-left items-center lg:items-start">
+                {/* Feature 3 */}
+                <motion.div
+                  initial={{ opacity: 0, x: 30 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  className="space-y-3 max-w-md group"
+                >
+                  <div className="flex lg:justify-start justify-center">
+                    <div className="w-12 h-12 rounded-full border border-accent bg-accent/5 text-accent flex items-center justify-center transition-all duration-300 group-hover:bg-accent group-hover:text-accent-foreground">
+                      <Zap className="w-6 h-6" />
+                    </div>
+                  </div>
+                  <h5 className="text-xl font-bold text-accent">Advanced Technology</h5>
+                  <p className="text-base text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
+                    Modern tools for efficient, safe, and accurate execution.
+                  </p>
+                </motion.div>
+
+                {/* Feature 4 */}
+                <motion.div
+                  initial={{ opacity: 0, x: 30 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.1 }}
+                  className="space-y-3 max-w-md group"
+                >
+                  <div className="flex lg:justify-start justify-center">
+                    <div className="w-12 h-12 rounded-full border border-accent bg-accent/5 text-accent flex items-center justify-center transition-all duration-300 group-hover:bg-accent group-hover:text-accent-foreground">
+                      <Clock className="w-6 h-6" />
+                    </div>
+                  </div>
+                  <h5 className="text-xl font-bold text-accent">Timely Service</h5>
+                  <p className="text-base text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
+                    Prompt appointments and scheduling designed to value your time and convenience.
+                  </p>
+                </motion.div>
+              </div>
+
             </div>
           </div>
         </section>
@@ -272,21 +502,21 @@ function HomePage() {
           </div>
         </section>
 
-        <section className="py-20 bg-muted/50">
+        <section className="py-20 bg-white dark:bg-slate-900">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="text-center mb-12"
+              className="text-center mb-16"
             >
-              <h2 className="mb-4">Our Services</h2>
-              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Comprehensive dental care for all your needs
+              <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white mb-4">Our Services</h2>
+              <p className="text-lg text-muted-foreground max-w-2xl mx-auto font-medium">
+                Quality dental care with a gentle, personal touch.
               </p>
             </motion.div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12">
               {services.map((service, index) => (
                 <ServiceCard key={service.slug} {...service} index={index} />
               ))}

@@ -1,36 +1,36 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 
-function ServiceCard({ title, description, icon: Icon, slug, index }) {
+function ServiceCard({ title, description, image, slug, index }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      transition={{ duration: 0.5, delay: index * 0.1 }}
+      transition={{ duration: 0.5, delay: index * 0.05 }}
+      className="group"
     >
-      <Card className="h-full flex flex-col hover:shadow-lg transition-all duration-200 group">
-        <CardHeader>
-          <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center mb-4 group-hover:bg-accent/20 transition-all duration-200">
-            <Icon className="h-6 w-6 text-accent" />
+      <Link to={`/services/${slug}`} className="block">
+        <div className="flex flex-col items-center text-center transition-all duration-300 transform group-hover:scale-105 group-hover:-translate-y-1">
+          {/* Image Container with rounded corners */}
+          <div className="w-full aspect-[4/3] rounded-[2rem] overflow-hidden shadow-md mb-4 bg-slate-100 dark:bg-slate-800">
+            <img
+              src={image}
+              alt={title}
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+            />
           </div>
-          <CardTitle className="text-xl">{title}</CardTitle>
-        </CardHeader>
-        <CardContent className="flex-1 flex flex-col">
-          <CardDescription className="flex-1 mb-4">{description}</CardDescription>
-          <Link to={`/services/${slug}`}>
-            <Button variant="ghost" className="w-full justify-between group-hover:text-accent transition-all duration-200">
-              Learn More
-              <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform duration-200" />
-            </Button>
-          </Link>
-        </CardContent>
-      </Card>
+          {/* Title */}
+          <h3 className="text-lg md:text-xl font-bold text-slate-900 dark:text-white mb-2 transition-colors duration-200 group-hover:text-accent">
+            {title}
+          </h3>
+          {/* Description */}
+          <p className="text-sm md:text-base text-muted-foreground leading-relaxed max-w-sm px-2">
+            {description}
+          </p>
+        </div>
+      </Link>
     </motion.div>
   );
 }
