@@ -147,4 +147,12 @@
   .hero-section {
     background-position: 40% center;
   }
+}
+
+/* Explicit line-clamp-3 utility */
+.line-clamp-3 {
+  display: -webkit-box !important;
+  -webkit-line-clamp: 3 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
 }
