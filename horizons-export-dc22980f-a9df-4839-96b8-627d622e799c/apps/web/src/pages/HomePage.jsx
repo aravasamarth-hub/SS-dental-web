@@ -286,7 +286,7 @@ function HomePage() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center max-w-6xl mx-auto">
               
               {/* Left Column: 2 features */}
-              <div className="lg:col-span-4 flex flex-col gap-12 text-center lg:text-right items-center lg:items-end">
+              <div className="lg:col-span-4 grid grid-cols-2 lg:flex lg:flex-col gap-6 lg:gap-12 text-center lg:text-right items-center lg:items-end">
                 {/* Feature 1 */}
                 <motion.div
                   initial={{ opacity: 0, x: -30 }}
@@ -353,7 +353,7 @@ function HomePage() {
               </div>
 
               {/* Right Column: 2 features */}
-              <div className="lg:col-span-4 flex flex-col gap-12 text-center lg:text-left items-center lg:items-start">
+              <div className="lg:col-span-4 grid grid-cols-2 lg:flex lg:flex-col gap-6 lg:gap-12 text-center lg:text-left items-center lg:items-start">
                 {/* Feature 3 */}
                 <motion.div
                   initial={{ opacity: 0, x: 30 }}
