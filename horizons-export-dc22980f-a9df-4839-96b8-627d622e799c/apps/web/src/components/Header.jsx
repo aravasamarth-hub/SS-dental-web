@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, ChevronDown, Phone, Facebook, Instagram, Youtube } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -27,7 +27,74 @@ function Header() {
   const [isOpen, setIsOpen] = useState(false);
   const [isMobileAboutOpen, setIsMobileAboutOpen] = useState(false);
   const [isMobileServicesOpen, setIsMobileServicesOpen] = useState(false);
+  const [isAboutOpen, setIsAboutOpen] = useState(false);
+  const [isServicesOpen, setIsServicesOpen] = useState(false);
+  const [isAboutLocked, setIsAboutLocked] = useState(false);
+  const [isServicesLocked, setIsServicesLocked] = useState(false);
+  
+  const aboutTimeoutRef = useRef(null);
+  const servicesTimeoutRef = useRef(null);
   const location = useLocation();
+
+  const handleAboutMouseEnter = () => {
+    if (aboutTimeoutRef.current) clearTimeout(aboutTimeoutRef.current);
+    setIsAboutOpen(true);
+  };
+
+  const handleAboutMouseLeave = () => {
+    aboutTimeoutRef.current = setTimeout(() => {
+      if (!isAboutLocked) {
+        setIsAboutOpen(false);
+      }
+    }, 200);
+  };
+
+  const handleAboutClick = () => {
+    setIsAboutLocked(!isAboutLocked);
+    setIsAboutOpen(!isAboutOpen);
+  };
+
+  const handleServicesMouseEnter = () => {
+    if (servicesTimeoutRef.current) clearTimeout(servicesTimeoutRef.current);
+    setIsServicesOpen(true);
+  };
+
+  const handleServicesMouseLeave = () => {
+    servicesTimeoutRef.current = setTimeout(() => {
+      if (!isServicesLocked) {
+        setIsServicesOpen(false);
+      }
+    }, 200);
+  };
+
+  const handleServicesClick = () => {
+    setIsServicesLocked(!isServicesLocked);
+    setIsServicesOpen(!isServicesOpen);
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (!event.target.closest('.dropdown-container')) {
+        setIsAboutOpen(false);
+        setIsServicesOpen(false);
+        setIsAboutLocked(false);
+        setIsServicesLocked(false);
+      }
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => {
+      document.removeEventListener('click', handleClickOutside);
+      if (aboutTimeoutRef.current) clearTimeout(aboutTimeoutRef.current);
+      if (servicesTimeoutRef.current) clearTimeout(servicesTimeoutRef.current);
+    };
+  }, []);
+
+  useEffect(() => {
+    setIsAboutOpen(false);
+    setIsServicesOpen(false);
+    setIsAboutLocked(false);
+    setIsServicesLocked(false);
+  }, [location.pathname]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -162,55 +229,183 @@ function Header() {
             </Link>
 
             {/* 2. About Us */}
-            <DropdownMenu>
-              <DropdownMenuTrigger
+            <div 
+              className="relative dropdown-container"
+              onMouseEnter={handleAboutMouseEnter}
+              onMouseLeave={handleAboutMouseLeave}
+            >
+              <Link
+                to="/about"
+                onClick={handleAboutClick}
                 className={`flex items-center gap-1.5 text-base font-semibold transition-all duration-300 focus:outline-none ${
                   isAboutActive() 
-                    ? 'text-accent scale-110 -translate-y-0.5 bg-accent/10 px-3.5 py-1.5 rounded-full border border-accent/20 shadow-sm' 
-                    : 'text-foreground hover:text-accent px-3.5 py-1.5 hover:bg-muted/50 rounded-full hover:-translate-y-0.5'
+                    ? 'text-accent scale-105 bg-accent/10 px-3.5 py-1.5 rounded-full border border-accent/20 shadow-sm' 
+                    : 'text-foreground hover:text-accent px-3.5 py-1.5 hover:bg-muted/50 rounded-full'
                 }`}
               >
                 About Us
-                <ChevronDown className="h-4.5 w-4.5" />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem asChild>
-                  <Link to="/about" className="w-full cursor-pointer">
-                    About SS Dental Care
-                  </Link>
-                </DropdownMenuItem>
-                {aboutLinks.map((link) => (
-                  <DropdownMenuItem key={link.path} asChild>
-                    <Link to={link.path} className="w-full cursor-pointer">
+                <ChevronDown className={`h-4.5 w-4.5 transition-transform duration-200 ${isAboutOpen ? 'rotate-180' : ''}`} />
+              </Link>
+              {/* About Us dropdown wrapper (bridge for gap-of-death) */}
+              <div className={`absolute left-0 top-full pt-2 w-72 transition-all duration-200 origin-top-left z-50 ${
+                isAboutOpen 
+                  ? 'opacity-100 scale-100 pointer-events-auto' 
+                  : 'opacity-0 scale-95 pointer-events-none'
+              }`}>
+                {/* Visual Panel */}
+                <div className="rounded-md border bg-popover p-1 text-popover-foreground shadow-md">
+                  {aboutLinks.map((link) => (
+                    <Link
+                      key={link.path}
+                      to={link.path}
+                      className="relative flex w-full cursor-pointer select-none items-center rounded-sm px-3 py-2 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground font-medium"
+                    >
                       {link.name}
                     </Link>
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
+                  ))}
+                </div>
+              </div>
+            </div>
 
-            {/* 3. Service */}
-            <DropdownMenu>
-              <DropdownMenuTrigger
+            {/* 3. Service (Mega Dropdown in Liquid Glass style) */}
+            <div 
+              className="relative dropdown-container"
+              onMouseEnter={handleServicesMouseEnter}
+              onMouseLeave={handleServicesMouseLeave}
+            >
+              <Link
+                to="/services"
+                onClick={handleServicesClick}
                 className={`flex items-center gap-1.5 text-base font-semibold transition-all duration-300 focus:outline-none ${
                   isServicesActive() 
-                    ? 'text-accent scale-110 -translate-y-0.5 bg-accent/10 px-3.5 py-1.5 rounded-full border border-accent/20 shadow-sm' 
-                    : 'text-foreground hover:text-accent px-3.5 py-1.5 hover:bg-muted/50 rounded-full hover:-translate-y-0.5'
+                    ? 'text-accent scale-105 bg-accent/10 px-3.5 py-1.5 rounded-full border border-accent/20 shadow-sm' 
+                    : 'text-foreground hover:text-accent px-3.5 py-1.5 hover:bg-muted/50 rounded-full'
                 }`}
               >
                 Service
-                <ChevronDown className="h-4.5 w-4.5" />
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="max-h-96 overflow-y-auto">
-                {serviceLinks.map((link) => (
-                  <DropdownMenuItem key={link.path} asChild>
-                    <Link to={link.path} className="w-full cursor-pointer">
-                      {link.name}
-                    </Link>
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
+                <ChevronDown className={`h-4.5 w-4.5 transition-transform duration-200 ${isServicesOpen ? 'rotate-180' : ''}`} />
+              </Link>
+              {/* Mega Dropdown Panel Wrapper (bridge for gap-of-death) */}
+              <div className={`absolute left-1/2 -translate-x-[45%] top-full pt-2 w-[calc(100vw-6rem)] max-w-5xl transition-all duration-300 origin-top z-50 ${
+                isServicesOpen 
+                  ? 'opacity-100 scale-100 pointer-events-auto' 
+                  : 'opacity-0 scale-95 pointer-events-none'
+              }`}>
+                {/* Visual Panel */}
+                <div className="rounded-3xl border border-white/20 dark:border-white/10 bg-white/70 dark:bg-slate-950/70 backdrop-blur-2xl p-8 shadow-[0_20px_50px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.35)] grid grid-cols-4 gap-8">
+                  {/* Column 1: Restorative & Gum */}
+                  <div className="space-y-6">
+                    <div>
+                      <h4 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary dark:text-accent mb-3">
+                        <span className="w-1.5 h-1.5 bg-accent rounded-sm" />
+                        Restorative Dentistry
+                      </h4>
+                      <ul className="space-y-1">
+                        {[{ name: 'Cavity Filling', path: '/services/cavity-filling' },
+                          { name: 'Broken Teeth', path: '/services/broken-teeth' },
+                          { name: 'Digital Dentures', path: '/services/digital-dentures' }].map((item) => (
+                          <li key={item.path}>
+                            <Link to={item.path} className="block text-sm text-muted-foreground hover:text-accent font-medium py-1.5 px-3 rounded-lg border border-transparent hover:border-white/30 dark:hover:border-white/10 hover:bg-white/40 dark:hover:bg-white/10 hover:shadow-[0_4px_12px_rgba(0,0,0,0.03)] transition-all duration-200">
+                              {item.name}
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                    <div>
+                      <h4 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary dark:text-accent mb-3">
+                        <span className="w-1.5 h-1.5 bg-accent rounded-sm" />
+                        Gum Treatment
+                      </h4>
+                      <ul className="space-y-1">
+                        {[{ name: 'Gum Therapy', path: '/services/gum-therapy' },
+                          { name: 'Laser Dental Treatment', path: '/services/laser-dental-treatment' }].map((item) => (
+                          <li key={item.path}>
+                            <Link to={item.path} className="block text-sm text-muted-foreground hover:text-accent font-medium py-1.5 px-3 rounded-lg border border-transparent hover:border-white/30 dark:hover:border-white/10 hover:bg-white/40 dark:hover:bg-white/10 hover:shadow-[0_4px_12px_rgba(0,0,0,0.03)] transition-all duration-200">
+                              {item.name}
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+
+                  {/* Column 2: Orthodontics & Oral Surgery */}
+                  <div className="space-y-6">
+                    <div>
+                      <h4 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary dark:text-accent mb-3">
+                        <span className="w-1.5 h-1.5 bg-accent rounded-sm" />
+                        Orthodontics
+                      </h4>
+                      <ul className="space-y-1">
+                        {[{ name: 'Orthodontic Treatment', path: '/services/orthodontic-treatment' },
+                          { name: 'Aligners', path: '/services/aligners' }].map((item) => (
+                          <li key={item.path}>
+                            <Link to={item.path} className="block text-sm text-muted-foreground hover:text-accent font-medium py-1.5 px-3 rounded-lg border border-transparent hover:border-white/30 dark:hover:border-white/10 hover:bg-white/40 dark:hover:bg-white/10 hover:shadow-[0_4px_12px_rgba(0,0,0,0.03)] transition-all duration-200">
+                              {item.name}
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                    <div>
+                      <h4 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary dark:text-accent mb-3">
+                        <span className="w-1.5 h-1.5 bg-accent rounded-sm" />
+                        Oral Surgery
+                      </h4>
+                      <ul className="space-y-1">
+                        {[{ name: 'Extraction', path: '/services/extraction' },
+                          { name: 'Orthognathic Surgery', path: '/services/orthodontic-surgery' }].map((item) => (
+                          <li key={item.path}>
+                            <Link to={item.path} className="block text-sm text-muted-foreground hover:text-accent font-medium py-1.5 px-3 rounded-lg border border-transparent hover:border-white/30 dark:hover:border-white/10 hover:bg-white/40 dark:hover:bg-white/10 hover:shadow-[0_4px_12px_rgba(0,0,0,0.03)] transition-all duration-200">
+                              {item.name}
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+
+                  {/* Column 3: Implants */}
+                  <div>
+                    <h4 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary dark:text-accent mb-3">
+                      <span className="w-1.5 h-1.5 bg-accent rounded-sm" />
+                      Implants
+                    </h4>
+                    <ul className="space-y-1">
+                      {[{ name: 'Dental Implants', path: '/services/dental-implants' },
+                        { name: 'Full Mouth Implant', path: '/services/full-mouth-implant' },
+                        { name: 'Pterygoid & Zygomatic Implant', path: '/services/pterygoid-zygomatic-implant' }].map((item) => (
+                        <li key={item.path}>
+                          <Link to={item.path} className="block text-sm text-muted-foreground hover:text-accent font-medium py-1.5 px-3 rounded-lg border border-transparent hover:border-white/30 dark:hover:border-white/10 hover:bg-white/40 dark:hover:bg-white/10 hover:shadow-[0_4px_12px_rgba(0,0,0,0.03)] transition-all duration-200">
+                            {item.name}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  {/* Column 4: Cosmetic Dentistry */}
+                  <div>
+                    <h4 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary dark:text-accent mb-3">
+                      <span className="w-1.5 h-1.5 bg-accent rounded-sm" />
+                      Cosmetic Dentistry
+                    </h4>
+                    <ul className="space-y-1">
+                      {[{ name: 'Smile Design', path: '/services/smile-design' },
+                        { name: 'Veneers', path: '/services/veneers' },
+                        { name: 'Teeth Whitening', path: '/services/teeth-whitening' }].map((item) => (
+                        <li key={item.path}>
+                          <Link to={item.path} className="block text-sm text-muted-foreground hover:text-accent font-medium py-1.5 px-3 rounded-lg border border-transparent hover:border-white/30 dark:hover:border-white/10 hover:bg-white/40 dark:hover:bg-white/10 hover:shadow-[0_4px_12px_rgba(0,0,0,0.03)] transition-all duration-200">
+                            {item.name}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
 
             {/* 4. Gallery */}
             <Link
@@ -236,17 +431,6 @@ function Header() {
               Contact Us
             </Link>
 
-            {/* 6. Location */}
-            <Link
-              to="/location"
-              className={`text-base font-semibold transition-all duration-300 ${
-                isActive('/location') 
-                  ? 'text-accent scale-110 -translate-y-0.5 bg-accent/10 px-3.5 py-1.5 rounded-full border border-accent/20 shadow-sm' 
-                  : 'text-foreground hover:text-accent px-3.5 py-1.5 hover:bg-muted/50 rounded-full hover:-translate-y-0.5'
-              }`}
-            >
-              Location
-            </Link>
 
             {/* 7. Blog */}
             <Link
@@ -291,24 +475,28 @@ function Header() {
                     Home
                   </Link>
 
-                  {/* About Us (Collapsible) */}
+                  {/* About Us */}
+                  <Link
+                    to="/about"
+                    onClick={() => setIsOpen(false)}
+                    className={`text-sm font-medium py-2 border-t border-muted transition-all duration-200 hover:text-accent ${
+                      isActive('/about') ? 'text-accent' : 'text-foreground'
+                    }`}
+                  >
+                    About Us
+                  </Link>
+
+                  {/* Our Doctors (Collapsible) */}
                   <div className="flex flex-col py-2 border-t border-muted">
                     <button
                       onClick={() => setIsMobileAboutOpen(!isMobileAboutOpen)}
                       className="flex items-center justify-between text-sm font-medium transition-all duration-200 hover:text-accent text-left"
                     >
-                      <span>About Us</span>
+                      <span>Our Doctors</span>
                       <ChevronDown className={`h-4 w-4 transform transition-transform duration-200 ${isMobileAboutOpen ? 'rotate-180' : ''}`} />
                     </button>
                     {isMobileAboutOpen && (
                       <div className="pl-4 mt-2 flex flex-col gap-2 border-l border-muted">
-                        <Link
-                          to="/about"
-                          onClick={() => setIsOpen(false)}
-                          className={`text-sm py-1 hover:text-accent transition-colors ${isActive('/about') ? 'text-accent' : 'text-muted-foreground'}`}
-                        >
-                          About SS Dental Care
-                        </Link>
                         {aboutLinks.map((link) => (
                           <Link
                             key={link.path}
@@ -333,17 +521,71 @@ function Header() {
                       <ChevronDown className={`h-4 w-4 transform transition-transform duration-200 ${isMobileServicesOpen ? 'rotate-180' : ''}`} />
                     </button>
                     {isMobileServicesOpen && (
-                      <div className="pl-4 mt-2 flex flex-col gap-2 border-l border-muted max-h-60 overflow-y-auto">
-                        {serviceLinks.map((link) => (
-                          <Link
-                            key={link.path}
-                            to={link.path}
-                            onClick={() => setIsOpen(false)}
-                            className={`text-sm py-1 hover:text-accent transition-colors ${isActive(link.path) ? 'text-accent' : 'text-muted-foreground'}`}
-                          >
-                            {link.name}
-                          </Link>
-                        ))}
+                      <div className="pl-4 mt-2 flex flex-col gap-4 border-l border-muted max-h-[400px] overflow-y-auto pr-2">
+                        <Link
+                          to="/services"
+                          onClick={() => setIsOpen(false)}
+                          className="text-[12px] font-extrabold uppercase tracking-wider text-accent border-b border-muted pb-2 hover:underline"
+                        >
+                          View All Services →
+                        </Link>
+                        <div>
+                          <p className="text-[11px] font-extrabold uppercase tracking-wider text-accent mb-1.5">Restorative Dentistry</p>
+                          <div className="flex flex-col gap-1.5 pl-2">
+                            {[{ name: 'Cavity Filling', path: '/services/cavity-filling' },
+                              { name: 'Broken Teeth', path: '/services/broken-teeth' },
+                              { name: 'Digital Dentures', path: '/services/digital-dentures' }].map((link) => (
+                              <Link key={link.path} to={link.path} onClick={() => setIsOpen(false)} className={`text-xs py-0.5 hover:text-accent transition-colors ${isActive(link.path) ? 'text-accent' : 'text-muted-foreground'}`}>{link.name}</Link>
+                            ))}
+                          </div>
+                        </div>
+                        <div>
+                          <p className="text-[11px] font-extrabold uppercase tracking-wider text-accent mb-1.5">Orthodontics</p>
+                          <div className="flex flex-col gap-1.5 pl-2">
+                            {[{ name: 'Orthodontic Treatment', path: '/services/orthodontic-treatment' },
+                              { name: 'Aligners', path: '/services/aligners' }].map((link) => (
+                              <Link key={link.path} to={link.path} onClick={() => setIsOpen(false)} className={`text-xs py-0.5 hover:text-accent transition-colors ${isActive(link.path) ? 'text-accent' : 'text-muted-foreground'}`}>{link.name}</Link>
+                            ))}
+                          </div>
+                        </div>
+                        <div>
+                          <p className="text-[11px] font-extrabold uppercase tracking-wider text-accent mb-1.5">Implants</p>
+                          <div className="flex flex-col gap-1.5 pl-2">
+                            {[{ name: 'Dental Implants', path: '/services/dental-implants' },
+                              { name: 'Full Mouth Implant', path: '/services/full-mouth-implant' },
+                              { name: 'Pterygoid & Zygomatic Implant', path: '/services/pterygoid-zygomatic-implant' }].map((link) => (
+                              <Link key={link.path} to={link.path} onClick={() => setIsOpen(false)} className={`text-xs py-0.5 hover:text-accent transition-colors ${isActive(link.path) ? 'text-accent' : 'text-muted-foreground'}`}>{link.name}</Link>
+                            ))}
+                          </div>
+                        </div>
+                        <div>
+                          <p className="text-[11px] font-extrabold uppercase tracking-wider text-accent mb-1.5">Cosmetic Dentistry</p>
+                          <div className="flex flex-col gap-1.5 pl-2">
+                            {[{ name: 'Smile Design', path: '/services/smile-design' },
+                              { name: 'Veneers', path: '/services/veneers' },
+                              { name: 'Teeth Whitening', path: '/services/teeth-whitening' }].map((link) => (
+                              <Link key={link.path} to={link.path} onClick={() => setIsOpen(false)} className={`text-xs py-0.5 hover:text-accent transition-colors ${isActive(link.path) ? 'text-accent' : 'text-muted-foreground'}`}>{link.name}</Link>
+                            ))}
+                          </div>
+                        </div>
+                        <div>
+                          <p className="text-[11px] font-extrabold uppercase tracking-wider text-accent mb-1.5">Gum Treatment</p>
+                          <div className="flex flex-col gap-1.5 pl-2">
+                            {[{ name: 'Gum Therapy', path: '/services/gum-therapy' },
+                              { name: 'Laser Dental Treatment', path: '/services/laser-dental-treatment' }].map((link) => (
+                              <Link key={link.path} to={link.path} onClick={() => setIsOpen(false)} className={`text-xs py-0.5 hover:text-accent transition-colors ${isActive(link.path) ? 'text-accent' : 'text-muted-foreground'}`}>{link.name}</Link>
+                            ))}
+                          </div>
+                        </div>
+                        <div>
+                          <p className="text-[11px] font-extrabold uppercase tracking-wider text-accent mb-1.5">Oral Surgery</p>
+                          <div className="flex flex-col gap-1.5 pl-2">
+                            {[{ name: 'Extraction', path: '/services/extraction' },
+                              { name: 'Orthognathic Surgery', path: '/services/orthodontic-surgery' }].map((link) => (
+                              <Link key={link.path} to={link.path} onClick={() => setIsOpen(false)} className={`text-xs py-0.5 hover:text-accent transition-colors ${isActive(link.path) ? 'text-accent' : 'text-muted-foreground'}`}>{link.name}</Link>
+                            ))}
+                          </div>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -370,16 +612,6 @@ function Header() {
                     Contact Us
                   </Link>
 
-                  {/* Location */}
-                  <Link
-                    to="/location"
-                    onClick={() => setIsOpen(false)}
-                    className={`text-sm font-medium py-2 border-t border-muted transition-all duration-200 hover:text-accent ${
-                      isActive('/location') ? 'text-accent' : 'text-foreground'
-                    }`}
-                  >
-                    Location
-                  </Link>
 
                   {/* Blog */}
                   <Link

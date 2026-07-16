@@ -6,10 +6,10 @@ import HomePage from './pages/HomePage';
 import AboutPage from './pages/AboutPage';
 import GalleryPage from './pages/GalleryPage';
 import ContactPage from './pages/ContactPage';
-import LocationPage from './pages/LocationPage';
 import BookingsPage from './pages/BookingsPage';
 import BlogPage from './pages/BlogPage';
 import TeethWhiteningPage from './pages/services/TeethWhiteningPage';
+import ServicesPage from './pages/ServicesPage';
 import VeneersPage from './pages/services/VeneersPage';
 import DentalImplantsPage from './pages/services/DentalImplantsPage';
 import CavityFillingPage from './pages/services/CavityFillingPage';
@@ -36,9 +36,10 @@ function App() {
         <Route path="/about" element={<AboutPage />} />
         <Route path="/gallery" element={<GalleryPage />} />
         <Route path="/contact" element={<ContactPage />} />
-        <Route path="/location" element={<LocationPage />} />
+        <Route path="/location" element={<ContactPage />} />
         <Route path="/bookings" element={<BookingsPage />} />
         <Route path="/blog" element={<BlogPage />} />
+        <Route path="/services" element={<ServicesPage />} />
         
         <Route path="/services/teeth-whitening" element={<TeethWhiteningPage />} />
         <Route path="/services/veneers" element={<VeneersPage />} />

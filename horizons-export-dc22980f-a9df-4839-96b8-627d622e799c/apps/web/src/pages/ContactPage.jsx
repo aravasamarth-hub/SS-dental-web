@@ -1,8 +1,7 @@
-
 import React, { useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { motion } from 'framer-motion';
-import { Mail, Phone, MapPin, Clock } from 'lucide-react';
+import { Mail, Phone, MapPin, Clock, Navigation } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import FloatingWhatsAppButton from '@/components/FloatingWhatsAppButton';
@@ -51,113 +50,128 @@ function ContactPage() {
         <meta name="description" content="Contact SS Dental Care in Davangere. Call us at +91 9448455699 or email ssdentalcare.in@gmail.com for appointments and inquiries." />
       </Helmet>
 
-      <div className="min-h-screen">
+      <div className="min-h-screen bg-background">
         <Header />
         <FloatingWhatsAppButton />
         <BackToTopButton />
 
-        <section className="py-20 bg-gradient-to-br from-primary/5 via-background to-accent/5">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Hero Banner Section */}
+        <section className="py-20 bg-gradient-to-br from-primary/10 via-background to-accent/10 relative overflow-hidden">
+          <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:30px_30px]" />
+          <div className="absolute top-0 right-0 w-96 h-96 bg-primary/20 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 left-0 w-96 h-96 bg-accent/20 rounded-full blur-3xl" />
+          
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               className="max-w-4xl mx-auto text-center"
             >
-              <h1 className="mb-6">Get in Touch</h1>
+              <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold mb-6 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                Get in Touch
+              </h1>
               <p className="text-xl text-muted-foreground leading-relaxed">
-                We're here to answer your questions and schedule your appointment
+                We&apos;re here to answer your questions and schedule your appointment
               </p>
             </motion.div>
           </div>
         </section>
 
+        {/* ROW 1: Contact Details & Form */}
         <section className="py-20">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
+              
+              {/* Row 1 Left: Contact Information & Timings */}
               <motion.div
-                initial={{ opacity: 0, x: -20 }}
+                initial={{ opacity: 0, x: -30 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
+                transition={{ duration: 0.6 }}
+                className="space-y-10"
               >
-                <h2 className="mb-8">Contact Information</h2>
-                
-                <div className="space-y-6">
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center flex-shrink-0">
-                      <MapPin className="h-6 w-6 text-accent" />
+                <div className="space-y-8">
+                  <h2 className="text-3xl font-bold">Contact Details</h2>
+                  
+                  <div className="space-y-8">
+                    <div className="flex items-start gap-5">
+                      <div className="w-12 h-12 rounded-xl bg-accent/15 flex items-center justify-center flex-shrink-0">
+                        <MapPin className="h-6 w-6 text-accent" />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-lg mb-1 text-foreground">Address</h3>
+                        <p className="text-muted-foreground leading-relaxed">
+                          SS Dental Care, 2873, S S Plaza, 1st Floor,<br />
+                          4th Main, 4th Cross Rd, MCC B Block,<br />
+                          Davanagere, Karnataka 577004
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="font-semibold mb-2">Address</h3>
-                      <p className="text-muted-foreground leading-relaxed">
-                        SS Dental Care, 2873, S S Plaza, 1st Floor,<br />
-                        4th Main, 4th Cross Rd, MCC B Block,<br />
-                        Davanagere, Karnataka 577004
-                      </p>
-                    </div>
-                  </div>
 
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center flex-shrink-0">
-                      <Phone className="h-6 w-6 text-accent" />
+                    <div className="flex items-start gap-5">
+                      <div className="w-12 h-12 rounded-xl bg-accent/15 flex items-center justify-center flex-shrink-0">
+                        <Phone className="h-6 w-6 text-accent" />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-lg mb-1 text-foreground">Phone</h3>
+                        <a href="tel:+919448455699" className="text-muted-foreground hover:text-accent transition-colors duration-200">
+                          +91 9448455699
+                        </a>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="font-semibold mb-2">Phone</h3>
-                      <a href="tel:+919448455699" className="text-muted-foreground hover:text-accent transition-all duration-200">
-                        +91 9448455699
-                      </a>
-                    </div>
-                  </div>
 
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center flex-shrink-0">
-                      <Mail className="h-6 w-6 text-accent" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold mb-2">Email</h3>
-                      <a href="mailto:ssdentalcare.in@gmail.com" className="text-muted-foreground hover:text-accent transition-all duration-200">
-                        ssdentalcare.in@gmail.com
-                      </a>
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center flex-shrink-0">
-                      <Clock className="h-6 w-6 text-accent" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold mb-2">Hours</h3>
-                      <p className="text-muted-foreground leading-relaxed">
-                        Monday – Saturday: 10:30 AM – 9:00 PM<br />
-                        Sunday: 10:30 AM – 2:00 PM
-                      </p>
+                    <div className="flex items-start gap-5">
+                      <div className="w-12 h-12 rounded-xl bg-accent/15 flex items-center justify-center flex-shrink-0">
+                        <Mail className="h-6 w-6 text-accent" />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-lg mb-1 text-foreground">Email</h3>
+                        <a href="mailto:ssdentalcare.in@gmail.com" className="text-muted-foreground hover:text-accent transition-colors duration-200">
+                          ssdentalcare.in@gmail.com
+                        </a>
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="mt-8 rounded-2xl overflow-hidden shadow-lg h-64">
-                  <iframe
-                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3858.123456789!2d75.9234567!3d14.4567890!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMTTCsDI3JzI0LjQiTiA3NcKwNTUnMjQuNCJF!5e0!3m2!1sen!2sin!4v1234567890"
-                    width="100%"
-                    height="100%"
-                    style={{ border: 0 }}
-                    allowFullScreen=""
-                    loading="lazy"
-                    referrerPolicy="no-referrer-when-downgrade"
-                    title="SS Dental Care location map"
-                  ></iframe>
+                {/* Timings Card */}
+                <div className="bg-card p-8 rounded-2xl border border-border/50 shadow-lg relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full blur-xl pointer-events-none" />
+                  <h3 className="text-2xl font-bold mb-6 flex items-center gap-2 text-foreground">
+                    <Clock className="h-6 w-6 text-accent" />
+                    Hours
+                  </h3>
+                  <div className="space-y-4">
+                    {[
+                      { day: 'MONDAY', time: '10:30 AM – 9:00 PM' },
+                      { day: 'TUESDAY', time: '10:30 AM – 9:00 PM' },
+                      { day: 'WEDNESDAY', time: '10:30 AM – 9:00 PM' },
+                      { day: 'THURSDAY', time: '10:30 AM – 9:00 PM' },
+                      { day: 'FRIDAY', time: '10:30 AM – 9:00 PM' },
+                      { day: 'SATURDAY', time: '10:30 AM – 9:00 PM' },
+                      { day: 'SUNDAY', time: '10:30 AM – 2:00 PM' }
+                    ].map((item) => (
+                      <div key={item.day} className="flex justify-between items-center py-2.5 border-b border-border/30 last:border-0">
+                        <span className="font-semibold text-foreground text-sm tracking-wider">{item.day}</span>
+                        <span className="text-muted-foreground text-sm font-medium">{item.time}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </motion.div>
 
+              {/* Row 1 Right: Send Message Form */}
               <motion.div
-                initial={{ opacity: 0, x: 20 }}
+                initial={{ opacity: 0, x: 30 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
+                transition={{ duration: 0.6 }}
               >
-                <div className="bg-card p-8 rounded-2xl shadow-lg">
-                  <h2 className="mb-6">Send Us a Message</h2>
+                <div className="bg-card p-8 rounded-2xl shadow-xl border border-border/50">
+                  <h2 className="text-3xl font-bold mb-8">Send Us a Message</h2>
                   
                   <form onSubmit={handleSubmit} className="space-y-6">
-                    <div>
+                    <div className="space-y-2">
                       <Label htmlFor="name">Full Name</Label>
                       <Input
                         id="name"
@@ -166,11 +180,11 @@ function ContactPage() {
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                         required
-                        className="mt-2 text-foreground placeholder:text-muted-foreground"
+                        className="text-foreground placeholder:text-muted-foreground focus-visible:ring-accent"
                       />
                     </div>
 
-                    <div>
+                    <div className="space-y-2">
                       <Label htmlFor="email">Email Address</Label>
                       <Input
                         id="email"
@@ -179,11 +193,11 @@ function ContactPage() {
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                         required
-                        className="mt-2 text-foreground placeholder:text-muted-foreground"
+                        className="text-foreground placeholder:text-muted-foreground focus-visible:ring-accent"
                       />
                     </div>
 
-                    <div>
+                    <div className="space-y-2">
                       <Label htmlFor="phone">Phone Number</Label>
                       <Input
                         id="phone"
@@ -192,11 +206,11 @@ function ContactPage() {
                         value={formData.phone}
                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                         required
-                        className="mt-2 text-foreground placeholder:text-muted-foreground"
+                        className="text-foreground placeholder:text-muted-foreground focus-visible:ring-accent"
                       />
                     </div>
 
-                    <div>
+                    <div className="space-y-2">
                       <Label htmlFor="message">Message</Label>
                       <Textarea
                         id="message"
@@ -205,13 +219,13 @@ function ContactPage() {
                         onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                         required
                         rows={5}
-                        className="mt-2 text-foreground placeholder:text-muted-foreground"
+                        className="text-foreground placeholder:text-muted-foreground focus-visible:ring-accent"
                       />
                     </div>
 
                     <Button
                       type="submit"
-                      className="w-full transition-all duration-200 active:scale-98"
+                      className="w-full py-6 text-base rounded-lg transition-all duration-200 active:scale-98"
                       disabled={isSubmitting}
                     >
                       {isSubmitting ? 'Sending...' : 'Send Message'}
@@ -219,6 +233,99 @@ function ContactPage() {
                   </form>
                 </div>
               </motion.div>
+
+            </div>
+          </div>
+        </section>
+
+        {/* ROW 2: Google Maps Map & Landmark Directions */}
+        <section className="py-20 border-t border-border/60 bg-muted/30">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+              
+              {/* Row 2 Left: Map and Get Directions */}
+              <motion.div
+                initial={{ opacity: 0, x: -30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6 }}
+                className="space-y-6"
+              >
+                <h2 className="text-3xl font-bold">Find Us on Google Maps</h2>
+                
+                <div className="relative group rounded-2xl overflow-hidden shadow-xl h-80 cursor-pointer border border-border/50">
+                  <a
+                    href="https://www.google.com/maps/dir/?api=1&destination=SS+Dental+Care+Davanagere"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block w-full h-full"
+                  >
+                    <img
+                      src="/clinic-map.png"
+                      alt="SS Dental Care Location Map"
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-300 flex items-center justify-center">
+                      <span className="bg-white/90 dark:bg-slate-900/90 text-slate-900 dark:text-white px-6 py-3 rounded-xl font-medium shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        Open in Google Maps
+                      </span>
+                    </div>
+                  </a>
+                </div>
+
+                <div className="flex justify-start">
+                  <a
+                    href="https://www.google.com/maps/dir/?api=1&destination=SS+Dental+Care+Davanagere"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full sm:w-auto"
+                  >
+                    <Button size="lg" className="w-full sm:w-auto px-8 transition-all duration-200 active:scale-98">
+                      <Navigation className="mr-2 h-5 w-5" />
+                      Get Directions
+                    </Button>
+                  </a>
+                </div>
+              </motion.div>
+
+              {/* Row 2 Right: Directions from landmarks */}
+              <motion.div
+                initial={{ opacity: 0, x: 30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6 }}
+                className="space-y-6"
+              >
+                <h2 className="text-3xl font-bold">Directions from Landmarks</h2>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="bg-card p-6 rounded-xl border border-border/40 shadow-sm hover:shadow-md transition-shadow">
+                    <h3 className="font-bold text-sm mb-1.5 text-foreground">From Davanagere Railway Station</h3>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      Approximately 3.2 km, 12 minutes by car via MG Road.
+                    </p>
+                  </div>
+                  <div className="bg-card p-6 rounded-xl border border-border/40 shadow-sm hover:shadow-md transition-shadow">
+                    <h3 className="font-bold text-sm mb-1.5 text-foreground">From Bus Stand</h3>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      Approximately 2.8 km, 10 minutes by car via PB Road.
+                    </p>
+                  </div>
+                  <div className="bg-card p-6 rounded-xl border border-border/40 shadow-sm hover:shadow-md transition-shadow">
+                    <h3 className="font-bold text-sm mb-1.5 text-foreground">From GMIT College</h3>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      Approximately 1.5 km, 5 minutes by car via 4th Main.
+                    </p>
+                  </div>
+                  <div className="bg-card p-6 rounded-xl border border-border/40 shadow-sm hover:shadow-md transition-shadow">
+                    <h3 className="font-bold text-sm mb-1.5 text-foreground">From City Hospital</h3>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      Approximately 2.1 km, 8 minutes by car via MCC Road.
+                    </p>
+                  </div>
+                </div>
+              </motion.div>
+
             </div>
           </div>
         </section>

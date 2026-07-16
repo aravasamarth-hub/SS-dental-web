@@ -8,7 +8,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ServiceCard from '@/components/ServiceCard';
 import DoctorCard from '@/components/DoctorCard';
-import TestimonialCard from '@/components/TestimonialCard';
+
 import StatCounter from '@/components/StatCounter';
 import FloatingWhatsAppButton from '@/components/FloatingWhatsAppButton';
 import BackToTopButton from '@/components/BackToTopButton';
@@ -25,7 +25,7 @@ function HomePage() {
     {
       title: 'Teeth Whitening',
       description: 'Removes stains and brightens teeth safely with quick visible results.',
-      image: '/services/teeth-whitening.jpg',
+      image: '/services/teeth-whitening-hq.jpg',
       slug: 'teeth-whitening'
     },
     {
@@ -47,6 +47,12 @@ function HomePage() {
       slug: 'laser-dental-treatment'
     },
     {
+      title: 'Broken Teeth',
+      description: 'Repairs damaged teeth using bonding, crowns, or veneers for strength.',
+      image: '/services/broken-teeth.png',
+      slug: 'broken-teeth'
+    },
+    {
       title: 'Aligners',
       description: 'Clear removable trays that gradually straighten teeth without visible braces.',
       image: '/services/aligners.png',
@@ -55,7 +61,7 @@ function HomePage() {
     {
       title: 'Orthodontic Treatment (Braces)',
       description: 'Corrects misaligned teeth and bite issues for improved function and appearance.',
-      image: '/services/braces.jpg',
+      image: '/services/braces-hq.png',
       slug: 'orthodontic-treatment'
     },
     {
@@ -69,6 +75,12 @@ function HomePage() {
       description: 'Restoring damaged teeth with comfortable, lasting fillings.',
       image: '/services/cavity-filling.jpg',
       slug: 'cavity-filling'
+    },
+    {
+      title: 'Smile Design',
+      description: 'Customized digital smile makeovers analyzing facial features to create your dream aesthetic smile.',
+      image: '/services/smile-design.png',
+      slug: 'smile-design'
     }
   ];
 
@@ -89,13 +101,7 @@ function HomePage() {
     }
   ];
 
-  const testimonials = [
-    { name: 'Priya Sharma', rating: 5, review: 'Excellent service and very professional staff. Dr. Naveen explained everything clearly before my orthodontic treatment. Highly recommend!', date: 'May 2026' },
-    { name: 'Rajesh Kumar', rating: 5, review: 'Got my dental implants done here. The entire process was smooth and painless. Dr. Sunitha is very skilled and caring.', date: 'April 2026' },
-    { name: 'Ananya Reddy', rating: 5, review: 'Best dental clinic in Davangere! The clinic is very clean and equipped with latest technology. My teeth whitening results are amazing.', date: 'March 2026' },
-    { name: 'Vikram Patel', rating: 5, review: 'I was nervous about getting braces, but the team made me feel comfortable. The results are worth it. Thank you SS Dental Care!', date: 'February 2026' },
-    { name: 'Meera Iyer', rating: 5, review: 'Professional and friendly environment. Got my cavity filled without any pain. The digital scanning technology is impressive.', date: 'January 2026' },
-  ];
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -132,7 +138,7 @@ function HomePage() {
         <FloatingWhatsAppButton />
         <BackToTopButton />
 
-        <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-cover bg-center" style={{ backgroundImage: `url('/hero-bg.png')` }}>
+        <section className="relative min-h-[90vh] flex items-center justify-center overflow-hidden bg-cover bg-center" style={{ backgroundImage: `url('/hero-bg.jpg')` }}>
           {/* Transparent overlay so the background image is fully bright and visible */}
           <div className="absolute inset-0 bg-transparent z-0"></div>
           
@@ -194,7 +200,7 @@ function HomePage() {
               </div>
 
               {/* Right Column - Doctors Cutouts */}
-              <div className="lg:col-span-5 flex flex-col justify-end h-full translate-y-6 md:translate-y-10 lg:translate-y-14">
+              <div className="lg:col-span-5 flex flex-col justify-end h-full translate-y-12 md:translate-y-20 lg:translate-y-28">
                 <motion.div
                   initial={{ opacity: 0, y: 50 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -516,35 +522,24 @@ function HomePage() {
               </p>
             </motion.div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-12">
-              {services.map((service, index) => (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+              {services.slice(0, 10).map((service, index) => (
                 <ServiceCard key={service.slug} {...service} index={index} />
               ))}
             </div>
-          </div>
-        </section>
 
-        <section className="py-20">
-          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="text-center mb-12"
-            >
-              <h2 className="mb-4">What Our Patients Say</h2>
-              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Real experiences from our valued patients
-              </p>
-            </motion.div>
-
-            <div className="columns-1 md:columns-2 lg:columns-3 gap-6">
-              {testimonials.map((testimonial, index) => (
-                <TestimonialCard key={index} {...testimonial} index={index} />
-              ))}
+            <div className="text-center mt-12">
+              <a
+                href="/services"
+                className="inline-flex items-center gap-2 px-8 py-3 rounded-full bg-accent text-white font-semibold text-base shadow-md hover:bg-accent/90 transition-all duration-200 hover:-translate-y-0.5"
+              >
+                View All Services →
+              </a>
             </div>
           </div>
         </section>
+
+
 
         <section className="py-20 bg-muted/50">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -588,7 +583,7 @@ function HomePage() {
                     </div>
                   </div>
                 </div>
-                <Link to="/location">
+                <Link to="/contact">
                   <Button variant="outline" className="transition-all duration-200 active:scale-98">
                     <MapPin className="mr-2 h-4 w-4" />
                     Get Directions
@@ -600,18 +595,25 @@ function HomePage() {
                 initial={{ opacity: 0, x: 20 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
-                className="rounded-2xl overflow-hidden shadow-lg h-96"
+                className="rounded-2xl overflow-hidden shadow-lg h-96 group relative cursor-pointer"
               >
-                <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3858.123456789!2d75.9234567!3d14.4567890!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMTTCsDI3JzI0LjQiTiA3NcKwNTUnMjQuNCJF!5e0!3m2!1sen!2sin!4v1234567890"
-                  width="100%"
-                  height="100%"
-                  style={{ border: 0 }}
-                  allowFullScreen=""
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                  title="SS Dental Care location map"
-                ></iframe>
+                <a
+                  href="https://www.google.com/maps/dir/?api=1&destination=SS+Dental+Care+Davanagere"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block w-full h-full"
+                >
+                  <img
+                    src="/clinic-map.png"
+                    alt="SS Dental Care Location Map"
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-300 flex items-center justify-center">
+                    <span className="bg-white/90 dark:bg-slate-900/90 text-slate-900 dark:text-white px-4 py-2 rounded-lg font-medium shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 text-sm">
+                      Open in Google Maps
+                    </span>
+                  </div>
+                </a>
               </motion.div>
             </div>
           </div>

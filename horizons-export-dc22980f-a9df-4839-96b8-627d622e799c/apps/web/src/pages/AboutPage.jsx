@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Helmet } from 'react-helmet';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Award, Heart, Users, Zap } from 'lucide-react';
 import Header from '@/components/Header';
@@ -166,50 +167,54 @@ function AboutPage() {
             </motion.div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-5xl mx-auto">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                className="bg-card rounded-2xl overflow-hidden shadow-lg"
-              >
-                <div className="h-80 overflow-hidden">
-                  <img
-                    src="https://horizons-cdn.hostinger.com/dc22980f-a9df-4839-96b8-627d622e799c/37a824af35a9003237db66be11bbe263.png"
-                    alt="Dr. Naveen Shamnur MDS - Orthodontist"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="p-6">
-                  <h3 className="text-2xl font-bold mb-2">Dr. Naveen Shamnur</h3>
-                  <p className="text-accent font-medium mb-3">MDS - Orthodontist</p>
-                  <p className="text-muted-foreground leading-relaxed">
-                    Specializing in braces, aligners, and orthodontic surgery with over 10 years of experience in creating beautiful, healthy smiles.
-                  </p>
-                </div>
-              </motion.div>
+              <Link to="/doctors/naveen-shamnur" className="block group">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  className="bg-card rounded-2xl overflow-hidden shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 cursor-pointer h-full"
+                >
+                  <div className="h-96 overflow-hidden bg-muted">
+                    <img
+                      src="https://horizons-cdn.hostinger.com/dc22980f-a9df-4839-96b8-627d622e799c/37a824af35a9003237db66be11bbe263.png"
+                      alt="Dr. Naveen Shamnur MDS - Orthodontist"
+                      className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
+                    />
+                  </div>
+                  <div className="p-6">
+                    <h3 className="text-2xl font-bold mb-2 group-hover:text-accent transition-colors duration-300">Dr. Naveen Shamnur</h3>
+                    <p className="text-accent font-medium mb-3">MDS - Orthodontist</p>
+                    <p className="text-muted-foreground leading-relaxed">
+                      Specializing in braces, aligners, and orthodontic surgery with over 10 years of experience in creating beautiful, healthy smiles.
+                    </p>
+                  </div>
+                </motion.div>
+              </Link>
 
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.1 }}
-                className="bg-card rounded-2xl overflow-hidden shadow-lg"
-              >
-                <div className="h-80 overflow-hidden">
-                  <img
-                    src="https://horizons-cdn.hostinger.com/dc22980f-a9df-4839-96b8-627d622e799c/478df36d82fc64b544111f8c6fd0f1dc.png"
-                    alt="Dr. Sunitha N Shamnur MDS - Prosthodontist and Implantologist"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="p-6">
-                  <h3 className="text-2xl font-bold mb-2">Dr. Sunitha N Shamnur</h3>
-                  <p className="text-accent font-medium mb-3">MDS - Prosthodontist & Implantologist</p>
-                  <p className="text-muted-foreground leading-relaxed">
-                    Expert in dental implants, dentures, and smile design with a decade of experience in restorative and cosmetic dentistry.
-                  </p>
-                </div>
-              </motion.div>
+              <Link to="/doctors/sunitha-shamnur" className="block group">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.1 }}
+                  className="bg-card rounded-2xl overflow-hidden shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 cursor-pointer h-full"
+                >
+                  <div className="h-96 overflow-hidden bg-muted">
+                    <img
+                      src="https://horizons-cdn.hostinger.com/dc22980f-a9df-4839-96b8-627d622e799c/478df36d82fc64b544111f8c6fd0f1dc.png"
+                      alt="Dr. Sunitha N Shamnur MDS - Prosthodontist and Implantologist"
+                      className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
+                    />
+                  </div>
+                  <div className="p-6">
+                    <h3 className="text-2xl font-bold mb-2 group-hover:text-accent transition-colors duration-300">Dr. Sunitha N Shamnur</h3>
+                    <p className="text-accent font-medium mb-3">MDS - Prosthodontist & Implantologist</p>
+                    <p className="text-muted-foreground leading-relaxed">
+                      Expert in dental implants, dentures, and smile design with a decade of experience in restorative and cosmetic dentistry.
+                    </p>
+                  </div>
+                </motion.div>
+              </Link>
             </div>
           </div>
         </section>

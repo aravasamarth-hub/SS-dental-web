@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
-function ServiceCard({ title, description, image, slug, index }) {
+function ServiceCard({ title, description, image, slug, index, imageFit = 'cover' }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -14,11 +14,11 @@ function ServiceCard({ title, description, image, slug, index }) {
       <Link to={`/services/${slug}`} className="block">
         <div className="flex flex-col items-center text-center transition-all duration-300 transform group-hover:scale-105 group-hover:-translate-y-1">
           {/* Image Container with rounded corners */}
-          <div className="w-full aspect-[4/3] rounded-[2rem] overflow-hidden shadow-md mb-4 bg-slate-100 dark:bg-slate-800">
+          <div className={`w-full aspect-[4/3] rounded-[2rem] overflow-hidden shadow-md mb-4 ${imageFit === 'contain' ? 'bg-white p-3 dark:bg-white' : 'bg-slate-100 dark:bg-slate-800'}`}>
             <img
               src={image}
               alt={title}
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+              className={`w-full h-full transition-transform duration-500 ${imageFit === 'contain' ? 'object-contain group-hover:scale-110' : 'object-cover scale-[1.02] group-hover:scale-110'}`}
             />
           </div>
           {/* Title */}
