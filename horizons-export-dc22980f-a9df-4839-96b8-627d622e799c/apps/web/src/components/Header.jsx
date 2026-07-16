@@ -143,25 +143,25 @@ function Header() {
         isScrolled ? 'bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80' : 'bg-background'
       }`}
     >
-      {/* Top Bar for Desktop and Tablet */}
-      <div className="bg-accent text-accent-foreground py-3.5 hidden md:block transition-all duration-300">
+      {/* Top Bar - shown on ALL screen sizes */}
+      <div className="bg-accent text-accent-foreground py-2 md:py-3.5 transition-all duration-300">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
             <a
               href="tel:+919448455699"
-              className="flex items-center gap-2 hover:opacity-90 font-bold tracking-wide transition-opacity text-base md:text-lg"
+              className="flex items-center gap-1.5 hover:opacity-90 font-bold tracking-wide transition-opacity text-sm md:text-lg"
             >
-              <Phone className="h-5 w-5" strokeWidth={2.5} />
+              <Phone className="h-4 w-4 md:h-5 md:w-5" strokeWidth={2.5} />
               <span>+91 94484 55699</span>
             </a>
           </div>
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-3 md:gap-6">
             <a
               href="tel:+919448455699"
               className="hover:opacity-85 transition-opacity"
               aria-label="Call Us"
             >
-              <Phone className="h-6 w-6" strokeWidth={2.5} />
+              <Phone className="h-4 w-4 md:h-6 md:w-6" strokeWidth={2.5} />
             </a>
             <a
               href="https://wa.me/919448455699"
@@ -170,7 +170,7 @@ function Header() {
               className="hover:opacity-85 transition-opacity"
               aria-label="WhatsApp"
             >
-              <WhatsAppIcon className="h-6 w-6" />
+              <WhatsAppIcon className="h-4 w-4 md:h-6 md:w-6" />
             </a>
             <a
               href="https://instagram.com/ssdentalcare"
@@ -179,7 +179,7 @@ function Header() {
               className="hover:opacity-85 transition-opacity"
               aria-label="Instagram"
             >
-              <Instagram className="h-6 w-6" strokeWidth={2.5} />
+              <Instagram className="h-4 w-4 md:h-6 md:w-6" strokeWidth={2.5} />
             </a>
             <a
               href="https://youtube.com/@ssdentalcare"
@@ -188,7 +188,7 @@ function Header() {
               className="hover:opacity-85 transition-opacity"
               aria-label="YouTube"
             >
-              <Youtube className="h-6 w-6" strokeWidth={2.5} />
+              <Youtube className="h-4 w-4 md:h-6 md:w-6" strokeWidth={2.5} />
             </a>
             <a
               href="https://facebook.com/ssdentalcare"
@@ -197,7 +197,7 @@ function Header() {
               className="hover:opacity-85 transition-opacity"
               aria-label="Facebook"
             >
-              <Facebook className="h-6 w-6" strokeWidth={2.5} />
+              <Facebook className="h-4 w-4 md:h-6 md:w-6" strokeWidth={2.5} />
             </a>
           </div>
         </div>
