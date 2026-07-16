@@ -2,8 +2,8 @@
 node_modules/
 .node/
 
-# Build outputs
-dist/
+# Build outputs (keep dist/ so Hostinger can serve built files)
+# dist/ -- intentionally NOT ignored so Hostinger can deploy built files
 build/
 .next/
 out/
