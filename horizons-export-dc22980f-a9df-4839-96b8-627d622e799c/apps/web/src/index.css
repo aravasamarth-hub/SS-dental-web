@@ -135,3 +135,16 @@
     text-wrap: balance;
   }
 }
+
+/* Hero section responsive background positioning */
+.hero-section {
+  background-position: center center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+@media (max-width: 768px) {
+  .hero-section {
+    background-position: 40% center;
+  }
+}
