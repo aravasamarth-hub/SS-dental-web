@@ -26,7 +26,7 @@ function ServiceCard({ title, description, image, slug, index, imageFit = 'cover
             {title}
           </h3>
           {/* Description */}
-          <p className="text-sm md:text-base text-muted-foreground leading-relaxed max-w-sm px-2">
+          <p className="text-sm md:text-base text-muted-foreground leading-relaxed max-w-sm px-2 line-clamp-3">
             {description}
           </p>
         </div>
