@@ -222,7 +222,7 @@ function ServicesPage() {
                         <h3 className="text-lg font-bold text-foreground mb-2 group-hover:text-accent transition-colors duration-200">
                           {service.title}
                         </h3>
-                        <p className="text-sm text-muted-foreground leading-relaxed flex-1">
+                        <p className="text-sm text-muted-foreground leading-relaxed flex-1 line-clamp-3">
                           {service.description}
                         </p>
                       </div>
