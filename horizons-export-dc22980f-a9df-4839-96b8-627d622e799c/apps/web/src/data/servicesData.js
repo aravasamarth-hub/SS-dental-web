@@ -122,7 +122,7 @@ export const servicesData = {
     "heroDescription": "Clear removable trays straighten teeth gradually, comfortable, nearly invisible, and easy maintenance.",
     "aboutTitle": "About the Treatment",
     "aboutText": "Clear aligners are a modern orthodontic treatment used to straighten teeth without the need for traditional metal braces. They consist of a series of transparent, custom-made trays that gradually move teeth into their correct position over time.",
-    "imageSrc": "/services/aligners.png",
+    "imageSrc": "/services/aligners.jpg",
     "benefits": [
       "Nearly invisible and aesthetically pleasing",
       "Removable for eating and oral hygiene",
@@ -151,7 +151,7 @@ export const servicesData = {
     "heroDescription": "Corrects teeth alignment and bite using braces or clear aligners.",
     "aboutTitle": "About the Treatment",
     "aboutText": "Orthodontic treatment is a specialized dental procedure focused on correcting misaligned teeth, improper bite (malocclusion), and jaw irregularities. It improves both the function and appearance of your teeth, leading to better oral health and a more balanced smile.",
-    "imageSrc": "/services/braces-hq.png",
+    "imageSrc": "/services/braces.jpg",
     "benefits": [
       "Corrects crooked, crowded, or spaced teeth",
       "Improves bite and jaw alignment",
@@ -238,7 +238,7 @@ export const servicesData = {
     "heroDescription": "Repair broken teeth using fillings, crowns, or implants to restore function and aesthetics.",
     "aboutTitle": "About the Treatment",
     "aboutText": "Broken teeth treatment focuses on restoring teeth that are chipped, cracked, or severely damaged due to trauma, decay, or biting hard objects. The approach depends on the extent of damage and the condition of the tooth.",
-    "imageSrc": "/services/broken-teeth.png",
+    "imageSrc": "/services/broken-teeth.jpg",
     "benefits": [
       "Restores strength and function of damaged teeth",
       "Improves appearance and smile aesthetics",
@@ -267,7 +267,7 @@ export const servicesData = {
     "heroDescription": "Computer-designed dentures ensuring precise fit, comfort, durability, and natural appearance.",
     "aboutTitle": "About the Treatment",
     "aboutText": "Digital dentures treatment involves creating and restoring complete or partial dentures using advanced CAD/CAM and 3D digital technology. These dentures are precisely designed for better fit, comfort, and durability.",
-    "imageSrc": "/services/digital-dentures.png",
+    "imageSrc": "/services/digital-dentures.jpg",
     "benefits": [
       "Highly precise fit and improved comfort",
       "Faster treatment with fewer clinic visits",
@@ -296,7 +296,7 @@ export const servicesData = {
     "heroDescription": "Restores entire smile with fixed implants, offering strength, stability, natural appearance.",
     "aboutTitle": "About the Treatment",
     "aboutText": "Full mouth implants are an advanced dental solution used to replace an entire set of missing or severely damaged teeth in the upper jaw, lower jaw, or both. Instead of replacing each tooth individually, a full arch of teeth is supported using a limited number of strategically placed dental implants (commonly known as All-on-4 or All-on-6).",
-    "imageSrc": "/services/full-mouth-implant.png",
+    "imageSrc": "/services/full-mouth-implant.jpg",
     "benefits": [
       "Permanent, fixed solution for complete tooth replacement",
       "Natural look and strong biting function",
@@ -325,7 +325,7 @@ export const servicesData = {
     "heroDescription": "Specialized implants anchored in strong bone for severe upper jaw loss cases.",
     "aboutTitle": "About the Treatment",
     "aboutText": "Pterygoid and zygomatic implants are advanced dental implant techniques used for patients with severe bone loss in the upper jaw (maxilla), where traditional implants are not possible without bone grafting. Zygomatic implants are longer implants anchored in the cheekbone (zygoma), while pterygoid implants are placed in the posterior region of the upper jaw, engaging the dense pterygoid bone. These areas provide strong support even when the jawbone has deteriorated significantly.",
-    "imageSrc": "/services/pterygoid-zygomatic-implant.png",
+    "imageSrc": "/services/pterygoid-zygomatic-implant.jpg",
     "benefits": [
       "Ideal for patients with severe bone loss",
       "Avoids complex bone grafting procedures",
@@ -353,7 +353,7 @@ export const servicesData = {
     "heroDescription": "Safe removal of damaged or wisdom teeth to relieve pain and prevent complications.",
     "aboutTitle": "About the Treatment",
     "aboutText": "Tooth extraction is a dental procedure in which a damaged, decayed, or problematic tooth is removed from its socket in the jawbone. It is commonly performed when a tooth cannot be saved through treatments like fillings, crowns, or root canal therapy.",
-    "imageSrc": "/services/extraction.png",
+    "imageSrc": "/services/extraction.jpg",
     "benefits": [
       "Relieves pain and prevents infection",
       "Eliminates crowding and protects adjacent teeth",
@@ -384,7 +384,7 @@ export const servicesData = {
     "heroDescription": "Treats infected gums, reduces inflammation, and restores healthy gum condition.",
     "aboutTitle": "About the Treatment",
     "aboutText": "Gum therapy (periodontal treatment) focuses on preventing, managing, and treating diseases of the gums and supporting structures of the teeth. It is essential for conditions like gingivitis (early-stage gum inflammation) and periodontitis (advanced gum disease that can lead to tooth loss).",
-    "imageSrc": "/services/gum-therapy.png",
+    "imageSrc": "/services/gum-therapy.jpg",
     "benefits": [
       "Stops progression of gum disease",
       "Reduces gum bleeding, swelling, and infection",
@@ -413,7 +413,7 @@ export const servicesData = {
     "heroDescription": "Customized treatment to enhance smile aesthetics, balance, and overall facial harmony.",
     "aboutTitle": "About the Treatment",
     "aboutText": "Smile Design (often called Digital Smile Design) is a customized cosmetic dental approach that enhances the overall appearance of your smile by combining aesthetics, facial proportions, and dental health. It focuses not just on teeth, but also on how your smile complements your face, lips, and personality.",
-    "imageSrc": "/services/smile-design.png",
+    "imageSrc": "/services/smile-design.jpg",
     "benefits": [
       "Enhances smile appearance and boosts confidence",
       "Quick and noticeable results",

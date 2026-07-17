@@ -261,7 +261,7 @@ function ContactPage() {
                     className="block w-full h-full"
                   >
                     <img
-                      src="/clinic-map.png"
+                      src="/clinic-map.jpg"
                       alt="SS Dental Care Location Map"
                       className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />

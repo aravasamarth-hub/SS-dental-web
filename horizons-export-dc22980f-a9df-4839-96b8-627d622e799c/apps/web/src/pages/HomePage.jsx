@@ -49,19 +49,19 @@ function HomePage() {
     {
       title: 'Broken Teeth',
       description: 'Repairs damaged teeth using bonding, crowns, or veneers for strength.',
-      image: '/services/broken-teeth.png',
+      image: '/services/broken-teeth.jpg',
       slug: 'broken-teeth'
     },
     {
       title: 'Aligners',
       description: 'Clear removable trays that gradually straighten teeth without visible braces.',
-      image: '/services/aligners.png',
+      image: '/services/aligners.jpg',
       slug: 'aligners'
     },
     {
       title: 'Orthodontic Treatment (Braces)',
       description: 'Corrects misaligned teeth and bite issues for improved function and appearance.',
-      image: '/services/braces-hq.png',
+      image: '/services/braces.jpg',
       slug: 'orthodontic-treatment'
     },
     {
@@ -79,7 +79,7 @@ function HomePage() {
     {
       title: 'Smile Design',
       description: 'Customized digital smile makeovers analyzing facial features to create your dream aesthetic smile.',
-      image: '/services/smile-design.png',
+      image: '/services/smile-design.jpg',
       slug: 'smile-design'
     }
   ];
@@ -87,7 +87,7 @@ function HomePage() {
   const doctors = [
     {
       name: 'Dr. Naveen Shamnur',
-      qualification: 'MDS - Orthodontist',
+      qualification: 'MDS - Orthodontist and Implantologist',
       specialization: 'Braces, Aligners & Orthodontic Surgery',
       image: 'https://horizons-cdn.hostinger.com/dc22980f-a9df-4839-96b8-627d622e799c/37a824af35a9003237db66be11bbe263.png',
       slug: 'naveen-shamnur'
@@ -131,6 +131,9 @@ function HomePage() {
         <title>Best Dental Clinic in Davangere - Implants & Aligners | SS Dental Care</title>
         <meta name="description" content="Discover the best dental clinic in Davangere offering top-notch services including dental implants, aligners, and whitening treatments." />
         <meta name="keywords" content="best dental clinic in davangere, dental implants davangere, aligners davangere" />
+        <link rel="preload" fetchpriority="high" as="image" href="/hero-bg.jpg" type="image/jpeg" />
+        <link rel="preload" fetchpriority="high" as="image" href="https://horizons-cdn.hostinger.com/dc22980f-a9df-4839-96b8-627d622e799c/37a824af35a9003237db66be11bbe263.png" type="image/png" />
+        <link rel="preload" fetchpriority="high" as="image" href="https://horizons-cdn.hostinger.com/dc22980f-a9df-4839-96b8-627d622e799c/478df36d82fc64b544111f8c6fd0f1dc.png" type="image/png" />
       </Helmet>
 
       <div className="min-h-screen">
@@ -213,13 +216,16 @@ function HomePage() {
                       <img
                         src="https://horizons-cdn.hostinger.com/dc22980f-a9df-4839-96b8-627d622e799c/37a824af35a9003237db66be11bbe263.png"
                         alt="Dr. Naveen Shamnur"
+                        fetchPriority="high"
+                        width={176}
+                        height={176}
                         className="h-36 md:h-44 object-contain drop-shadow-[0_8px_16px_rgba(0,0,0,0.6)] transform group-hover:scale-105 transition-transform duration-300"
                       />
                     </div>
                     <div className="mt-2 h-20 md:h-24 flex flex-col justify-start drop-shadow-[0_2px_4px_rgba(0,0,0,0.85)]">
                       <h3 className="text-white font-bold text-lg md:text-xl">Dr. Naveen Shamnur</h3>
                       <p className="text-accent text-xs md:text-sm font-bold mt-0.5 tracking-wide uppercase">
-                        Dental Specialist orthodontist
+                        orthodontist and Implantologist
                       </p>
                     </div>
                   </div>
@@ -230,13 +236,16 @@ function HomePage() {
                       <img
                         src="https://horizons-cdn.hostinger.com/dc22980f-a9df-4839-96b8-627d622e799c/478df36d82fc64b544111f8c6fd0f1dc.png"
                         alt="Dr. Sunitha N Shamnur"
+                        fetchPriority="high"
+                        width={176}
+                        height={176}
                         className="h-36 md:h-44 object-contain drop-shadow-[0_8px_16px_rgba(0,0,0,0.6)] transform group-hover:scale-105 transition-transform duration-300"
                       />
                     </div>
                     <div className="mt-2 h-20 md:h-24 flex flex-col justify-start drop-shadow-[0_2px_4px_rgba(0,0,0,0.85)]">
                       <h3 className="text-white font-bold text-lg md:text-xl">Dr. Sunitha Shamnur</h3>
                       <p className="text-accent text-xs md:text-sm font-bold mt-0.5 tracking-wide uppercase">
-                        Specialist Prosthodontist and Implantologist
+                        Prosthodontist and Implantologist
                       </p>
                     </div>
                   </div>
@@ -347,6 +356,9 @@ function HomePage() {
                   <img
                     src="/3d-tooth.png"
                     alt="Glossy 3D Tooth Illustration"
+                    loading="lazy"
+                    width={224}
+                    height={224}
                     className="w-48 h-48 md:w-56 md:h-56 object-contain z-10 drop-shadow-[0_15px_30px_rgba(0,0,0,0.15)] animate-[bounce_5s_infinite_ease-in-out]"
                   />
                 </motion.div>
@@ -604,8 +616,11 @@ function HomePage() {
                   className="block w-full h-full"
                 >
                   <img
-                    src="/clinic-map.png"
+                    src="/clinic-map.jpg"
                     alt="SS Dental Care Location Map"
+                    loading="lazy"
+                    width={600}
+                    height={384}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                   <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors duration-300 flex items-center justify-center">

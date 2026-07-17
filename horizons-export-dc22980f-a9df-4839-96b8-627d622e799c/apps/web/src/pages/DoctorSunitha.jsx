@@ -51,8 +51,8 @@ function DoctorSunitha() {
   return (
     <>
       <Helmet>
-        <title>Dr. Sunitha N Shamnur MDS - Prosthodontist & Implantologist | SS Dental Care Davangere</title>
-        <meta name="description" content="Meet Dr. Sunitha N Shamnur MDS, Senior Prosthodontist & Implantologist at SS Dental Care. Expert in dental implants, dentures, crowns & bridges, and smile design." />
+        <title>Dr. Sunitha N Shamnur MDS - Prosthodontist and Implantologist | SS Dental Care Davangere</title>
+        <meta name="description" content="Meet Dr. Sunitha N Shamnur MDS, Senior Prosthodontist and Implantologist at SS Dental Care. Expert in dental implants, dentures, crowns & bridges, and smile design." />
       </Helmet>
 
       <div className="min-h-screen">
@@ -63,14 +63,16 @@ function DoctorSunitha() {
         {/* Hero Section */}
         <section className="py-20 bg-gradient-to-br from-primary/5 via-background to-accent/5">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="order-2 lg:order-1"
+                className="order-2 lg:order-1 lg:col-span-7"
               >
-                <h1 className="mb-2">
-                  About <span className="text-accent">Dr. Sunitha Shamnur</span> MDS
+                <h1 className="mb-2 flex flex-col gap-1">
+                  <span className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground">About</span>
+                  <span className="text-accent text-4xl md:text-5xl lg:text-6xl font-bold">Dr. Sunitha Shamnur</span>
+                  <span className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground">MDS</span>
                 </h1>
                 <p className="text-base text-muted-foreground font-medium mb-4">
                   Professor, Dept. of Prosthodontics, Bapuji College of Dental Sciences, Davangere
@@ -101,9 +103,9 @@ function DoctorSunitha() {
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="order-1 lg:order-2"
+                className="order-1 lg:order-2 lg:col-span-5 flex justify-center lg:justify-start"
               >
-                <div className="rounded-2xl overflow-hidden shadow-xl">
+                <div className="rounded-2xl overflow-hidden shadow-xl max-w-sm md:max-w-md lg:max-w-[380px] w-full">
                   <img
                     src="https://horizons-cdn.hostinger.com/dc22980f-a9df-4839-96b8-627d622e799c/478df36d82fc64b544111f8c6fd0f1dc.png"
                     alt="Dr. Sunitha N Shamnur MDS - Prosthodontist and Implantologist"

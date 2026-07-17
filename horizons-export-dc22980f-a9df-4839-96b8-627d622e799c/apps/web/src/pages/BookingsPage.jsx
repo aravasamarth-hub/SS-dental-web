@@ -132,7 +132,7 @@ function BookingsPage() {
                   {/* Left Column: Cozy Clinic Image */}
                   <div className="lg:col-span-6 rounded-2xl overflow-hidden aspect-[4/3] relative group shadow-lg border border-border/40">
                     <img
-                      src="/clinic-interior.png"
+                      src="/clinic-interior.jpg"
                       alt="SS Dental Care Cozy Clinic Room"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                     />
@@ -230,7 +230,7 @@ function BookingsPage() {
                     {/* Right Column: Dentist Checkup Image */}
                     <div className="lg:col-span-6 rounded-2xl overflow-hidden aspect-[4/3] relative group shadow-lg border border-border/40">
                       <img
-                        src="/whatsapp-booking-dentist.png"
+                        src="/whatsapp-booking-dentist.jpg"
                         alt="SS Dental Care Dentist Checkup"
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                       />
@@ -288,7 +288,7 @@ function BookingsPage() {
                     {/* Right Column: Dentist Checkup Image */}
                     <div className="lg:col-span-6 rounded-2xl overflow-hidden aspect-[4/3] relative group shadow-lg border border-border/40">
                       <img
-                        src="/whatsapp-booking-dentist.png"
+                        src="/whatsapp-booking-dentist.jpg"
                         alt="SS Dental Care Dentist Checkup"
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                       />
@@ -456,7 +456,7 @@ function BookingsPage() {
                     {/* Item details */}
                     <div className="flex gap-4 items-start pb-6 border-b border-border/60">
                       <div className="w-16 h-12 rounded-lg overflow-hidden relative border flex-shrink-0">
-                        <img src="/clinic-interior.png" alt="Thumbnail" className="w-full h-full object-cover" />
+                        <img src="/clinic-interior.jpg" alt="Thumbnail" className="w-full h-full object-cover" />
                         <div className="absolute -top-1.5 -right-1.5 bg-accent text-accent-foreground text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center border">
                           1
                         </div>

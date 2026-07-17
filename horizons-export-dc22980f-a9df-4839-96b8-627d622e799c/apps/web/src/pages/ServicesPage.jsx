@@ -60,13 +60,13 @@ function ServicesPage() {
     {
       title: 'Aligners',
       description: 'Clear removable trays that gradually straighten teeth without visible braces.',
-      image: '/services/aligners.png',
+      image: '/services/aligners.jpg',
       path: '/services/aligners'
     },
     {
       title: 'Orthodontic Treatment (Braces)',
       description: 'Corrects misaligned teeth and bite issues for improved function and appearance.',
-      image: '/services/braces-hq.png',
+      image: '/services/braces.jpg',
       path: '/services/orthodontic-treatment'
     },
     {
@@ -84,43 +84,43 @@ function ServicesPage() {
     {
       title: 'Broken Teeth Restoration',
       description: 'Expert restoration of damaged or broken teeth with durable, seamless tooth-colored bonding.',
-      image: '/services/broken-teeth.png',
+      image: '/services/broken-teeth.jpg',
       path: '/services/broken-teeth'
     },
     {
       title: 'Digital Dentures',
       description: 'Modern digital prosthodontics for lightweight, highly precise, and comfortable dentures.',
-      image: '/services/digital-dentures.png',
+      image: '/services/digital-dentures.jpg',
       path: '/services/digital-dentures'
     },
     {
       title: 'Full Mouth Implant',
       description: 'Complete arch restorations replacing all missing teeth with a premium implant-supported bridge.',
-      image: '/services/full-mouth-implant.png',
+      image: '/services/full-mouth-implant.jpg',
       path: '/services/full-mouth-implant'
     },
     {
       title: 'Pterygoid & Zygomatic Implant',
       description: 'Advanced implant procedures utilizing facial bones for patients with severe upper jaw bone loss.',
-      image: '/services/pterygoid-zygomatic-implant.png',
+      image: '/services/pterygoid-zygomatic-implant.jpg',
       path: '/services/pterygoid-zygomatic-implant'
     },
     {
       title: 'Extraction',
       description: 'Safe, comfortable, and painless tooth removal including surgical wisdom teeth extractions.',
-      image: '/services/extraction.png',
+      image: '/services/extraction.jpg',
       path: '/services/extraction'
     },
     {
       title: 'Gum Therapy',
       description: 'Advanced deep cleaning, scaling, and laser therapy to treat gingivitis and restore gum health.',
-      image: '/services/gum-therapy.png',
+      image: '/services/gum-therapy.jpg',
       path: '/services/gum-therapy'
     },
     {
       title: 'Smile Design',
       description: 'Customized digital smile makeovers analyzing facial features to create your dream aesthetic smile.',
-      image: '/services/smile-design.png',
+      image: '/services/smile-design.jpg',
       path: '/services/smile-design'
     }
   ];
@@ -157,7 +157,7 @@ function ServicesPage() {
                   className="lg:col-span-6 rounded-3xl overflow-hidden shadow-xl aspect-[4/3] bg-muted border border-muted"
                 >
                   <img
-                    src="/services/services_hero_scan.png"
+                    src="/services/services_hero_scan.jpg"
                     alt="Dentist explaining a digital 3D scan to a patient"
                     className="w-full h-full object-cover"
                   />

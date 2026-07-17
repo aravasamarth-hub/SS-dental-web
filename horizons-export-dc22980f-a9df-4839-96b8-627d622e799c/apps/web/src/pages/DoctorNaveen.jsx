@@ -46,8 +46,8 @@ function DoctorNaveen() {
   return (
     <>
       <Helmet>
-        <title>Dr. Naveen Shamnur MDS - Orthodontist | SS Dental Care Davangere</title>
-        <meta name="description" content="Meet Dr. Naveen Shamnur MDS, Senior Orthodontist at SS Dental Care Davangere. 25+ years of experience in braces, aligners, orthognathic surgery, and dental implants." />
+        <title>Dr. Naveen Shamnur MDS - Orthodontist and Implantologist | SS Dental Care Davangere</title>
+        <meta name="description" content="Meet Dr. Naveen Shamnur MDS, Senior Orthodontist and Implantologist at SS Dental Care Davangere. 25+ years of experience in braces, aligners, orthognathic surgery, and dental implants." />
       </Helmet>
 
       <div className="min-h-screen">
@@ -58,14 +58,16 @@ function DoctorNaveen() {
         {/* Hero Section */}
         <section className="py-20 bg-gradient-to-br from-primary/5 via-background to-accent/5">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="order-2 lg:order-1"
+                className="order-2 lg:order-1 lg:col-span-7"
               >
-                <h1 className="mb-2">
-                  About <span className="text-accent">Dr. Naveen Shamnur</span> MDS
+                <h1 className="mb-2 flex flex-col gap-1">
+                  <span className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground">About</span>
+                  <span className="text-accent text-4xl md:text-5xl lg:text-6xl font-bold">Dr. Naveen Shamnur</span>
+                  <span className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground">MDS</span>
                 </h1>
                 <p className="text-base text-muted-foreground font-medium mb-4">
                   Professor, Dept. of Orthodontics, College of Dental Sciences, Davangere
@@ -98,12 +100,12 @@ function DoctorNaveen() {
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="order-1 lg:order-2"
+                className="order-1 lg:order-2 lg:col-span-5 flex justify-center lg:justify-start"
               >
-                <div className="rounded-2xl overflow-hidden shadow-xl">
+                <div className="rounded-2xl overflow-hidden shadow-xl max-w-sm md:max-w-md lg:max-w-[380px] w-full">
                   <img
                     src="https://horizons-cdn.hostinger.com/dc22980f-a9df-4839-96b8-627d622e799c/37a824af35a9003237db66be11bbe263.png"
-                    alt="Dr. Naveen Shamnur MDS - Orthodontist"
+                    alt="Dr. Naveen Shamnur MDS - Orthodontist and Implantologist"
                     className="w-full h-auto object-cover object-top"
                   />
                 </div>
