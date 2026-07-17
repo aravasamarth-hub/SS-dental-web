@@ -26,6 +26,10 @@ import ExtractionPage from './pages/services/ExtractionPage';
 import GumTherapyPage from './pages/services/GumTherapyPage';
 import DoctorNaveen from './pages/DoctorNaveen';
 import DoctorSunitha from './pages/DoctorSunitha';
+import TermsPage from './pages/TermsPage';
+import PrivacyPage from './pages/PrivacyPage';
+import CancellationPage from './pages/CancellationPage';
+import RefundPage from './pages/RefundPage';
 
 function App() {
   return (
@@ -59,6 +63,11 @@ function App() {
         
         <Route path="/doctors/naveen-shamnur" element={<DoctorNaveen />} />
         <Route path="/doctors/sunitha-shamnur" element={<DoctorSunitha />} />
+
+        <Route path="/terms" element={<TermsPage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
+        <Route path="/cancellation" element={<CancellationPage />} />
+        <Route path="/refund" element={<RefundPage />} />
       </Routes>
     </Router>
   );
