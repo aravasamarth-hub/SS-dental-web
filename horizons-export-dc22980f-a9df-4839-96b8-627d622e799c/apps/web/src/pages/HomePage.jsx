@@ -210,15 +210,15 @@ function HomePage() {
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 py-12 md:py-16">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
               {/* Left Column - Content */}
-              <div className="lg:col-span-7 flex flex-col items-start text-left text-white">
+              <div className="lg:col-span-7 flex flex-col items-center lg:items-start text-center lg:text-left text-white">
                 <motion.div
                   initial={{ opacity: 0, x: -30 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.6 }}
-                  className="space-y-5 max-w-2xl"
+                  className="space-y-5 max-w-2xl flex flex-col items-center lg:items-start"
                 >
                   {/* Badge */}
-                  <div className="flex items-center gap-2.5 text-white font-extrabold drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+                  <div className="flex items-center justify-center lg:justify-start gap-2.5 text-white font-extrabold drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
                     <Star className="h-8 w-8 md:h-9 md:w-9 fill-yellow-400 text-yellow-400 flex-shrink-0" />
                     <span className="text-3xl md:text-4xl tracking-wide uppercase">SS DENTAL CARE</span>
                   </div>
@@ -249,7 +249,7 @@ function HomePage() {
                   <hr className="w-full border-white/20 my-2" />
 
                   {/* Google Rating line */}
-                  <div className="flex flex-wrap items-center gap-3 text-white text-sm md:text-base font-semibold drop-shadow-[0_2px_4px_rgba(0,0,0,0.85)]">
+                  <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3 text-white text-sm md:text-base font-semibold drop-shadow-[0_2px_4px_rgba(0,0,0,0.85)]">
                     <div className="flex items-center gap-1.5">
                       <div className="flex">
                         {[...Array(5)].map((_, i) => (
