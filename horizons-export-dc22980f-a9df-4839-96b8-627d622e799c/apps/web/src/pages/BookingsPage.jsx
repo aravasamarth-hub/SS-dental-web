@@ -282,45 +282,114 @@ function BookingsPage() {
                   className="mt-20 border-t border-border/60 pt-20 space-y-12"
                 >
                   <h2 className="text-4xl font-extrabold text-center text-foreground">
-                    Book Through Online
+                    Book & Pay Online
                   </h2>
 
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center bg-card p-6 md:p-10 rounded-3xl border border-border/50 shadow-2xl">
                     {/* Left Column: Online Booking Details */}
-                    <div className="lg:col-span-6 space-y-6">
+                    <div className="lg:col-span-8 space-y-6">
                       <div className="space-y-2">
-                        <h3 className="text-3xl font-bold text-foreground">Book Your Visit</h3>
-                        <p className="text-lg text-accent font-semibold italic">&ldquo;Starting from ₹250&rdquo;</p>
+                        <h3 className="text-3xl font-bold text-foreground">Secure Payment Gateway</h3>
+                        <p className="text-sm text-muted-foreground leading-relaxed">
+                          Settle your booking deposit, custom treatment fees, or services instantly using our verified Razorpay checkout integrations.
+                        </p>
                       </div>
 
-                      <div className="space-y-4">
-                        <h4 className="text-xl font-bold text-foreground">Dental Consultation Booking</h4>
-                        <ul className="space-y-4 text-muted-foreground list-disc pl-5 leading-relaxed">
-                          <li>
-                            Secure your appointment by completing a quick online payment via Razorpay. Enter the amount as advised by the clinic and confirm instantly. Safe, fast, and hassle-free booking.
-                          </li>
-                          <li>
-                            Secure Payment via Razorpay | Trusted & Encrypted
-                          </li>
-                        </ul>
-                      </div>
-
-                      <div className="pt-4 flex flex-col items-start gap-2">
-                        <Button
-                          onClick={() => setShowModal(true)}
-                          className="bg-[#3b82f6] hover:bg-[#2563eb] text-white font-bold px-12 py-6 rounded-md shadow-lg transition-transform active:scale-98 hover:scale-102 w-full sm:w-auto"
-                        >
-                          Pay Now
-                        </Button>
-                        <div className="flex items-center gap-1 text-[10px] text-muted-foreground pl-2 font-medium">
-                          <span>Powered by</span>
-                          <span className="font-extrabold italic text-slate-700 dark:text-slate-300">Razorpay</span>
+                      {/* Payment Options Grid */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                        {/* Option 1: Appointment booking */}
+                        <div className="bg-muted/40 p-5 rounded-2xl border border-border/60 hover:border-accent/40 transition-all duration-300 flex flex-col justify-between space-y-4">
+                          <div className="space-y-2">
+                            <h4 className="font-extrabold text-base text-foreground flex items-center gap-2">
+                              <span>📅</span> Appointment Booking
+                            </h4>
+                            <p className="text-xs text-muted-foreground leading-relaxed">
+                              Schedule your custom date & time slot and pay the ₹250.00 consulting deposit fee.
+                            </p>
+                          </div>
+                          <Button
+                            onClick={() => setShowModal(true)}
+                            className="bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-bold w-full text-xs py-5 rounded-xl transition-all duration-200 active:scale-98 shadow-sm"
+                          >
+                            Book & Pay (₹250)
+                          </Button>
                         </div>
+
+                        {/* Option 2: Razorpay.me */}
+                        <div className="bg-muted/40 p-5 rounded-2xl border border-border/60 hover:border-accent/40 transition-all duration-300 flex flex-col justify-between space-y-4">
+                          <div className="space-y-2">
+                            <h4 className="font-extrabold text-base text-foreground flex items-center gap-2">
+                              <span>💳</span> Pay Custom Amount
+                            </h4>
+                            <p className="text-xs text-muted-foreground leading-relaxed">
+                              Pay custom treatment amounts, consulting fees, or bills as advised by our dental clinic doctor.
+                            </p>
+                          </div>
+                          <a
+                            href="https://razorpay.me/@ssdentalcare"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-full block"
+                          >
+                            <Button
+                              className="bg-accent hover:bg-accent/90 text-white font-bold w-full text-xs py-5 rounded-xl transition-all duration-200 active:scale-98 shadow-sm"
+                            >
+                              Open Razorpay.me Link
+                            </Button>
+                          </a>
+                        </div>
+
+                        {/* Option 3: Services Pages */}
+                        <div className="bg-muted/40 p-5 rounded-2xl border border-border/60 hover:border-accent/40 transition-all duration-300 flex flex-col justify-between space-y-4 md:col-span-2">
+                          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                            <div className="space-y-1.5 max-w-md">
+                              <h4 className="font-extrabold text-base text-foreground flex items-center gap-2">
+                                <span>🏥</span> Services & Treatment Pages
+                              </h4>
+                              <p className="text-xs text-muted-foreground leading-relaxed">
+                                Complete payments for specific root canals, dental implants, aligners, braces, or checkup packages.
+                              </p>
+                            </div>
+                            <div className="flex flex-col sm:flex-row gap-3 flex-shrink-0">
+                              <a
+                                href="https://rzp.io/rzp/x1yhTQc"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="w-full sm:w-auto"
+                              >
+                                <Button
+                                  variant="outline"
+                                  className="border-[#2563eb]/30 hover:bg-[#2563eb]/10 hover:border-[#2563eb] text-[#2563eb] dark:text-[#60a5fa] font-bold text-xs py-5 px-6 rounded-xl transition-all w-full sm:w-auto"
+                                >
+                                  Services Page Link 1
+                                </Button>
+                              </a>
+                              <a
+                                href="https://rzp.io/rzp/r5Sa6Fr"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="w-full sm:w-auto"
+                              >
+                                <Button
+                                  variant="outline"
+                                  className="border-[#2563eb]/30 hover:bg-[#2563eb]/10 hover:border-[#2563eb] text-[#2563eb] dark:text-[#60a5fa] font-bold text-xs py-5 px-6 rounded-xl transition-all w-full sm:w-auto"
+                                >
+                                  Services Page Link 2
+                                </Button>
+                              </a>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground pl-1.5 font-medium">
+                        <span>Powered by</span>
+                        <span className="font-extrabold italic text-slate-700 dark:text-slate-300">Razorpay Secure Checkout</span>
                       </div>
                     </div>
 
                     {/* Right Column: Dentist Checkup Image */}
-                    <div className="lg:col-span-6 rounded-2xl overflow-hidden aspect-[4/3] relative group shadow-lg border border-border/40">
+                    <div className="lg:col-span-4 rounded-2xl overflow-hidden aspect-[4/3] relative group shadow-lg border border-border/40 self-stretch">
                       <img
                         src="/whatsapp-booking-dentist.jpg"
                         alt="SS Dental Care Dentist Checkup"
