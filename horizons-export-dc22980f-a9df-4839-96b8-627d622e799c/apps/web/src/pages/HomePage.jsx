@@ -193,7 +193,7 @@ function HomePage() {
         <title>Best Dental Clinic in Davangere - Implants & Aligners | SS Dental Care</title>
         <meta name="description" content="Discover the best dental clinic in Davangere offering top-notch services including dental implants, aligners, and whitening treatments." />
         <meta name="keywords" content="best dental clinic in davangere, dental implants davangere, aligners davangere" />
-        <link rel="preload" fetchpriority="high" as="image" href="/hero-bg.jpg" type="image/jpeg" />
+        <link rel="preload" fetchpriority="high" as="image" href="/hero-bg.png" type="image/png" />
         <link rel="preload" fetchpriority="high" as="image" href="https://horizons-cdn.hostinger.com/dc22980f-a9df-4839-96b8-627d622e799c/37a824af35a9003237db66be11bbe263.png" type="image/png" />
         <link rel="preload" fetchpriority="high" as="image" href="https://horizons-cdn.hostinger.com/dc22980f-a9df-4839-96b8-627d622e799c/478df36d82fc64b544111f8c6fd0f1dc.png" type="image/png" />
       </Helmet>
@@ -203,7 +203,7 @@ function HomePage() {
         <FloatingWhatsAppButton />
         <BackToTopButton />
 
-        <section className="hero-section relative min-h-[90vh] flex items-center justify-center overflow-hidden" style={{ backgroundImage: `url('/hero-bg.jpg')` }}>
+        <section className="hero-section relative min-h-[90vh] flex items-center justify-center overflow-hidden" style={{ backgroundImage: `url('/hero-bg.png')` }}>
           {/* Transparent overlay so the background image is fully bright and visible */}
           <div className="absolute inset-0 bg-transparent z-0"></div>
           
