@@ -419,7 +419,7 @@ function HomePage() {
                   {/* Clinic logo container with floating and hover animations */}
                   <motion.div
                     ref={logoRef}
-                    className="w-48 h-48 md:w-56 md:h-56 bg-white rounded-3xl p-5 flex items-center justify-center z-10 border border-slate-150 dark:border-slate-800 shadow-[0_20px_40px_rgba(0,0,0,0.15),0_0_20px_rgba(230,60,10,0.08)] cursor-pointer"
+                    className="w-48 h-48 md:w-56 md:h-56 bg-transparent rounded-3xl p-5 flex items-center justify-center z-10 cursor-pointer drop-shadow-[0_20px_40px_rgba(0,0,0,0.3)]"
                     animate={{
                       y: [0, -12, 0],
                     }}
@@ -433,7 +433,6 @@ function HomePage() {
                     whileHover={{
                       scale: 1.08,
                       rotate: 3,
-                      boxShadow: "0 25px 50px rgba(230,60,10,0.22)",
                     }}
                   >
                     <img
