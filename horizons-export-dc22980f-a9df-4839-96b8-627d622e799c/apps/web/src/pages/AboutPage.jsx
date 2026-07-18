@@ -177,13 +177,13 @@ function AboutPage() {
                   <div className="h-96 overflow-hidden bg-[#000000] flex items-center justify-center">
                     <img
                       src="https://horizons-cdn.hostinger.com/dc22980f-a9df-4839-96b8-627d622e799c/37a824af35a9003237db66be11bbe263.png"
-                      alt="Dr. Naveen Shamnur MDS - Orthodontist and Implantologist"
+                      alt="Dr. Naveen Shamnur MDS - Orthodontist and Dentofacial Orthopedics"
                       className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
                     />
                   </div>
                   <div className="p-6">
                     <h3 className="text-2xl font-bold mb-2 group-hover:text-accent transition-colors duration-300">Dr. Naveen Shamnur</h3>
-                    <p className="text-accent font-medium mb-3">MDS - Orthodontist and Implantologist</p>
+                    <p className="text-accent font-medium mb-3">MDS - Orthodontist and Dentofacial Orthopedics</p>
                     <p className="text-muted-foreground leading-relaxed">
                       Specializing in braces, aligners, and orthodontic surgery with over 10 years of experience in creating beautiful, healthy smiles.
                     </p>

@@ -149,7 +149,7 @@ function HomePage() {
   const doctors = [
     {
       name: 'Dr. Naveen Shamnur',
-      qualification: 'MDS - Orthodontist and Implantologist',
+      qualification: 'MDS - Orthodontist and Dentofacial Orthopedics',
       specialization: 'Braces, Aligners & Orthodontic Surgery',
       image: 'https://horizons-cdn.hostinger.com/dc22980f-a9df-4839-96b8-627d622e799c/37a824af35a9003237db66be11bbe263.png',
       slug: 'naveen-shamnur'
@@ -287,7 +287,7 @@ function HomePage() {
                     <div className="mt-2 h-20 md:h-24 flex flex-col justify-start drop-shadow-[0_2px_4px_rgba(0,0,0,0.85)]">
                       <h3 className="text-white font-bold text-lg md:text-xl">Dr. Naveen Shamnur</h3>
                       <p className="text-accent text-xs md:text-sm font-bold mt-0.5 tracking-wide uppercase">
-                        orthodontist and Implantologist
+                        orthodontist and dentofacial orthopedics
                       </p>
                     </div>
                   </div>

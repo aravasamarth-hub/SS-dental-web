@@ -46,8 +46,8 @@ function DoctorNaveen() {
   return (
     <>
       <Helmet>
-        <title>Dr. Naveen Shamnur MDS - Orthodontist and Implantologist | SS Dental Care Davangere</title>
-        <meta name="description" content="Meet Dr. Naveen Shamnur MDS, Senior Orthodontist and Implantologist at SS Dental Care Davangere. 25+ years of experience in braces, aligners, orthognathic surgery, and dental implants." />
+        <title>Dr. Naveen Shamnur MDS - Orthodontist and Dentofacial Orthopedics | SS Dental Care Davangere</title>
+        <meta name="description" content="Meet Dr. Naveen Shamnur MDS, Senior Orthodontist and Dentofacial Orthopedics at SS Dental Care Davangere. 25+ years of experience in braces, aligners, orthognathic surgery, and dentofacial orthopedics." />
       </Helmet>
 
       <div className="min-h-screen">
@@ -105,7 +105,7 @@ function DoctorNaveen() {
                 <div className="rounded-2xl overflow-hidden shadow-xl max-w-sm md:max-w-md lg:max-w-[380px] w-full">
                   <img
                     src="https://horizons-cdn.hostinger.com/dc22980f-a9df-4839-96b8-627d622e799c/37a824af35a9003237db66be11bbe263.png"
-                    alt="Dr. Naveen Shamnur MDS - Orthodontist and Implantologist"
+                    alt="Dr. Naveen Shamnur MDS - Orthodontist and Dentofacial Orthopedics"
                     className="w-full h-auto object-cover object-top"
                   />
                 </div>
