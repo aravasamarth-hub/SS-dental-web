@@ -218,9 +218,9 @@ function HomePage() {
                   className="space-y-5 max-w-2xl"
                 >
                   {/* Badge */}
-                  <div className="flex items-center gap-2 text-white font-extrabold drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
-                    <Star className="h-6 w-6 md:h-7 md:w-7 fill-yellow-400 text-yellow-400 flex-shrink-0" />
-                    <span className="text-2xl md:text-3xl tracking-wide uppercase">SS DENTAL CARE</span>
+                  <div className="flex items-center gap-2.5 text-white font-extrabold drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+                    <Star className="h-8 w-8 md:h-9 md:w-9 fill-yellow-400 text-yellow-400 flex-shrink-0" />
+                    <span className="text-3xl md:text-4xl tracking-wide uppercase">SS DENTAL CARE</span>
                   </div>
 
                   {/* Heading */}
