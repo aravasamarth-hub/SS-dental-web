@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -20,6 +20,68 @@ import { toast } from 'sonner';
 function HomePage() {
   const [formData, setFormData] = useState({ name: '', phone: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Refs for tracking coordinates of the 4 features and the central logo
+  const containerRef = useRef(null);
+  const qaIconRef = useRef(null);
+  const pcIconRef = useRef(null);
+  const atIconRef = useRef(null);
+  const tsIconRef = useRef(null);
+  const logoRef = useRef(null);
+
+  const [coords, setCoords] = useState({
+    qa: { x: 0, y: 0 },
+    pc: { x: 0, y: 0 },
+    at: { x: 0, y: 0 },
+    ts: { x: 0, y: 0 },
+    logo: { x: 0, y: 0 },
+  });
+
+  const updateCoordinates = () => {
+    if (!containerRef.current) return;
+    const parentRect = containerRef.current.getBoundingClientRect();
+    
+    const getCenter = (elRef) => {
+      if (!elRef.current) return { x: 0, y: 0 };
+      const rect = elRef.current.getBoundingClientRect();
+      return {
+        x: rect.left - parentRect.left + rect.width / 2,
+        y: rect.top - parentRect.top + rect.height / 2,
+      };
+    };
+
+    setCoords({
+      qa: getCenter(qaIconRef),
+      pc: getCenter(pcIconRef),
+      at: getCenter(atIconRef),
+      ts: getCenter(tsIconRef),
+      logo: getCenter(logoRef),
+    });
+  };
+
+  useEffect(() => {
+    updateCoordinates();
+    window.addEventListener('resize', updateCoordinates);
+    // Double check on mounting shifts
+    const timer1 = setTimeout(updateCoordinates, 300);
+    const timer2 = setTimeout(updateCoordinates, 1000);
+    return () => {
+      window.removeEventListener('resize', updateCoordinates);
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+    };
+  }, []);
+
+  const getPath = (from, to, idx) => {
+    const dx = to.x - from.x;
+    const dy = to.y - from.y;
+    // Alternate curves for different streams to create a natural, organic flow
+    const factor = (idx % 2 === 0 ? 0.08 : -0.08);
+    return {
+      x: [0, dx * 0.5 - dy * factor, dx],
+      y: [0, dy * 0.5 + dx * factor, dy]
+    };
+  };
 
   const services = [
     {
@@ -255,7 +317,7 @@ function HomePage() {
           </div>
         </section>
 
-        <section className="py-20 bg-white dark:bg-slate-900 border-y border-slate-100 dark:border-slate-800">
+        <section ref={containerRef} className="py-20 bg-white dark:bg-slate-900 border-y border-slate-100 dark:border-slate-800 relative overflow-hidden">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             {/* Header */}
             <motion.div
@@ -296,7 +358,7 @@ function HomePage() {
               
               {/* Left Column: 2 features */}
               <div className="lg:col-span-4 grid grid-cols-2 lg:flex lg:flex-col gap-6 lg:gap-12 text-center lg:text-right items-center lg:items-end">
-                {/* Feature 1 */}
+                {/* Feature 1 - Quality Assurance (Green) */}
                 <motion.div
                   initial={{ opacity: 0, x: -30 }}
                   whileInView={{ opacity: 1, x: 0 }}
@@ -304,17 +366,17 @@ function HomePage() {
                   className="space-y-3 max-w-md group"
                 >
                   <div className="flex lg:justify-end justify-center">
-                    <div className="w-12 h-12 rounded-full border border-accent bg-accent/5 text-accent flex items-center justify-center transition-all duration-300 group-hover:bg-accent group-hover:text-accent-foreground">
-                      <Star className="w-6 h-6 fill-accent text-accent group-hover:fill-accent-foreground group-hover:text-accent-foreground" />
+                    <div ref={qaIconRef} className="w-12 h-12 rounded-full border border-emerald-500/30 dark:border-emerald-400/30 bg-emerald-500/5 text-emerald-500 dark:text-emerald-400 flex items-center justify-center transition-all duration-300 group-hover:bg-emerald-500 dark:group-hover:bg-emerald-400 group-hover:text-white dark:group-hover:text-slate-900 shadow-[0_0_10px_rgba(16,185,129,0.05)] group-hover:shadow-[0_0_20px_rgba(16,185,129,0.25)]">
+                      <Star className="w-6 h-6 fill-emerald-500/10 text-emerald-500 dark:text-emerald-400 group-hover:fill-white/10 dark:group-hover:fill-slate-900/10 group-hover:text-white dark:group-hover:text-slate-900" />
                     </div>
                   </div>
-                  <h5 className="text-xl font-bold text-accent">Quality Assurance</h5>
+                  <h5 className="text-xl font-bold text-emerald-600 dark:text-emerald-400">Quality Assurance</h5>
                   <p className="text-base text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
                     Delivering reliable and precise results with top-quality standards.
                   </p>
                 </motion.div>
 
-                {/* Feature 2 */}
+                {/* Feature 2 - Patient-Centric Care (Red/Orange) */}
                 <motion.div
                   initial={{ opacity: 0, x: -30 }}
                   whileInView={{ opacity: 1, x: 0 }}
@@ -323,7 +385,7 @@ function HomePage() {
                   className="space-y-3 max-w-md group"
                 >
                   <div className="flex lg:justify-end justify-center">
-                    <div className="w-12 h-12 rounded-full border border-accent bg-accent/5 text-accent flex items-center justify-center transition-all duration-300 group-hover:bg-accent group-hover:text-accent-foreground">
+                    <div ref={pcIconRef} className="w-12 h-12 rounded-full border border-accent/30 bg-accent/5 text-accent flex items-center justify-center transition-all duration-300 group-hover:bg-accent group-hover:text-accent-foreground shadow-[0_0_10px_rgba(230,60,10,0.05)] group-hover:shadow-[0_0_20px_rgba(230,60,10,0.25)]">
                       <Award className="w-6 h-6" />
                     </div>
                   </div>
@@ -334,7 +396,7 @@ function HomePage() {
                 </motion.div>
               </div>
 
-              {/* Center Column: Glossy 3D Tooth Graphic */}
+              {/* Center Column: Logo */}
               <div className="lg:col-span-4 flex justify-center py-6 lg:py-0 relative">
                 <motion.div
                   initial={{ opacity: 0, scale: 0.8 }}
@@ -346,27 +408,47 @@ function HomePage() {
                   <div className="absolute w-72 h-72 rounded-full border-2 border-dashed border-accent/20 animate-[spin_60s_linear_infinite] z-0"></div>
                   <div className="absolute w-64 h-64 rounded-full border border-accent/10 z-0"></div>
                   
-                  {/* Dotted indicator nodes around the circle */}
-                  <div className="absolute top-0 w-2.5 h-2.5 rounded-full bg-accent animate-pulse"></div>
-                  <div className="absolute bottom-0 w-2.5 h-2.5 rounded-full bg-accent animate-pulse"></div>
-                  <div className="absolute left-0 w-2.5 h-2.5 rounded-full bg-accent animate-pulse"></div>
-                  <div className="absolute right-0 w-2.5 h-2.5 rounded-full bg-accent animate-pulse"></div>
+                  {/* Dotted indicator nodes aligned perfectly to the w-72 rotating dashed circle */}
+                  <div className="absolute w-72 h-72 pointer-events-none z-0">
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2.5 h-2.5 rounded-full bg-accent animate-pulse"></div>
+                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-2.5 h-2.5 rounded-full bg-accent animate-pulse"></div>
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-accent animate-pulse"></div>
+                    <div className="absolute right-0 top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-accent animate-pulse"></div>
+                  </div>
                   
-                  {/* Tooth image */}
-                  <img
-                    src="/3d-tooth.png"
-                    alt="Glossy 3D Tooth Illustration"
-                    loading="lazy"
-                    width={224}
-                    height={224}
-                    className="w-48 h-48 md:w-56 md:h-56 object-contain z-10 drop-shadow-[0_15px_30px_rgba(0,0,0,0.15)] animate-[bounce_5s_infinite_ease-in-out]"
-                  />
+                  {/* Clinic logo container with floating and hover animations */}
+                  <motion.div
+                    ref={logoRef}
+                    className="w-48 h-48 md:w-56 md:h-56 bg-white rounded-3xl p-5 flex items-center justify-center z-10 border border-slate-150 dark:border-slate-800 shadow-[0_20px_40px_rgba(0,0,0,0.15),0_0_20px_rgba(230,60,10,0.08)] cursor-pointer"
+                    animate={{
+                      y: [0, -12, 0],
+                    }}
+                    transition={{
+                      y: {
+                        duration: 4,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                      }
+                    }}
+                    whileHover={{
+                      scale: 1.08,
+                      rotate: 3,
+                      boxShadow: "0 25px 50px rgba(230,60,10,0.22)",
+                    }}
+                  >
+                    <img
+                      src="https://horizons-cdn.hostinger.com/dc22980f-a9df-4839-96b8-627d622e799c/38c4b0b05acaa72021a2d891747924f2.jpg"
+                      alt="SS Dental Care Logo"
+                      loading="lazy"
+                      className="w-full h-full object-contain rounded-2xl"
+                    />
+                  </motion.div>
                 </motion.div>
               </div>
 
               {/* Right Column: 2 features */}
               <div className="lg:col-span-4 grid grid-cols-2 lg:flex lg:flex-col gap-6 lg:gap-12 text-center lg:text-left items-center lg:items-start">
-                {/* Feature 3 */}
+                {/* Feature 3 - Advanced Technology (Blue) */}
                 <motion.div
                   initial={{ opacity: 0, x: 30 }}
                   whileInView={{ opacity: 1, x: 0 }}
@@ -374,17 +456,17 @@ function HomePage() {
                   className="space-y-3 max-w-md group"
                 >
                   <div className="flex lg:justify-start justify-center">
-                    <div className="w-12 h-12 rounded-full border border-accent bg-accent/5 text-accent flex items-center justify-center transition-all duration-300 group-hover:bg-accent group-hover:text-accent-foreground">
+                    <div ref={atIconRef} className="w-12 h-12 rounded-full border border-sky-500/30 dark:border-sky-400/30 bg-sky-500/5 text-sky-500 dark:text-sky-400 flex items-center justify-center transition-all duration-300 group-hover:bg-sky-500 dark:group-hover:bg-sky-400 group-hover:text-white dark:group-hover:text-slate-900 shadow-[0_0_10px_rgba(14,165,233,0.05)] group-hover:shadow-[0_0_20px_rgba(14,165,233,0.25)]">
                       <Zap className="w-6 h-6" />
                     </div>
                   </div>
-                  <h5 className="text-xl font-bold text-accent">Advanced Technology</h5>
+                  <h5 className="text-xl font-bold text-sky-600 dark:text-sky-400">Advanced Technology</h5>
                   <p className="text-base text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
                     Modern tools for efficient, safe, and accurate execution.
                   </p>
                 </motion.div>
 
-                {/* Feature 4 */}
+                {/* Feature 4 - Timely Service (Pink) */}
                 <motion.div
                   initial={{ opacity: 0, x: 30 }}
                   whileInView={{ opacity: 1, x: 0 }}
@@ -393,11 +475,11 @@ function HomePage() {
                   className="space-y-3 max-w-md group"
                 >
                   <div className="flex lg:justify-start justify-center">
-                    <div className="w-12 h-12 rounded-full border border-accent bg-accent/5 text-accent flex items-center justify-center transition-all duration-300 group-hover:bg-accent group-hover:text-accent-foreground">
+                    <div ref={tsIconRef} className="w-12 h-12 rounded-full border border-pink-500/30 dark:border-pink-400/30 bg-pink-500/5 text-pink-500 dark:text-pink-400 flex items-center justify-center transition-all duration-300 group-hover:bg-pink-500 dark:group-hover:bg-pink-400 group-hover:text-white dark:group-hover:text-slate-900 shadow-[0_0_10px_rgba(236,72,153,0.05)] group-hover:shadow-[0_0_20px_rgba(236,72,153,0.25)]">
                       <Clock className="w-6 h-6" />
                     </div>
                   </div>
-                  <h5 className="text-xl font-bold text-accent">Timely Service</h5>
+                  <h5 className="text-xl font-bold text-pink-600 dark:text-pink-400">Timely Service</h5>
                   <p className="text-base text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
                     Prompt appointments and scheduling designed to value your time and convenience.
                   </p>
@@ -406,6 +488,59 @@ function HomePage() {
 
             </div>
           </div>
+
+          {/* Animated color particles connecting features to the central logo */}
+          {coords.logo.x !== 0 && [
+            // Quality Assurance -> Green particles
+            { from: coords.qa, to: coords.logo, color: '#10b981', delay: 0 },
+            { from: coords.qa, to: coords.logo, color: '#10b981', delay: 1.5 },
+            { from: coords.qa, to: coords.logo, color: '#10b981', delay: 3.0 },
+
+            // Patient-Centric Care -> Orange/Red particles
+            { from: coords.pc, to: coords.logo, color: '#e63c0a', delay: 0.7 },
+            { from: coords.pc, to: coords.logo, color: '#e63c0a', delay: 2.2 },
+            { from: coords.pc, to: coords.logo, color: '#e63c0a', delay: 3.7 },
+
+            // Advanced Technology -> Blue particles
+            { from: coords.at, to: coords.logo, color: '#008cd2', delay: 0.3 },
+            { from: coords.at, to: coords.logo, color: '#008cd2', delay: 1.8 },
+            { from: coords.at, to: coords.logo, color: '#008cd2', delay: 3.3 },
+
+            // Timely Service -> Pink particles
+            { from: coords.ts, to: coords.logo, color: '#ec4899', delay: 1.1 },
+            { from: coords.ts, to: coords.logo, color: '#ec4899', delay: 2.6 },
+            { from: coords.ts, to: coords.logo, color: '#ec4899', delay: 4.1 },
+          ].map((particle, idx) => {
+            const path = getPath(particle.from, particle.to, idx);
+            return (
+              <motion.div
+                key={idx}
+                className="absolute pointer-events-none z-20 rounded-full"
+                style={{
+                  left: particle.from.x,
+                  top: particle.from.y,
+                  x: '-50%',
+                  y: '-50%',
+                  width: '8px',
+                  height: '8px',
+                  backgroundColor: particle.color,
+                  boxShadow: `0 0 10px ${particle.color}, 0 0 20px ${particle.color}`,
+                }}
+                animate={{
+                  x: path.x,
+                  y: path.y,
+                  scale: [0.5, 1.2, 1.2, 0.4],
+                  opacity: [0, 1, 1, 0],
+                }}
+                transition={{
+                  duration: 2.8,
+                  repeat: Infinity,
+                  ease: 'easeInOut',
+                  delay: particle.delay,
+                }}
+              />
+            );
+          })}
         </section>
 
         <section className="py-20">
