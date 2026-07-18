@@ -64,7 +64,6 @@ function BookingsPage() {
     }
 
     if (paymentMethod === 'Razorpay') {
-      // Dynamic loader helper for script tag
       const loadScript = (src) => {
         return new Promise((resolve) => {
           if (window.Razorpay) {
@@ -85,37 +84,114 @@ function BookingsPage() {
         return;
       }
 
-      const options = {
-        key: 'rzp_live_SeQO0J84sbnMZb',
-        amount: price * 100, // Amount in paise
-        currency: 'INR',
-        name: 'SS Dental Care',
-        description: 'Dental Consultation Booking Fee',
-        image: 'https://horizons-cdn.hostinger.com/dc22980f-a9df-4839-96b8-627d622e799c/38c4b0b05acaa72021a2d891747924f2.jpg',
-        handler: function (response) {
-          // Success callback
-          setStep('success');
-          toast.success(`Payment successful! Payment ID: ${response.razorpay_payment_id}`);
-        },
-        prefill: {
-          name: fullName,
-          email: email,
-          contact: phone,
-        },
-        notes: {
-          booking_details: `Consultation on Jul ${selectedDay}, 2026 at ${selectedTime}`,
-        },
-        theme: {
-          color: '#e63c0a', // Clinic orange/red accent
-        },
-      };
+      const apiUrl = import.meta.env.VITE_API_URL;
 
-      try {
-        const paymentObject = new window.Razorpay(options);
-        paymentObject.open();
-      } catch (err) {
-        console.error(err);
-        toast.error('Could not initiate payment. Please try again.');
+      if (apiUrl) {
+        // --- SECURE BACKEND INTEGRATION FLOW ---
+        try {
+          // 1. Create order on the backend server
+          const response = await fetch(`${apiUrl}/api/create-order`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ amount: price })
+          });
+          const orderData = await response.json();
+
+          if (!orderData.success) {
+            toast.error('Failed to initialize payment order on server.');
+            return;
+          }
+
+          // 2. Open checkout modal using backend Order ID
+          const options = {
+            key: 'rzp_live_SeQO0J84sbnMZb',
+            amount: orderData.amount,
+            currency: 'INR',
+            name: 'SS Dental Care',
+            description: 'Dental Consultation Booking Fee',
+            order_id: orderData.order_id,
+            image: 'https://horizons-cdn.hostinger.com/dc22980f-a9df-4839-96b8-627d622e799c/38c4b0b05acaa72021a2d891747924f2.jpg',
+            handler: async function (response) {
+              try {
+                // 3. Verify signature on backend server
+                const verifyResponse = await fetch(`${apiUrl}/api/verify-payment`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    razorpay_order_id: response.razorpay_order_id,
+                    razorpay_payment_id: response.razorpay_payment_id,
+                    razorpay_signature: response.razorpay_signature,
+                    bookingDetails: {
+                      name: fullName,
+                      email,
+                      phone,
+                      date: selectedDay,
+                      time: selectedTime
+                    }
+                  })
+                });
+                const verificationResult = await verifyResponse.json();
+
+                if (verificationResult.success) {
+                  setStep('success');
+                  toast.success('Appointment booked successfully!');
+                } else {
+                  toast.error('Payment signature validation failed.');
+                }
+              } catch (err) {
+                console.error(err);
+                toast.error('Error confirming payment on server.');
+              }
+            },
+            prefill: {
+              name: fullName,
+              email: email,
+              contact: phone,
+            },
+            theme: {
+              color: '#e63c0a',
+            },
+          };
+
+          const paymentObject = new window.Razorpay(options);
+          paymentObject.open();
+        } catch (err) {
+          console.error(err);
+          toast.error('Could not connect to payment server.');
+        }
+      } else {
+        // --- SECURE CLIENT-ONLY FALLBACK FLOW ---
+        const options = {
+          key: 'rzp_live_SeQO0J84sbnMZb',
+          amount: price * 100,
+          currency: 'INR',
+          name: 'SS Dental Care',
+          description: 'Dental Consultation Booking Fee',
+          image: 'https://horizons-cdn.hostinger.com/dc22980f-a9df-4839-96b8-627d622e799c/38c4b0b05acaa72021a2d891747924f2.jpg',
+          handler: function (response) {
+            setStep('success');
+            toast.success(`Payment successful! Payment ID: ${response.razorpay_payment_id}`);
+          },
+          prefill: {
+            name: fullName,
+            email: email,
+            contact: phone,
+          },
+          notes: {
+            booking_details: `Consultation on Jul ${selectedDay}, 2026 at ${selectedTime}`,
+          },
+          theme: {
+            color: '#e63c0a',
+          },
+        };
+
+        try {
+          const paymentObject = new window.Razorpay(options);
+          paymentObject.open();
+        } catch (err) {
+          console.error(err);
+          toast.error('Could not initiate checkout.');
+        }
       }
     } else {
       setStep('success');
