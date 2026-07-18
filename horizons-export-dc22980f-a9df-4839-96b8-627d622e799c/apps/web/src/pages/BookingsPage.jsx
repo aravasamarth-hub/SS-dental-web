@@ -30,13 +30,7 @@ function BookingsPage() {
   const [discountApplied, setDiscountApplied] = useState(false);
   const [price, setPrice] = useState(250);
 
-  // Simulated Razorpay payment modal states
-  const [showRazorpayModal, setShowRazorpayModal] = useState(false);
-  const [razorpayStep, setRazorpayStep] = useState('list'); // 'list', 'card', 'upi', 'processing', 'success'
-  const [cardNumber, setCardNumber] = useState('');
-  const [cardExpiry, setCardExpiry] = useState('');
-  const [cardCvv, setCardCvv] = useState('');
-  const [upiId, setUpiId] = useState('');
+
 
   // Calendar dates helper for July 2026
   // July 1st starts on a Wednesday (index 2: Mon=0, Tue=1, Wed=2)
@@ -62,7 +56,7 @@ function BookingsPage() {
     }
   };
 
-  const handleCheckoutSubmit = (e) => {
+  const handleCheckoutSubmit = async (e) => {
     e.preventDefault();
     if (!email || !fullName || !phone) {
       toast.error('Please fill in all required fields');
@@ -70,24 +64,63 @@ function BookingsPage() {
     }
 
     if (paymentMethod === 'Razorpay') {
-      setRazorpayStep('list');
-      setShowRazorpayModal(true);
+      // Dynamic loader helper for script tag
+      const loadScript = (src) => {
+        return new Promise((resolve) => {
+          if (window.Razorpay) {
+            resolve(true);
+            return;
+          }
+          const script = document.createElement('script');
+          script.src = src;
+          script.onload = () => resolve(true);
+          script.onerror = () => resolve(false);
+          document.body.appendChild(script);
+        });
+      };
+
+      const sdkLoaded = await loadScript('https://checkout.razorpay.com/v1/checkout.js');
+      if (!sdkLoaded) {
+        toast.error('Razorpay SDK failed to load. Please check your internet connection.');
+        return;
+      }
+
+      const options = {
+        key: 'rzp_live_SeQO0J84sbnMZb',
+        amount: price * 100, // Amount in paise
+        currency: 'INR',
+        name: 'SS Dental Care',
+        description: 'Dental Consultation Booking Fee',
+        image: 'https://horizons-cdn.hostinger.com/dc22980f-a9df-4839-96b8-627d622e799c/38c4b0b05acaa72021a2d891747924f2.jpg',
+        handler: function (response) {
+          // Success callback
+          setStep('success');
+          toast.success(`Payment successful! Payment ID: ${response.razorpay_payment_id}`);
+        },
+        prefill: {
+          name: fullName,
+          email: email,
+          contact: phone,
+        },
+        notes: {
+          booking_details: `Consultation on Jul ${selectedDay}, 2026 at ${selectedTime}`,
+        },
+        theme: {
+          color: '#e63c0a', // Clinic orange/red accent
+        },
+      };
+
+      try {
+        const paymentObject = new window.Razorpay(options);
+        paymentObject.open();
+      } catch (err) {
+        console.error(err);
+        toast.error('Could not initiate payment. Please try again.');
+      }
     } else {
       setStep('success');
       toast.success('Appointment booked successfully!');
     }
-  };
-
-  const handleRazorpayPay = () => {
-    setRazorpayStep('processing');
-    setTimeout(() => {
-      setRazorpayStep('success');
-      setTimeout(() => {
-        setShowRazorpayModal(false);
-        setStep('success');
-        toast.success('Payment successful! Appointment booked.');
-      }, 1500);
-    }, 2000);
   };
 
   return (
@@ -770,250 +803,7 @@ function BookingsPage() {
           )}
         </AnimatePresence>
 
-        {/* SIMULATED RAZORPAY PAYMENT MODAL */}
-        <AnimatePresence>
-          {showRazorpayModal && (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-              {/* Backdrop */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                onClick={() => setShowRazorpayModal(false)}
-                className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-              />
 
-              {/* Modal Card container */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95, y: 15 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: 15 }}
-                className="bg-white text-slate-800 rounded-xl overflow-hidden w-full max-w-2xl h-[450px] flex shadow-2xl relative z-10 border border-slate-200"
-              >
-                {/* Razorpay Brand Left Panel */}
-                <div className="w-2/5 bg-[#141b29] text-white p-6 flex flex-col justify-between select-none">
-                  <div className="space-y-6">
-                    {/* Logo placeholder */}
-                    <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-inner">
-                      <span className="text-xl font-black text-[#141b29]">SS</span>
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-bold">SS Dental Care</h3>
-                      <p className="text-xs text-slate-400">Dental Consultation Booking</p>
-                    </div>
-                  </div>
-
-                  <div className="space-y-1">
-                    <p className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Amount to Pay</p>
-                    <p className="text-2xl font-black text-white">₹{price.toFixed(2)}</p>
-                  </div>
-                </div>
-
-                {/* Right Panel: Interactive payment flows */}
-                <div className="w-3/5 bg-white p-6 flex flex-col justify-between relative">
-                  
-                  {/* Close button */}
-                  <button
-                    onClick={() => setShowRazorpayModal(false)}
-                    className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 p-1.5 rounded-full hover:bg-slate-100 transition-all focus:outline-none"
-                  >
-                    <Check className="h-4 w-4 rotate-45" strokeWidth={3} />
-                  </button>
-
-                  <div className="flex-1 flex flex-col justify-center">
-                    
-                    {/* STATE 1: METHODS LIST */}
-                    {razorpayStep === 'list' && (
-                      <div className="space-y-6">
-                        <div>
-                          <h4 className="text-base font-bold text-slate-800">Select Payment Option</h4>
-                          <p className="text-[10px] text-slate-400 font-medium">Test Mode - Prefilled for convenience</p>
-                        </div>
-
-                        <div className="space-y-2">
-                          <button
-                            onClick={() => setRazorpayStep('card')}
-                            className="w-full flex items-center justify-between p-3.5 rounded-lg border border-slate-200 hover:border-blue-500 hover:bg-slate-50/55 transition-all text-left group"
-                          >
-                            <div className="flex items-center gap-3">
-                              <span className="text-slate-600 group-hover:text-blue-600">💳</span>
-                              <div>
-                                <p className="font-bold text-xs text-slate-700">Card</p>
-                                <p className="text-[10px] text-slate-400">Visa, MasterCard, RuPay, Maestro</p>
-                              </div>
-                            </div>
-                            <span className="text-slate-400 text-xs font-bold">&rarr;</span>
-                          </button>
-
-                          <button
-                            onClick={() => setRazorpayStep('upi')}
-                            className="w-full flex items-center justify-between p-3.5 rounded-lg border border-slate-200 hover:border-blue-500 hover:bg-slate-50/55 transition-all text-left group"
-                          >
-                            <div className="flex items-center gap-3">
-                              <span className="text-slate-600 group-hover:text-blue-600">📱</span>
-                              <div>
-                                <p className="font-bold text-xs text-slate-700">UPI / QR</p>
-                                <p className="text-[10px] text-slate-400">Google Pay, PhonePe, Paytm</p>
-                              </div>
-                            </div>
-                            <span className="text-slate-400 text-xs font-bold">&rarr;</span>
-                          </button>
-
-                          <button
-                            onClick={handleRazorpayPay}
-                            className="w-full flex items-center justify-between p-3.5 rounded-lg border border-slate-200 hover:border-blue-500 hover:bg-slate-50/55 transition-all text-left group"
-                          >
-                            <div className="flex items-center gap-3">
-                              <span className="text-slate-600 group-hover:text-blue-600">🏦</span>
-                              <div>
-                                <p className="font-bold text-xs text-slate-700">Netbanking</p>
-                                <p className="text-[10px] text-slate-400">All Indian banks supported</p>
-                              </div>
-                            </div>
-                            <span className="text-slate-400 text-xs font-bold">&rarr;</span>
-                          </button>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* STATE 2: CARD PAY */}
-                    {razorpayStep === 'card' && (
-                      <div className="space-y-6">
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => setRazorpayStep('list')}
-                            className="text-slate-400 hover:text-slate-600 text-xs font-bold flex items-center gap-1 focus:outline-none"
-                          >
-                            &larr; Back
-                          </button>
-                        </div>
-
-                        <div>
-                          <h4 className="text-base font-bold text-slate-800">Enter Card Details</h4>
-                          <p className="text-[10px] text-slate-400 font-medium">Use dummy values for demo payment</p>
-                        </div>
-
-                        <div className="space-y-4">
-                          <div className="space-y-1">
-                            <label className="text-[10px] uppercase font-bold text-slate-400">Card Number</label>
-                            <input
-                              type="text"
-                              placeholder="4111 1111 1111 1111"
-                              value={cardNumber}
-                              onChange={(e) => setCardNumber(e.target.value)}
-                              className="w-full text-xs px-3 py-2 border rounded-md focus:outline-none focus:border-blue-500 text-slate-800"
-                            />
-                          </div>
-
-                          <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-1">
-                              <label className="text-[10px] uppercase font-bold text-slate-400">Expiry</label>
-                              <input
-                                type="text"
-                                placeholder="12/28"
-                                value={cardExpiry}
-                                onChange={(e) => setCardExpiry(e.target.value)}
-                                className="w-full text-xs px-3 py-2 border rounded-md focus:outline-none focus:border-blue-500 text-slate-800"
-                              />
-                            </div>
-                            <div className="space-y-1">
-                              <label className="text-[10px] uppercase font-bold text-slate-400">CVV</label>
-                              <input
-                                type="password"
-                                placeholder="123"
-                                value={cardCvv}
-                                onChange={(e) => setCardCvv(e.target.value)}
-                                className="w-full text-xs px-3 py-2 border rounded-md focus:outline-none focus:border-blue-500 text-slate-800"
-                              />
-                            </div>
-                          </div>
-
-                          <Button
-                            onClick={handleRazorpayPay}
-                            className="w-full bg-[#1b72e9] hover:bg-[#155fc3] text-white text-xs font-bold py-3 rounded-md"
-                          >
-                            Pay ₹{price.toFixed(2)}
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* STATE 3: UPI PAY */}
-                    {razorpayStep === 'upi' && (
-                      <div className="space-y-6">
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => setRazorpayStep('list')}
-                            className="text-slate-400 hover:text-slate-600 text-xs font-bold flex items-center gap-1 focus:outline-none"
-                          >
-                            &larr; Back
-                          </button>
-                        </div>
-
-                        <div>
-                          <h4 className="text-base font-bold text-slate-800">Enter UPI ID</h4>
-                          <p className="text-[10px] text-slate-400 font-medium">Pay instantly using any UPI app</p>
-                        </div>
-
-                        <div className="space-y-4">
-                          <div className="space-y-1">
-                            <label className="text-[10px] uppercase font-bold text-slate-400">UPI ID / VPA</label>
-                            <input
-                              type="text"
-                              placeholder="username@okhdfcbank"
-                              value={upiId}
-                              onChange={(e) => setUpiId(e.target.value)}
-                              className="w-full text-xs px-3 py-2 border rounded-md focus:outline-none focus:border-blue-500 text-slate-800"
-                            />
-                          </div>
-
-                          <Button
-                            onClick={handleRazorpayPay}
-                            className="w-full bg-[#1b72e9] hover:bg-[#155fc3] text-white text-xs font-bold py-3 rounded-md"
-                          >
-                            Pay ₹{price.toFixed(2)}
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* STATE 4: PROCESSING GATEWAY */}
-                    {razorpayStep === 'processing' && (
-                      <div className="text-center space-y-4 py-8 flex flex-col items-center justify-center">
-                        <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
-                        <div className="space-y-1 select-none">
-                          <p className="font-bold text-sm text-slate-700">Connecting to secure gateway...</p>
-                          <p className="text-[10px] text-slate-400">Please do not click back or refresh</p>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* STATE 5: SUCCESS GATEWAY */}
-                    {razorpayStep === 'success' && (
-                      <div className="text-center space-y-4 py-8 flex flex-col items-center justify-center">
-                        <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center shadow-inner">
-                          <Check className="h-6 w-6 animate-pulse" strokeWidth={3.5} />
-                        </div>
-                        <div className="space-y-1 select-none">
-                          <p className="font-black text-sm text-emerald-600">Payment Successful!</p>
-                          <p className="text-[10px] text-slate-400 font-medium">Redirecting to booking confirmation...</p>
-                        </div>
-                      </div>
-                    )}
-
-                  </div>
-
-                  {/* Footer branding */}
-                  <div className="border-t border-slate-100 pt-4 flex items-center justify-between text-[9px] text-slate-400 select-none">
-                    <span>Secured by Razorpay</span>
-                    <span className="font-bold text-slate-500">PCI-DSS Compliant</span>
-                  </div>
-                </div>
-
-              </motion.div>
-            </div>
-          )}
-        </AnimatePresence>
 
         <Footer />
       </div>
