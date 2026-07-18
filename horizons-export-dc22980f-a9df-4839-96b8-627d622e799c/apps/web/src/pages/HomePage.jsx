@@ -435,11 +435,12 @@ function HomePage() {
                       rotate: 3,
                     }}
                   >
+                    {/* Original SS Dental Care logo — mix-blend-screen removes black background */}
                     <img
                       src="https://horizons-cdn.hostinger.com/dc22980f-a9df-4839-96b8-627d622e799c/38c4b0b05acaa72021a2d891747924f2.jpg"
                       alt="SS Dental Care Logo"
                       loading="lazy"
-                      className="w-full h-full object-contain rounded-2xl"
+                      className="w-full h-full object-contain mix-blend-screen"
                     />
                   </motion.div>
                 </motion.div>
