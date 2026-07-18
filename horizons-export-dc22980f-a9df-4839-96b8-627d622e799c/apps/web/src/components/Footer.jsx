@@ -85,10 +85,10 @@ function Footer() {
             </div>
             <div className="mt-6 space-y-1.5 border-t border-white/10 pt-4">
               <p className="text-sm opacity-80">
-                <span className="font-medium text-accent">Email:</span> ssdentalcare.in@gmail.com
+                <span className="font-medium text-accent">Email:</span> <a href="mailto:ssdentalcare.in@gmail.com" className="hover:text-accent hover:underline transition-all">ssdentalcare.in@gmail.com</a>
               </p>
               <p className="text-sm opacity-80">
-                <span className="font-medium text-accent">Phone:</span> +91 94484 55699
+                <span className="font-medium text-accent">Phone:</span> <a href="tel:+919448455699" className="hover:text-accent hover:underline transition-all">+91 94484 55699</a>
               </p>
             </div>
           </div>
