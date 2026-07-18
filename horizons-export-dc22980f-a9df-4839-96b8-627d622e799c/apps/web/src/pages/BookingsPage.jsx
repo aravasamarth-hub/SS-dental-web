@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Helmet } from 'react-helmet';
+import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Clock, MapPin, Check, ChevronLeft, ChevronRight, ArrowLeft, Calendar, HelpCircle, Navigation } from 'lucide-react';
 import Header from '@/components/Header';
@@ -156,12 +157,12 @@ function BookingsPage() {
                         <Clock className="h-5 w-5 text-accent flex-shrink-0" />
                         <span>Duration - <strong className="text-foreground">30 min</strong></span>
                       </div>
-                      <div className="flex items-start gap-3 text-muted-foreground">
-                        <MapPin className="h-5 w-5 text-accent flex-shrink-0 mt-0.5" />
+                      <Link to="/location" className="flex items-start gap-3 text-muted-foreground group cursor-pointer">
+                        <MapPin className="h-5 w-5 text-accent flex-shrink-0 mt-0.5 group-hover:scale-110 transition-transform" />
                         <span>
-                          Location - <strong className="text-foreground">2873, S S Plaza, 1st Floor, 4th Main, 4th Cross Rd, MCC B Block, Davanagere, Karnataka 577004</strong>
+                          Location - <strong className="text-foreground group-hover:text-accent transition-colors">2873, S S Plaza, 1st Floor, 4th Main, 4th Cross Rd, MCC B Block, Davanagere, Karnataka 577004</strong>
                         </span>
-                      </div>
+                      </Link>
                     </div>
 
                     <p className="text-muted-foreground leading-relaxed">
@@ -632,12 +633,12 @@ function BookingsPage() {
                     </div>
 
                     <div className="space-y-4 text-xs">
-                      <div className="flex items-start gap-2 text-muted-foreground leading-relaxed">
-                        <MapPin className="h-4 w-4 text-accent flex-shrink-0 mt-0.5" />
+                      <Link to="/location" className="flex items-start gap-2 text-muted-foreground leading-relaxed group cursor-pointer">
+                        <MapPin className="h-4 w-4 text-accent flex-shrink-0 mt-0.5 group-hover:scale-110 transition-transform" />
                         <span>
-                          Live meeting, 2873, S S Plaza, 1st Floor 4th main, 4th Cross Rd, MCC B Block, Davanagere, Karnataka 577004
+                          Live meeting, <strong className="text-foreground font-normal group-hover:text-accent transition-colors">2873, S S Plaza, 1st Floor 4th main, 4th Cross Rd, MCC B Block, Davanagere, Karnataka 577004</strong>
                         </span>
-                      </div>
+                      </Link>
                     </div>
 
                     <div className="space-y-2">

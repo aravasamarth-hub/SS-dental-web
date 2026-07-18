@@ -94,19 +94,24 @@ function ContactPage() {
                   <h2 className="text-3xl font-bold">Contact Details</h2>
                   
                   <div className="space-y-8">
-                    <div className="flex items-start gap-5">
-                      <div className="w-12 h-12 rounded-xl bg-accent/15 flex items-center justify-center flex-shrink-0">
+                    <a
+                      href="https://www.google.com/maps/dir/?api=1&destination=SS+Dental+Care+Davanagere"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-start gap-5 group cursor-pointer"
+                    >
+                      <div className="w-12 h-12 rounded-xl bg-accent/15 flex items-center justify-center flex-shrink-0 group-hover:bg-accent/25 transition-all">
                         <MapPin className="h-6 w-6 text-accent" />
                       </div>
                       <div>
-                        <h3 className="font-bold text-lg mb-1 text-foreground">Address</h3>
-                        <p className="text-muted-foreground leading-relaxed">
+                        <h3 className="font-bold text-lg mb-1 text-foreground group-hover:text-accent transition-colors">Address</h3>
+                        <p className="text-muted-foreground leading-relaxed group-hover:text-foreground transition-colors">
                           SS Dental Care, 2873, S S Plaza, 1st Floor,<br />
                           4th Main, 4th Cross Rd, MCC B Block,<br />
                           Davanagere, Karnataka 577004
                         </p>
                       </div>
-                    </div>
+                    </a>
 
                     <div className="flex items-start gap-5">
                       <div className="w-12 h-12 rounded-xl bg-accent/15 flex items-center justify-center flex-shrink-0">

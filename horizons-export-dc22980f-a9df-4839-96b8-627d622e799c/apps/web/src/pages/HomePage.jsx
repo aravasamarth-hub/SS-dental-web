@@ -563,17 +563,17 @@ function HomePage() {
               >
                 <h2 className="mb-6">Visit Our Clinic</h2>
                 <div className="space-y-4 mb-6">
-                  <div className="flex items-start gap-3">
-                    <MapPin className="h-5 w-5 text-accent mt-1 flex-shrink-0" />
+                  <Link to="/location" className="flex items-start gap-3 group cursor-pointer">
+                    <MapPin className="h-5 w-5 text-accent mt-1 flex-shrink-0 group-hover:scale-110 transition-transform" />
                     <div>
-                      <p className="font-medium mb-1">Address</p>
-                      <p className="text-muted-foreground">
+                      <p className="font-medium mb-1 group-hover:text-accent transition-colors">Address</p>
+                      <p className="text-muted-foreground group-hover:text-foreground transition-colors">
                         SS Dental Care, 2873, S S Plaza, 1st Floor,<br />
                         4th Main, 4th Cross Rd, MCC B Block,<br />
                         Davanagere, Karnataka 577004
                       </p>
                     </div>
-                  </div>
+                  </Link>
                   <div className="flex items-start gap-3">
                     <Clock className="h-5 w-5 text-accent mt-1 flex-shrink-0" />
                     <div>

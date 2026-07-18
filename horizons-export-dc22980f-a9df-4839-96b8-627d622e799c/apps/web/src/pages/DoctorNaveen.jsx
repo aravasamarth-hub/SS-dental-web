@@ -197,16 +197,16 @@ function DoctorNaveen() {
                   <strong className="text-foreground">calm approach, painless procedures, and use of advanced dental equipment</strong>, ensuring a comfortable patient experience.
                 </p>
                 <div className="space-y-5">
-                  <div className="flex items-start gap-3">
-                    <MapPin className="h-5 w-5 text-accent mt-0.5 flex-shrink-0" />
+                  <Link to="/location" className="flex items-start gap-3 group cursor-pointer">
+                    <MapPin className="h-5 w-5 text-accent mt-0.5 flex-shrink-0 group-hover:scale-110 transition-transform" />
                     <div>
-                      <p className="font-bold text-foreground mb-1">Address</p>
-                      <p className="text-sm text-muted-foreground leading-relaxed">
+                      <p className="font-bold text-foreground mb-1 group-hover:text-accent transition-colors">Address</p>
+                      <p className="text-sm text-muted-foreground leading-relaxed group-hover:text-foreground transition-colors">
                         #2873, 1st Floor, S S Plaza, 4th Main, 4th Cross Road,<br />
                         MCC B Block, Davangere, Karnataka
                       </p>
                     </div>
-                  </div>
+                  </Link>
                   <div className="flex items-start gap-3">
                     <Clock className="h-5 w-5 text-accent mt-0.5 flex-shrink-0" />
                     <div>
