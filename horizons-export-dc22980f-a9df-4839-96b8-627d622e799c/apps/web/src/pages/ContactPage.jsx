@@ -313,25 +313,25 @@ function ContactPage() {
                   <div className="bg-card p-6 rounded-xl border border-border/40 shadow-sm hover:shadow-md transition-shadow">
                     <h3 className="font-bold text-sm mb-1.5 text-foreground">From Davanagere Railway Station</h3>
                     <p className="text-xs text-muted-foreground leading-relaxed">
-                      Approximately 3.2 km, 12 minutes by car via MG Road.
+                      Approximately 2.9 km, 10 minutes by two wheeler via Davangere Harihar Road.
                     </p>
                   </div>
                   <div className="bg-card p-6 rounded-xl border border-border/40 shadow-sm hover:shadow-md transition-shadow">
                     <h3 className="font-bold text-sm mb-1.5 text-foreground">From Bus Stand</h3>
                     <p className="text-xs text-muted-foreground leading-relaxed">
-                      Approximately 2.8 km, 10 minutes by car via PB Road.
+                      Approximately 2.9 km, 11 minutes by two wheeler via PB Road.
                     </p>
                   </div>
                   <div className="bg-card p-6 rounded-xl border border-border/40 shadow-sm hover:shadow-md transition-shadow">
                     <h3 className="font-bold text-sm mb-1.5 text-foreground">From GMIT College</h3>
                     <p className="text-xs text-muted-foreground leading-relaxed">
-                      Approximately 1.5 km, 5 minutes by car via 4th Main.
+                      Approximately 5.1 km, 13 minutes by two wheeler via Davangere Harihar Road.
                     </p>
                   </div>
                   <div className="bg-card p-6 rounded-xl border border-border/40 shadow-sm hover:shadow-md transition-shadow">
                     <h3 className="font-bold text-sm mb-1.5 text-foreground">From City Hospital</h3>
                     <p className="text-xs text-muted-foreground leading-relaxed">
-                      Approximately 2.1 km, 8 minutes by car via MCC Road.
+                      Approximately 1.5 km, 6 minutes by two wheeler via AVK College Road.
                     </p>
                   </div>
                 </div>
