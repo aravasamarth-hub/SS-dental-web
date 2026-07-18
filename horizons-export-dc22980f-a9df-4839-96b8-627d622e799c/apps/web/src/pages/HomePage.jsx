@@ -437,7 +437,7 @@ function HomePage() {
                   >
                     {/* Transparent PNG logo — real alpha channel, no blend tricks needed */}
                     <img
-                      src="/ss-dental-logo.png"
+                      src="/ss-dental-logo-full.png"
                       alt="SS Dental Care Logo"
                       loading="lazy"
                       className="w-full h-full object-contain drop-shadow-[0_4px_16px_rgba(0,0,0,0.4)]"
