@@ -1,13 +1,16 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import FloatingWhatsAppButton from '@/components/FloatingWhatsAppButton';
 import BackToTopButton from '@/components/BackToTopButton';
 
 function GalleryPage() {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
   const images = [
     {
       url: 'https://horizons-cdn.hostinger.com/dc22980f-a9df-4839-96b8-627d622e799c/49d7bbcfbcca055c20b75b55c7aded8e.jpg',
@@ -30,6 +33,21 @@ function GalleryPage() {
       description: 'Clean, modern facilities with advanced dental technology'
     }
   ];
+
+  const handlePrev = () => {
+    setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
+  };
+
+  const handleNext = () => {
+    setCurrentIndex((prev) => (prev + 1) % images.length);
+  };
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % images.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [currentIndex, images.length]);
 
   return (
     <>
@@ -85,6 +103,86 @@ function GalleryPage() {
                   </div>
                 </motion.div>
               ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Gallery Slideshow Section */}
+        <section className="py-20 bg-[#0d121f] text-white border-y border-slate-800 relative overflow-hidden">
+          {/* Subtle background glow */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-accent/5 rounded-full blur-[120px] pointer-events-none z-0"></div>
+          
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-center mb-12"
+            >
+              <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight text-white mb-4">
+                Virtual Clinic Tour
+              </h2>
+              <p className="text-lg text-slate-300 max-w-xl mx-auto">
+                Swipe or click to browse through our welcoming spaces, treatment rooms, and advanced dental setup.
+              </p>
+            </motion.div>
+
+            {/* Slideshow container */}
+            <div className="relative aspect-[16/9] w-full max-w-4xl mx-auto overflow-hidden rounded-3xl border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] bg-slate-950">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentIndex}
+                  initial={{ opacity: 0, scale: 1.02 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.98 }}
+                  transition={{ duration: 0.5 }}
+                  className="absolute inset-0"
+                >
+                  <img
+                    src={images[currentIndex].url}
+                    alt={images[currentIndex].title}
+                    className="w-full h-full object-cover"
+                  />
+                  {/* Overlay with details */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent flex flex-col justify-end p-6 md:p-12 text-white">
+                    <span className="text-accent font-bold text-xs uppercase tracking-widest mb-1.5">
+                      Slide {currentIndex + 1} of {images.length}
+                    </span>
+                    <h3 className="text-xl md:text-3xl font-extrabold mb-2 tracking-tight text-white">{images[currentIndex].title}</h3>
+                    <p className="text-sm md:text-base text-slate-200 max-w-2xl">{images[currentIndex].description}</p>
+                  </div>
+                </motion.div>
+              </AnimatePresence>
+
+              {/* Navigation Arrows */}
+              <button
+                onClick={handlePrev}
+                className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 md:w-12 md:h-12 rounded-full bg-slate-900/40 hover:bg-slate-900/70 backdrop-blur-md border border-white/10 text-white flex items-center justify-center transition-all duration-200 shadow-md z-30"
+                aria-label="Previous Slide"
+              >
+                <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" />
+              </button>
+              <button
+                onClick={handleNext}
+                className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 md:w-12 md:h-12 rounded-full bg-slate-900/40 hover:bg-slate-900/70 backdrop-blur-md border border-white/10 text-white flex items-center justify-center transition-all duration-200 shadow-md z-30"
+                aria-label="Next Slide"
+              >
+                <ChevronRight className="w-5 h-5 md:w-6 md:h-6" />
+              </button>
+
+              {/* Indicators */}
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 md:gap-2 z-30">
+                {images.map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setCurrentIndex(idx)}
+                    className={`w-2 h-2 md:w-2.5 md:h-2.5 rounded-full transition-all duration-300 ${
+                      currentIndex === idx ? 'bg-accent w-5 md:w-6' : 'bg-white/40 hover:bg-white/70'
+                    }`}
+                    aria-label={`Go to slide ${idx + 1}`}
+                  />
+                ))}
+              </div>
             </div>
           </div>
         </section>
