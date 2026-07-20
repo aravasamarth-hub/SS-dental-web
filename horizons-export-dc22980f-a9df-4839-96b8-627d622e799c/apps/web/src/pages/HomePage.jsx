@@ -676,12 +676,12 @@ function HomePage() {
             </div>
 
             <div className="text-center mt-12">
-              <a
-                href="/services"
+              <Link
+                to="/services"
                 className="inline-flex items-center gap-2 px-8 py-3 rounded-full bg-accent text-white font-semibold text-base shadow-md hover:bg-accent/90 transition-all duration-200 hover:-translate-y-0.5"
               >
                 View All Services →
-              </a>
+              </Link>
             </div>
           </div>
         </section>
