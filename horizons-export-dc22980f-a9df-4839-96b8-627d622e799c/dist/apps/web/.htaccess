@@ -1,0 +1,24 @@
+<IfModule mod_rewrite.c>
+	RewriteEngine On
+	RewriteBase /
+	RewriteCond %{REQUEST_FILENAME} !-f
+	RewriteCond %{REQUEST_FILENAME} !-d
+	RewriteRule ^ index.html [L]
+</IfModule>
+
+<IfModule mod_headers.c>
+	Header set X-Powered-By "Hostinger Horizons"
+
+	# Cache everything on CDN by default
+	Header set Cache-Control "public, s-maxage=604800, max-age=0"
+
+	# Cache in browser all assets
+	<If "%{REQUEST_URI} =~ m#^/assets/.*$#">
+		Header set Cache-Control "public, max-age=604800"
+	</If>
+
+	# Cache static images and fonts for 30 days in browser
+	<FilesMatch "\.(ico|jpg|jpeg|png|gif|webp|svg|woff|woff2)$">
+		Header set Cache-Control "public, max-age=2592000, immutable"
+	</FilesMatch>
+</IfModule>
