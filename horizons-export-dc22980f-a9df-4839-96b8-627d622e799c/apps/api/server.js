@@ -2,6 +2,7 @@ const express = require('express');
 const Razorpay = require('razorpay');
 const cors = require('cors');
 const crypto = require('crypto');
+const supabase = require('./db');
 require('dotenv').config();
 
 const app = express();
@@ -41,13 +42,48 @@ app.post('/api/create-order', async (req, res) => {
   }
 });
 
+// Helper to format date cleanly as YYYY-MM-DD
+const formatDate = (dateVal) => {
+  if (!dateVal) return new Date().toISOString().split('T')[0];
+  if (typeof dateVal === 'string' && dateVal.includes('-')) {
+    return dateVal;
+  }
+  return `2026-07-${dateVal.toString().padStart(2, '0')}`;
+};
+
 // Endpoint 2: Verify Payment & Confirm Booking
 app.post('/api/verify-payment', async (req, res) => {
   try {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, bookingDetails } = req.body;
+
+    const saveBooking = async () => {
+      if (!bookingDetails) return;
+      const { error } = await supabase
+        .from('appointments')
+        .insert([
+          {
+            full_name: bookingDetails.name,
+            email: bookingDetails.email,
+            phone: bookingDetails.phone,
+            appointment_date: formatDate(bookingDetails.date),
+            appointment_time: bookingDetails.time,
+            payment_method: 'Razorpay',
+            payment_status: 'paid',
+            payment_id: razorpay_payment_id,
+            order_id: razorpay_order_id,
+            amount_paid: 250.00
+          }
+        ]);
+      if (error) {
+        console.error('Error inserting booking into Supabase:', error);
+      } else {
+        console.log('Successfully saved booking to Supabase');
+      }
+    };
 
     if (!process.env.RAZORPAY_KEY_SECRET) {
       console.warn('Warning: RAZORPAY_KEY_SECRET is not set in environment. Skipping verification check.');
+      await saveBooking();
       return res.json({ success: true, message: 'Skipped signature validation due to missing credentials' });
     }
 
@@ -62,6 +98,7 @@ app.post('/api/verify-payment', async (req, res) => {
 
     if (isSignatureValid) {
       console.log('Payment verified successfully for order:', razorpay_order_id);
+      await saveBooking();
       res.json({ success: true, message: 'Payment verified and appointment booked!' });
     } else {
       res.status(400).json({ success: false, message: 'Invalid payment signature' });
@@ -69,6 +106,42 @@ app.post('/api/verify-payment', async (req, res) => {
   } catch (error) {
     console.error('Error verifying payment:', error);
     res.status(500).json({ success: false, message: 'Verification process failed' });
+  }
+});
+
+// Endpoint 3: Create Booking (for Visit to Pay option)
+app.post('/api/create-booking', async (req, res) => {
+  try {
+    const { name, email, phone, date, time } = req.body;
+
+    if (!name || !phone) {
+      return res.status(400).json({ success: false, message: 'Missing required booking details' });
+    }
+
+    const { error } = await supabase
+      .from('appointments')
+      .insert([
+        {
+          full_name: name,
+          email: email || '',
+          phone: phone,
+          appointment_date: formatDate(date),
+          appointment_time: time,
+          payment_method: 'Visit to pay',
+          payment_status: 'pending',
+          amount_paid: 250.00
+        }
+      ]);
+
+    if (error) {
+      console.error('Error inserting booking into Supabase:', error);
+      return res.status(500).json({ success: false, message: 'Failed to create booking in database' });
+    }
+
+    res.json({ success: true, message: 'Appointment booked successfully!' });
+  } catch (error) {
+    console.error('Error creating booking:', error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });
 

@@ -192,10 +192,36 @@ function BookingsPage() {
           console.error(err);
           toast.error('Could not initiate checkout.');
         }
-      }
     } else {
-      setStep('success');
-      toast.success('Appointment booked successfully!');
+      const apiUrl = import.meta.env.VITE_API_URL;
+      if (apiUrl) {
+        try {
+          const response = await fetch(`${apiUrl}/api/create-booking`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              name: fullName,
+              email,
+              phone,
+              date: selectedDay,
+              time: selectedTime
+            })
+          });
+          const result = await response.json();
+          if (result.success) {
+            setStep('success');
+            toast.success('Appointment booked successfully!');
+          } else {
+            toast.error(result.message || 'Failed to submit booking');
+          }
+        } catch (err) {
+          console.error(err);
+          toast.error('Could not connect to server to save booking.');
+        }
+      } else {
+        setStep('success');
+        toast.success('Appointment booked successfully!');
+      }
     }
   };
 
