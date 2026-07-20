@@ -149,7 +149,7 @@ function Header() {
           <div className="flex items-center gap-2">
             <a
               href="tel:+919448455699"
-              className="flex items-center gap-1.5 hover:opacity-90 font-bold tracking-wide transition-opacity text-sm md:text-lg"
+              className="flex items-center gap-1.5 hover:text-[#008cd2] font-bold tracking-wide transition-colors duration-300 text-sm md:text-lg"
             >
               <Phone className="h-4 w-4 md:h-5 md:w-5" strokeWidth={2.5} />
               <span>+91 94484 55699</span>
@@ -158,7 +158,7 @@ function Header() {
           <div className="flex items-center gap-3 md:gap-6">
             <a
               href="tel:+919448455699"
-              className="hover:opacity-85 transition-opacity"
+              className="hover:text-[#008cd2] transition-colors duration-300"
               aria-label="Call Us"
             >
               <Phone className="h-4 w-4 md:h-6 md:w-6" strokeWidth={2.5} />
@@ -167,7 +167,7 @@ function Header() {
               href="https://wa.me/919448455699"
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:opacity-85 transition-opacity"
+              className="hover:text-[#25D366] transition-colors duration-300"
               aria-label="WhatsApp"
             >
               <WhatsAppIcon className="h-4 w-4 md:h-6 md:w-6" />
@@ -176,7 +176,7 @@ function Header() {
               href="https://instagram.com/ssdentalcare"
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:opacity-85 transition-opacity"
+              className="hover:text-[#E1306C] transition-colors duration-300"
               aria-label="Instagram"
             >
               <Instagram className="h-4 w-4 md:h-6 md:w-6" strokeWidth={2.5} />
@@ -185,7 +185,7 @@ function Header() {
               href="https://youtube.com/@ssdentalcare"
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:opacity-85 transition-opacity"
+              className="hover:text-[#FF0000] transition-colors duration-300"
               aria-label="YouTube"
             >
               <Youtube className="h-4 w-4 md:h-6 md:w-6" strokeWidth={2.5} />
@@ -194,7 +194,7 @@ function Header() {
               href="https://facebook.com/ssdentalcare"
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:opacity-85 transition-opacity"
+              className="hover:text-[#1877F2] transition-colors duration-300"
               aria-label="Facebook"
             >
               <Facebook className="h-4 w-4 md:h-6 md:w-6" strokeWidth={2.5} />
