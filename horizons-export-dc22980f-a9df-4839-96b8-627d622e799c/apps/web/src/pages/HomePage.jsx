@@ -273,7 +273,7 @@ function HomePage() {
                   className="grid grid-cols-2 gap-4 items-end mt-8 lg:mt-0"
                 >
                   {/* Dr. Naveen */}
-                  <div className="flex flex-col items-center text-center group">
+                  <Link to="/doctors/naveen-shamnur" className="flex flex-col items-center text-center group cursor-pointer">
                     <div className="relative overflow-hidden p-2">
                       <img
                         src="https://horizons-cdn.hostinger.com/dc22980f-a9df-4839-96b8-627d622e799c/37a824af35a9003237db66be11bbe263.png"
@@ -285,15 +285,15 @@ function HomePage() {
                       />
                     </div>
                     <div className="mt-2 h-20 md:h-24 flex flex-col justify-start drop-shadow-[0_2px_4px_rgba(0,0,0,0.85)]">
-                      <h3 className="text-white font-bold text-lg md:text-xl">Dr. Naveen Shamnur</h3>
+                      <h3 className="text-white font-bold text-lg md:text-xl group-hover:text-accent transition-colors duration-200">Dr. Naveen Shamnur</h3>
                       <p className="text-accent text-xs md:text-sm font-bold mt-0.5 tracking-wide uppercase">
                         orthodontist and dentofacial orthopedics
                       </p>
                     </div>
-                  </div>
+                  </Link>
 
                   {/* Dr. Sunitha */}
-                  <div className="flex flex-col items-center text-center group">
+                  <Link to="/doctors/sunitha-shamnur" className="flex flex-col items-center text-center group cursor-pointer">
                     <div className="relative overflow-hidden p-2">
                       <img
                         src="https://horizons-cdn.hostinger.com/dc22980f-a9df-4839-96b8-627d622e799c/478df36d82fc64b544111f8c6fd0f1dc.png"
@@ -305,12 +305,12 @@ function HomePage() {
                       />
                     </div>
                     <div className="mt-2 h-20 md:h-24 flex flex-col justify-start drop-shadow-[0_2px_4px_rgba(0,0,0,0.85)]">
-                      <h3 className="text-white font-bold text-lg md:text-xl">Dr. Sunitha Shamnur</h3>
+                      <h3 className="text-white font-bold text-lg md:text-xl group-hover:text-accent transition-colors duration-200">Dr. Sunitha Shamnur</h3>
                       <p className="text-accent text-xs md:text-sm font-bold mt-0.5 tracking-wide uppercase">
                         Prosthodontist and Implantologist
                       </p>
                     </div>
-                  </div>
+                  </Link>
                 </motion.div>
               </div>
             </div>
