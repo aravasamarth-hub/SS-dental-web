@@ -819,11 +819,10 @@ function HomePage() {
                     Thank you for reaching out. We have received your request and will contact you shortly.
                   </p>
                   <Button 
-                    variant="outline" 
-                    onClick={() => setIsSubmitted(false)} 
-                    className="mt-4 border-emerald-500/40 text-foreground hover:bg-emerald-500/10"
+                    asChild
+                    className="mt-4 bg-primary text-primary-foreground hover:bg-primary/90"
                   >
-                    Send Another Message
+                    <Link to="/booking">Book Appointment</Link>
                   </Button>
                 </div>
               ) : (

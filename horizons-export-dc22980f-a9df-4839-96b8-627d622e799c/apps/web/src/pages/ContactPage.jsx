@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Helmet } from 'react-helmet';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+
 import { Mail, Phone, MapPin, Clock, Navigation } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -214,11 +216,10 @@ function ContactPage() {
                         Thank you for reaching out. We have received your message and will contact you shortly.
                       </p>
                       <Button 
-                        variant="outline" 
-                        onClick={() => setIsSubmitted(false)} 
-                        className="mt-4 border-emerald-500/40 text-foreground hover:bg-emerald-500/10"
+                        asChild
+                        className="mt-4 bg-primary text-primary-foreground hover:bg-primary/90"
                       >
-                        Send Another Message
+                        <Link to="/booking">Book Appointment</Link>
                       </Button>
                     </div>
                   ) : (
