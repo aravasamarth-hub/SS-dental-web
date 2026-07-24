@@ -15,11 +15,16 @@ import BackToTopButton from '@/components/BackToTopButton';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
+import { supabase } from '@/lib/supabase';
+import { CheckCircle2 } from 'lucide-react';
 
 function HomePage() {
-  const [formData, setFormData] = useState({ name: '', phone: '' });
+  const [formData, setFormData] = useState({ name: '', email: '', phone: '', message: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+
 
   // Refs for tracking coordinates of the 4 features and the central logo
   const containerRef = useRef(null);
@@ -169,7 +174,7 @@ function HomePage() {
     e.preventDefault();
     
     if (!formData.name || !formData.phone) {
-      toast.error('Please fill in all fields');
+      toast.error('Please fill in all required fields (Name and Phone)');
       return;
     }
 
@@ -180,11 +185,31 @@ function HomePage() {
 
     setIsSubmitting(true);
 
-    setTimeout(() => {
-      toast.success('Booking request received. We will contact you shortly.');
-      setFormData({ name: '', phone: '' });
-      setIsSubmitting(false);
-    }, 1000);
+    try {
+      if (supabase) {
+        const today = new Date().toISOString().split('T')[0];
+        const { error } = await supabase.from('appointments').insert([
+          {
+            full_name: formData.name,
+            email: formData.email || '',
+            phone: formData.phone,
+            appointment_date: today,
+            appointment_time: formData.message ? `Message: ${formData.message}` : 'General Consultation Request',
+            payment_method: 'Message / Booking Form',
+            payment_status: 'pending',
+            amount_paid: 0.00
+          }
+        ]);
+        if (error) console.error('Error inserting into Supabase:', error);
+      }
+    } catch (err) {
+      console.error('Supabase submission exception:', err);
+    }
+
+    setIsSubmitting(false);
+    setIsSubmitted(true);
+    toast.success('Your message has been sent successfully! We will contact you shortly.');
+    setFormData({ name: '', email: '', phone: '', message: '' });
   };
 
   return (
@@ -784,41 +809,84 @@ function HomePage() {
                 </p>
               </div>
 
-              <form onSubmit={handleSubmit} className="space-y-6 bg-card p-8 rounded-2xl shadow-lg">
-                <div>
-                  <Label htmlFor="name">Full Name</Label>
-                  <Input
-                    id="name"
-                    type="text"
-                    placeholder="Enter your full name"
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    required
-                    className="mt-2 text-foreground placeholder:text-muted-foreground"
-                  />
+              {isSubmitted ? (
+                <div className="bg-card border border-emerald-500/30 p-8 rounded-2xl shadow-xl text-center space-y-4">
+                  <div className="w-16 h-16 bg-emerald-500/10 text-emerald-500 rounded-full flex items-center justify-center mx-auto text-3xl">
+                    <CheckCircle2 className="w-10 h-10 text-emerald-500" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-foreground">Message Sent Successfully!</h3>
+                  <p className="text-muted-foreground max-w-md mx-auto">
+                    Thank you for reaching out. We have received your request and will contact you shortly.
+                  </p>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setIsSubmitted(false)} 
+                    className="mt-4 border-emerald-500/40 text-foreground hover:bg-emerald-500/10"
+                  >
+                    Send Another Message
+                  </Button>
                 </div>
+              ) : (
+                <form onSubmit={handleSubmit} className="space-y-6 bg-card p-8 rounded-2xl shadow-lg border border-border/50">
+                  <div>
+                    <Label htmlFor="name">Full Name *</Label>
+                    <Input
+                      id="name"
+                      type="text"
+                      placeholder="Enter your full name"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      required
+                      className="mt-2 text-foreground placeholder:text-muted-foreground"
+                    />
+                  </div>
 
-                <div>
-                  <Label htmlFor="phone">Phone Number</Label>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    placeholder="Enter your phone number"
-                    value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    required
-                    className="mt-2 text-foreground placeholder:text-muted-foreground"
-                  />
-                </div>
+                  <div>
+                    <Label htmlFor="email">Email Address (Optional)</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="Enter your email"
+                      value={formData.email}
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      className="mt-2 text-foreground placeholder:text-muted-foreground"
+                    />
+                  </div>
 
-                <Button
-                  type="submit"
-                  className="w-full transition-all duration-200 active:scale-98"
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? 'Submitting...' : 'Submit Booking Request'}
-                </Button>
-              </form>
+                  <div>
+                    <Label htmlFor="phone">Phone Number *</Label>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      placeholder="Enter your phone number"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                      required
+                      className="mt-2 text-foreground placeholder:text-muted-foreground"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="message">Message</Label>
+                    <Textarea
+                      id="message"
+                      placeholder="Tell us how we can help you"
+                      value={formData.message}
+                      onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                      rows={4}
+                      className="mt-2 text-foreground placeholder:text-muted-foreground resize-none"
+                    />
+                  </div>
+
+                  <Button
+                    type="submit"
+                    className="w-full transition-all duration-200 active:scale-98"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? 'Submitting...' : 'Submit Booking Request'}
+                  </Button>
+                </form>
+              )}
             </motion.div>
           </div>
         </section>

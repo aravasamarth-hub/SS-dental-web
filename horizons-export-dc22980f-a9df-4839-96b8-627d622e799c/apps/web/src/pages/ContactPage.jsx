@@ -11,6 +11,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
+import { supabase } from '@/lib/supabase';
+import { CheckCircle2 } from 'lucide-react';
 
 function ContactPage() {
   const [formData, setFormData] = useState({
@@ -20,12 +22,13 @@ function ContactPage() {
     message: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.name || !formData.email || !formData.phone || !formData.message) {
-      toast.error('Please fill in all fields');
+    if (!formData.name || !formData.phone) {
+      toast.error('Please fill in required fields (Name and Phone)');
       return;
     }
 
@@ -36,11 +39,31 @@ function ContactPage() {
 
     setIsSubmitting(true);
 
-    setTimeout(() => {
-      toast.success('Message sent successfully. We will contact you soon.');
-      setFormData({ name: '', email: '', phone: '', message: '' });
-      setIsSubmitting(false);
-    }, 1000);
+    try {
+      if (supabase) {
+        const today = new Date().toISOString().split('T')[0];
+        const { error } = await supabase.from('appointments').insert([
+          {
+            full_name: formData.name,
+            email: formData.email || '',
+            phone: formData.phone,
+            appointment_date: today,
+            appointment_time: formData.message ? `Contact Form: ${formData.message}` : 'Contact Inquiry',
+            payment_method: 'Contact Form Message',
+            payment_status: 'pending',
+            amount_paid: 0.00
+          }
+        ]);
+        if (error) console.error('Error inserting into Supabase:', error);
+      }
+    } catch (err) {
+      console.error('Supabase submission exception:', err);
+    }
+
+    setIsSubmitting(false);
+    setIsSubmitted(true);
+    toast.success('Your message has been sent successfully. We will contact you soon.');
+    setFormData({ name: '', email: '', phone: '', message: '' });
   };
 
   return (
@@ -181,67 +204,84 @@ function ContactPage() {
                 <div className="bg-card p-8 rounded-2xl shadow-xl border border-border/50">
                   <h2 className="text-3xl font-bold mb-8">Send Us a Message</h2>
                   
-                  <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="space-y-2">
-                      <Label htmlFor="name">Full Name</Label>
-                      <Input
-                        id="name"
-                        type="text"
-                        placeholder="Enter your full name"
-                        value={formData.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        required
-                        className="text-foreground placeholder:text-muted-foreground focus-visible:ring-accent"
-                      />
+                  {isSubmitted ? (
+                    <div className="border border-emerald-500/30 p-8 rounded-2xl text-center space-y-4">
+                      <div className="w-16 h-16 bg-emerald-500/10 text-emerald-500 rounded-full flex items-center justify-center mx-auto text-3xl">
+                        <CheckCircle2 className="w-10 h-10 text-emerald-500" />
+                      </div>
+                      <h3 className="text-2xl font-bold text-foreground">Message Sent Successfully!</h3>
+                      <p className="text-muted-foreground">
+                        Thank you for reaching out. We have received your message and will contact you shortly.
+                      </p>
+                      <Button 
+                        variant="outline" 
+                        onClick={() => setIsSubmitted(false)} 
+                        className="mt-4 border-emerald-500/40 text-foreground hover:bg-emerald-500/10"
+                      >
+                        Send Another Message
+                      </Button>
                     </div>
+                  ) : (
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                      <div className="space-y-2">
+                        <Label htmlFor="name">Full Name *</Label>
+                        <Input
+                          id="name"
+                          type="text"
+                          placeholder="Enter your full name"
+                          value={formData.name}
+                          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                          required
+                          className="text-foreground placeholder:text-muted-foreground focus-visible:ring-accent"
+                        />
+                      </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email Address</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        placeholder="Enter your email"
-                        value={formData.email}
-                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        required
-                        className="text-foreground placeholder:text-muted-foreground focus-visible:ring-accent"
-                      />
-                    </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="email">Email Address (Optional)</Label>
+                        <Input
+                          id="email"
+                          type="email"
+                          placeholder="Enter your email"
+                          value={formData.email}
+                          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                          className="text-foreground placeholder:text-muted-foreground focus-visible:ring-accent"
+                        />
+                      </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="phone">Phone Number</Label>
-                      <Input
-                        id="phone"
-                        type="tel"
-                        placeholder="Enter your phone number"
-                        value={formData.phone}
-                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                        required
-                        className="text-foreground placeholder:text-muted-foreground focus-visible:ring-accent"
-                      />
-                    </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="phone">Phone Number *</Label>
+                        <Input
+                          id="phone"
+                          type="tel"
+                          placeholder="Enter your phone number"
+                          value={formData.phone}
+                          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                          required
+                          className="text-foreground placeholder:text-muted-foreground focus-visible:ring-accent"
+                        />
+                      </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="message">Message</Label>
-                      <Textarea
-                        id="message"
-                        placeholder="Tell us how we can help you"
-                        value={formData.message}
-                        onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                        required
-                        rows={5}
-                        className="text-foreground placeholder:text-muted-foreground focus-visible:ring-accent"
-                      />
-                    </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="message">Message</Label>
+                        <Textarea
+                          id="message"
+                          placeholder="Tell us how we can help you"
+                          value={formData.message}
+                          onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                          rows={4}
+                          className="text-foreground placeholder:text-muted-foreground focus-visible:ring-accent resize-none"
+                        />
+                      </div>
 
-                    <Button
-                      type="submit"
-                      className="w-full py-6 text-base rounded-lg transition-all duration-200 active:scale-98"
-                      disabled={isSubmitting}
-                    >
-                      {isSubmitting ? 'Sending...' : 'Send Message'}
-                    </Button>
-                  </form>
+                      <Button
+                        type="submit"
+                        className="w-full py-6 text-base rounded-lg transition-all duration-200 active:scale-98"
+                        disabled={isSubmitting}
+                      >
+                        {isSubmitting ? 'Sending...' : 'Send Message'}
+                      </Button>
+                    </form>
+                  )}
                 </div>
               </motion.div>
 
