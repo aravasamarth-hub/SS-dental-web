@@ -13,6 +13,44 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 
+const INDIAN_STATES = [
+  "Andhra Pradesh",
+  "Arunachal Pradesh",
+  "Assam",
+  "Bihar",
+  "Chhattisgarh",
+  "Goa",
+  "Gujarat",
+  "Haryana",
+  "Himachal Pradesh",
+  "Jharkhand",
+  "Karnataka",
+  "Kerala",
+  "Madhya Pradesh",
+  "Maharashtra",
+  "Manipur",
+  "Meghalaya",
+  "Mizoram",
+  "Nagaland",
+  "Odisha",
+  "Punjab",
+  "Rajasthan",
+  "Sikkim",
+  "Tamil Nadu",
+  "Telangana",
+  "Tripura",
+  "Uttar Pradesh",
+  "Uttarakhand",
+  "West Bengal",
+  "Andaman and Nicobar Islands",
+  "Chandigarh",
+  "Dadra and Nagar Haveli and Daman and Diu",
+  "Delhi (NCT)",
+  "Jammu and Kashmir",
+  "Ladakh",
+  "Lakshadweep",
+  "Puducherry"
+];
 
 function BookingsPage() {
   const [step, setStep] = useState('intro'); // 'intro', 'checkout', 'success'
@@ -590,29 +628,14 @@ function BookingsPage() {
 
                     <form onSubmit={handleCheckoutSubmit} className="space-y-8 bg-card p-6 md:p-8 rounded-2xl border border-border/50 shadow-md">
                       
-                      {/* Contact Section */}
-                      <div className="space-y-4">
-                        <h3 className="text-xl font-bold border-b border-border pb-2 text-foreground">Contact</h3>
-                        <div className="space-y-2">
-                          <Label htmlFor="checkout-email">Email</Label>
-                          <Input
-                            id="checkout-email"
-                            type="email"
-                            placeholder="Enter your email address"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            required
-                            className="text-foreground focus-visible:ring-accent"
-                          />
-                        </div>
-                      </div>
-
-                      {/* Billing Section */}
-                      <div className="space-y-4 pt-4">
-                        <h3 className="text-xl font-bold border-b border-border pb-2 text-foreground">Billing</h3>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          <div className="space-y-2 sm:col-span-2">
-                            <Label htmlFor="checkout-name">Full name</Label>
+                      {/* Contact & Billing Section */}
+                      <div className="space-y-6">
+                        <h3 className="text-xl font-bold border-b border-border pb-2 text-foreground">Contact & Billing</h3>
+                        
+                        <div className="space-y-4">
+                          {/* 1. Full Name */}
+                          <div className="space-y-2">
+                            <Label htmlFor="checkout-name">Full name *</Label>
                             <Input
                               id="checkout-name"
                               type="text"
@@ -624,29 +647,11 @@ function BookingsPage() {
                             />
                           </div>
 
+                          {/* 2. Phone Number */}
                           <div className="space-y-2">
-                            <Label>Country/Region</Label>
-                            <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground ring-offset-background focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2">
-                              <option>India</option>
-                            </select>
-                          </div>
-
-                          <div className="space-y-2">
-                            <Label htmlFor="checkout-state">State</Label>
-                            <Input
-                              id="checkout-state"
-                              type="text"
-                              value={state}
-                              onChange={(e) => setState(e.target.value)}
-                              required
-                              className="text-foreground focus-visible:ring-accent"
-                            />
-                          </div>
-
-                          <div className="space-y-2 sm:col-span-2">
-                            <Label htmlFor="checkout-phone">Phone number</Label>
+                            <Label htmlFor="checkout-phone">Phone number *</Label>
                             <div className="flex gap-2">
-                              <div className="flex items-center gap-1 bg-muted px-3 border rounded-md text-xs text-muted-foreground font-medium">
+                              <div className="flex items-center gap-1 bg-muted px-3 border rounded-md text-xs text-muted-foreground font-medium flex-shrink-0">
                                 🇮🇳 +91
                               </div>
                               <Input
@@ -658,6 +663,46 @@ function BookingsPage() {
                                 required
                                 className="text-foreground focus-visible:ring-accent"
                               />
+                            </div>
+                          </div>
+
+                          {/* 3. Email ID */}
+                          <div className="space-y-2">
+                            <Label htmlFor="checkout-email">Email ID (Optional)</Label>
+                            <Input
+                              id="checkout-email"
+                              type="email"
+                              placeholder="Enter your email address"
+                              value={email}
+                              onChange={(e) => setEmail(e.target.value)}
+                              className="text-foreground focus-visible:ring-accent"
+                            />
+                          </div>
+
+                          {/* 4. Country/Region & State */}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                            <div className="space-y-2">
+                              <Label>Country/Region</Label>
+                              <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground ring-offset-background focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2">
+                                <option>India</option>
+                              </select>
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label htmlFor="checkout-state">State *</Label>
+                              <select
+                                id="checkout-state"
+                                value={state}
+                                onChange={(e) => setState(e.target.value)}
+                                required
+                                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground ring-offset-background focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2"
+                              >
+                                {INDIAN_STATES.map((st) => (
+                                  <option key={st} value={st}>
+                                    {st}
+                                  </option>
+                                ))}
+                              </select>
                             </div>
                           </div>
                         </div>
