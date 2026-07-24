@@ -42,7 +42,10 @@ function ContactPage() {
     setIsSubmitting(true);
 
     try {
-      if (supabase) {
+      if (!supabase) {
+        console.error('Supabase client is null because VITE_SUPABASE_ANON_KEY is missing!');
+        toast.error('Database connection key is missing in website settings.');
+      } else {
         const today = new Date().toISOString().split('T')[0];
         const { error } = await supabase.from('appointments').insert([
           {
@@ -56,7 +59,12 @@ function ContactPage() {
             amount_paid: 0.00
           }
         ]);
-        if (error) console.error('Error inserting into Supabase:', error);
+        if (error) {
+          console.error('Error inserting into Supabase:', error);
+          toast.error(`Database error: ${error.message}`);
+        } else {
+          console.log('Successfully inserted contact message into Supabase');
+        }
       }
     } catch (err) {
       console.error('Supabase submission exception:', err);

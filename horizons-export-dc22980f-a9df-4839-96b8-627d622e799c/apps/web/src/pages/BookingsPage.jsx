@@ -60,30 +60,34 @@ function BookingsPage() {
 
   const saveToDatabaseDirect = async ({ paymentMethodType, paymentStatus, paymentId, orderId }) => {
     try {
-      if (supabase) {
-        const dateStr = typeof selectedDay === 'string' && selectedDay.includes('-')
-          ? selectedDay
-          : `2026-07-${String(selectedDay).padStart(2, '0')}`;
-          
-        const { error } = await supabase.from('appointments').insert([
-          {
-            full_name: fullName,
-            email: email || '',
-            phone: phone,
-            appointment_date: dateStr,
-            appointment_time: selectedTime,
-            payment_method: paymentMethodType || 'Visit to pay',
-            payment_status: paymentStatus || 'pending',
-            payment_id: paymentId || null,
-            order_id: orderId || null,
-            amount_paid: 250.00
-          }
-        ]);
-        if (error) {
-          console.error('Supabase direct insert error:', error);
-        } else {
-          console.log('Successfully inserted booking into Supabase directly');
+      if (!supabase) {
+        console.error('Supabase client is null because VITE_SUPABASE_ANON_KEY is missing!');
+        toast.error('Database connection key is missing in website settings.');
+        return;
+      }
+      const dateStr = typeof selectedDay === 'string' && selectedDay.includes('-')
+        ? selectedDay
+        : `2026-07-${String(selectedDay).padStart(2, '0')}`;
+        
+      const { data, error } = await supabase.from('appointments').insert([
+        {
+          full_name: fullName,
+          email: email || '',
+          phone: phone,
+          appointment_date: dateStr,
+          appointment_time: selectedTime,
+          payment_method: paymentMethodType || 'Visit to pay',
+          payment_status: paymentStatus || 'pending',
+          payment_id: paymentId || null,
+          order_id: orderId || null,
+          amount_paid: 250.00
         }
+      ]);
+      if (error) {
+        console.error('Supabase direct insert error:', error);
+        toast.error(`Database error: ${error.message}`);
+      } else {
+        console.log('Successfully inserted booking into Supabase directly:', data);
       }
     } catch (err) {
       console.error('Failed to save booking to Supabase directly:', err);
