@@ -219,7 +219,7 @@ function ContactPage() {
                         asChild
                         className="mt-4 bg-primary text-primary-foreground hover:bg-primary/90"
                       >
-                        <Link to="/booking">Book Appointment</Link>
+                        <Link to="/bookings">Book Appointment</Link>
                       </Button>
                     </div>
                   ) : (
