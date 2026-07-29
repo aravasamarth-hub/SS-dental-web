@@ -26,8 +26,11 @@ function ContactPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
+  const submittingRef = React.useRef(false);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isSubmitting || submittingRef.current) return;
 
     if (!formData.name || !formData.phone) {
       toast.error('Please fill in required fields (Name and Phone)');
@@ -39,6 +42,7 @@ function ContactPage() {
       return;
     }
 
+    submittingRef.current = true;
     setIsSubmitting(true);
 
     try {
@@ -47,14 +51,15 @@ function ContactPage() {
         toast.error('Database connection key is missing in website settings.');
       } else {
         const today = new Date().toISOString().split('T')[0];
+        const appointmentTimeVal = (formData.message ? `Msg: ${formData.message}` : 'Contact Inquiry').slice(0, 20);
         const { error } = await supabase.from('appointments').insert([
           {
             full_name: formData.name,
             email: formData.email || '',
             phone: formData.phone,
             appointment_date: today,
-            appointment_time: formData.message ? `Contact Form: ${formData.message}` : 'Contact Inquiry',
-            payment_method: 'Contact Form Message',
+            appointment_time: appointmentTimeVal,
+            payment_method: 'Contact Form',
             payment_status: 'pending',
             amount_paid: 0.00
           }
@@ -64,16 +69,17 @@ function ContactPage() {
           toast.error(`Database error: ${error.message}`);
         } else {
           console.log('Successfully inserted contact message into Supabase');
+          setIsSubmitted(true);
+          toast.success('Your message has been sent successfully. We will contact you soon.');
+          setFormData({ name: '', email: '', phone: '', message: '' });
         }
       }
     } catch (err) {
       console.error('Supabase submission exception:', err);
+    } finally {
+      setIsSubmitting(false);
+      submittingRef.current = false;
     }
-
-    setIsSubmitting(false);
-    setIsSubmitted(true);
-    toast.success('Your message has been sent successfully. We will contact you soon.');
-    setFormData({ name: '', email: '', phone: '', message: '' });
   };
 
   return (

@@ -113,8 +113,8 @@ function BookingsPage() {
           email: email || '',
           phone: phone,
           appointment_date: dateStr,
-          appointment_time: selectedTime,
-          payment_method: paymentMethodType || 'Visit to pay',
+          appointment_time: (selectedTime || '05:00 PM').slice(0, 20),
+          payment_method: (paymentMethodType || 'Visit to pay').slice(0, 20),
           payment_status: paymentStatus || 'pending',
           payment_id: paymentId || null,
           order_id: orderId || null,
@@ -125,7 +125,29 @@ function BookingsPage() {
         console.error('Supabase direct insert error:', error);
         toast.error(`Database error: ${error.message}`);
       } else {
-        console.log('Successfully inserted booking into Supabase directly:', data);
+        console.log('Successfully inserted booking into appointments directly:', data);
+      }
+
+      if (paymentStatus === 'paid') {
+        const { error: paidErr } = await supabase.from('paid_bookings').insert([
+          {
+            full_name: fullName,
+            email: email || '',
+            phone: phone,
+            appointment_date: dateStr,
+            appointment_time: (selectedTime || '05:00 PM').slice(0, 20),
+            payment_method: (paymentMethodType || 'Razorpay').slice(0, 20),
+            payment_status: 'paid',
+            payment_id: paymentId || null,
+            order_id: orderId || null,
+            amount_paid: 250.00
+          }
+        ]);
+        if (paidErr) {
+          console.error('Error inserting into paid_bookings:', paidErr);
+        } else {
+          console.log('Successfully inserted into paid_bookings table directly');
+        }
       }
     } catch (err) {
       console.error('Failed to save booking to Supabase directly:', err);
@@ -503,51 +525,35 @@ function BookingsPage() {
                       </div>
 
                       {/* Payment Options Grid */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
-                        {/* Option 1: Appointment booking */}
+                      <div className="grid grid-cols-1 gap-6 pt-2">
+                        {/* Option: Razorpay.me */}
                         <div className="bg-muted/40 p-5 rounded-2xl border border-border/60 hover:border-accent/40 transition-all duration-300 flex flex-col justify-between space-y-4">
-                          <div className="space-y-2">
-                            <h4 className="font-extrabold text-base text-foreground flex items-center gap-2">
-                              <span>📅</span> Appointment Booking
-                            </h4>
-                            <p className="text-xs text-muted-foreground leading-relaxed">
-                              Schedule your custom date & time slot and pay the ₹250.00 consulting deposit fee.
-                            </p>
-                          </div>
-                          <Button
-                            onClick={() => setShowModal(true)}
-                            className="bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-bold w-full text-xs py-5 rounded-xl transition-all duration-200 active:scale-98 shadow-sm"
-                          >
-                            Book & Pay (₹250)
-                          </Button>
-                        </div>
-
-                        {/* Option 2: Razorpay.me */}
-                        <div className="bg-muted/40 p-5 rounded-2xl border border-border/60 hover:border-accent/40 transition-all duration-300 flex flex-col justify-between space-y-4">
-                          <div className="space-y-2">
-                            <h4 className="font-extrabold text-base text-foreground flex items-center gap-2">
-                              <span>💳</span> Pay Custom Amount
-                            </h4>
-                            <p className="text-xs text-muted-foreground leading-relaxed">
-                              Pay custom treatment amounts, consulting fees, or bills as advised by our dental clinic doctor.
-                            </p>
-                          </div>
-                          <a
-                            href="https://razorpay.me/@ssdentalcare"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="w-full block"
-                          >
-                            <Button
-                              className="bg-accent hover:bg-accent/90 text-white font-bold w-full text-xs py-5 rounded-xl transition-all duration-200 active:scale-98 shadow-sm"
+                          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                            <div className="space-y-1.5 max-w-md">
+                              <h4 className="font-extrabold text-base text-foreground flex items-center gap-2">
+                                <span>💳</span> Pay Custom Amount
+                              </h4>
+                              <p className="text-xs text-muted-foreground leading-relaxed">
+                                Pay custom treatment amounts, consulting fees, or bills as advised by our dental clinic doctor.
+                              </p>
+                            </div>
+                            <a
+                              href="https://razorpay.me/@ssdentalcare"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="w-full sm:w-auto flex-shrink-0"
                             >
-                              Open Razorpay.me Link
-                            </Button>
-                          </a>
+                              <Button
+                                className="bg-accent hover:bg-accent/90 text-white font-bold w-full sm:w-auto text-xs py-5 px-6 rounded-xl transition-all duration-200 active:scale-98 shadow-sm"
+                              >
+                                Open Razorpay.me Link
+                              </Button>
+                            </a>
+                          </div>
                         </div>
 
                         {/* Option 3: Services Pages */}
-                        <div className="bg-muted/40 p-5 rounded-2xl border border-border/60 hover:border-accent/40 transition-all duration-300 flex flex-col justify-between space-y-4 md:col-span-2">
+                        <div className="bg-muted/40 p-5 rounded-2xl border border-border/60 hover:border-accent/40 transition-all duration-300 flex flex-col justify-between space-y-4">
                           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                             <div className="space-y-1.5 max-w-md">
                               <h4 className="font-extrabold text-base text-foreground flex items-center gap-2">
@@ -628,9 +634,9 @@ function BookingsPage() {
 
                     <form onSubmit={handleCheckoutSubmit} className="space-y-8 bg-card p-6 md:p-8 rounded-2xl border border-border/50 shadow-md">
                       
-                      {/* Contact & Billing Section */}
+                      {/* Billing Section */}
                       <div className="space-y-6">
-                        <h3 className="text-xl font-bold border-b border-border pb-2 text-foreground">Contact & Billing</h3>
+                        <h3 className="text-xl font-bold border-b border-border pb-2 text-foreground">Billing</h3>
                         
                         <div className="space-y-4">
                           {/* 1. Full Name */}
@@ -647,40 +653,8 @@ function BookingsPage() {
                             />
                           </div>
 
-                          {/* 2. Phone Number */}
-                          <div className="space-y-2">
-                            <Label htmlFor="checkout-phone">Phone number *</Label>
-                            <div className="flex gap-2">
-                              <div className="flex items-center gap-1 bg-muted px-3 border rounded-md text-xs text-muted-foreground font-medium flex-shrink-0">
-                                🇮🇳 +91
-                              </div>
-                              <Input
-                                id="checkout-phone"
-                                type="tel"
-                                placeholder="Enter 10-digit number"
-                                value={phone}
-                                onChange={(e) => setPhone(e.target.value)}
-                                required
-                                className="text-foreground focus-visible:ring-accent"
-                              />
-                            </div>
-                          </div>
-
-                          {/* 3. Email ID */}
-                          <div className="space-y-2">
-                            <Label htmlFor="checkout-email">Email ID (Optional)</Label>
-                            <Input
-                              id="checkout-email"
-                              type="email"
-                              placeholder="Enter your email address"
-                              value={email}
-                              onChange={(e) => setEmail(e.target.value)}
-                              className="text-foreground focus-visible:ring-accent"
-                            />
-                          </div>
-
-                          {/* 4. Country/Region & State */}
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                          {/* 2. Country/Region & State */}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="space-y-2">
                               <Label>Country/Region</Label>
                               <select className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground ring-offset-background focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2">
@@ -704,6 +678,39 @@ function BookingsPage() {
                                 ))}
                               </select>
                             </div>
+                          </div>
+
+                          {/* 3. Phone Number */}
+                          <div className="space-y-2">
+                            <Label htmlFor="checkout-phone">Phone number *</Label>
+                            <div className="flex gap-2">
+                              <div className="flex items-center gap-1 bg-muted px-3 border rounded-md text-xs text-muted-foreground font-medium flex-shrink-0">
+                                🇮🇳 +91
+                              </div>
+                              <Input
+                                id="checkout-phone"
+                                type="tel"
+                                placeholder="Enter 10-digit number"
+                                value={phone}
+                                onChange={(e) => setPhone(e.target.value)}
+                                required
+                                className="text-foreground focus-visible:ring-accent"
+                              />
+                            </div>
+                          </div>
+
+                          {/* 4. Email ID (Below Phone Number) */}
+                          <div className="space-y-2">
+                            <Label htmlFor="checkout-email">Email ID *</Label>
+                            <Input
+                              id="checkout-email"
+                              type="email"
+                              placeholder="Enter your email address"
+                              value={email}
+                              onChange={(e) => setEmail(e.target.value)}
+                              required
+                              className="text-foreground focus-visible:ring-accent"
+                            />
                           </div>
                         </div>
                       </div>

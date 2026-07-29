@@ -58,7 +58,9 @@ app.post('/api/verify-payment', async (req, res) => {
 
     const saveBooking = async () => {
       if (!bookingDetails) return;
-      const { error } = await supabase
+      
+      // Insert into appointments table
+      const { error: apptError } = await supabase
         .from('appointments')
         .insert([
           {
@@ -66,7 +68,7 @@ app.post('/api/verify-payment', async (req, res) => {
             email: bookingDetails.email,
             phone: bookingDetails.phone,
             appointment_date: formatDate(bookingDetails.date),
-            appointment_time: bookingDetails.time,
+            appointment_time: (bookingDetails.time || 'General Consult').slice(0, 20),
             payment_method: 'Razorpay',
             payment_status: 'paid',
             payment_id: razorpay_payment_id,
@@ -74,10 +76,29 @@ app.post('/api/verify-payment', async (req, res) => {
             amount_paid: 250.00
           }
         ]);
-      if (error) {
-        console.error('Error inserting booking into Supabase:', error);
+      if (apptError) console.error('Error inserting into appointments:', apptError);
+
+      // Insert into paid_bookings table
+      const { error: paidError } = await supabase
+        .from('paid_bookings')
+        .insert([
+          {
+            full_name: bookingDetails.name,
+            email: bookingDetails.email,
+            phone: bookingDetails.phone,
+            appointment_date: formatDate(bookingDetails.date),
+            appointment_time: (bookingDetails.time || 'General Consult').slice(0, 20),
+            payment_method: 'Razorpay',
+            payment_status: 'paid',
+            payment_id: razorpay_payment_id,
+            order_id: razorpay_order_id,
+            amount_paid: 250.00
+          }
+        ]);
+      if (paidError) {
+        console.error('Error inserting into paid_bookings:', paidError);
       } else {
-        console.log('Successfully saved booking to Supabase');
+        console.log('Successfully saved paid booking to paid_bookings table in Supabase');
       }
     };
 
@@ -126,7 +147,7 @@ app.post('/api/create-booking', async (req, res) => {
           email: email || '',
           phone: phone,
           appointment_date: formatDate(date),
-          appointment_time: time,
+          appointment_time: (time || 'General Consult').slice(0, 20),
           payment_method: 'Visit to pay',
           payment_status: 'pending',
           amount_paid: 250.00
