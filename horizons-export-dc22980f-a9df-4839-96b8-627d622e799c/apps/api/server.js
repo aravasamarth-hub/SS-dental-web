@@ -198,7 +198,31 @@ app.post('/api/create-booking', async (req, res) => {
   }
 });
 
+// Endpoint 4: Direct Notification Trigger for General Inquiries & Form Submissions
+app.post('/api/notify', async (req, res) => {
+  try {
+    const { name, email, phone, date, time, payment_method, payment_status, amount_paid, created_at, form_type } = req.body;
+
+    await notifyNewBooking({
+      name: name || 'Valued Patient',
+      email: email || '',
+      phone: phone || '',
+      date: date || new Date().toISOString().split('T')[0],
+      time: time || 'General Consult',
+      payment_method: payment_method || form_type || 'General Form Inquiry',
+      payment_status: payment_status || 'pending',
+      amount_paid: amount_paid || 0.00,
+      created_at: created_at || getFormattedTimestamp()
+    });
+
+    res.json({ success: true, message: 'Notification dispatched successfully!' });
+  } catch (error) {
+    console.error('Error dispatching notification:', error);
+    res.status(500).json({ success: false, message: 'Failed to dispatch notification' });
+  }
+});
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`Secure payment backend running on port ${PORT}`);
+  console.log(`Secure payment & notification backend running on port ${PORT}`);
 });

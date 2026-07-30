@@ -141,6 +141,23 @@ function BookingsPage() {
         toast.error(`Database error: ${error.message}`);
       } else {
         console.log('Successfully inserted booking into paid_bookings table directly:', data);
+
+        // Trigger Email, SMS, and WhatsApp Notifications
+        fetch('http://localhost:5000/api/notify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: fullName,
+            email: email,
+            phone: phone,
+            date: dateStr,
+            time: selectedTime || '05:00 PM',
+            payment_method: paymentMethodType || paymentMethod || 'Visit to pay',
+            payment_status: paymentStatus || (paymentMethod === 'Razorpay' ? 'paid' : 'pending'),
+            amount_paid: 250.00,
+            form_type: 'Paid Booking Page'
+          })
+        }).catch(err => console.error('Notification API dispatch error:', err));
       }
     } catch (err) {
       console.error('Failed to save booking to paid_bookings directly:', err);

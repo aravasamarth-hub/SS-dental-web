@@ -225,6 +225,21 @@ function HomePage() {
           toast.error(`Database error: ${error.message}`);
         } else {
           console.log('Successfully inserted inquiry into Supabase');
+          
+          // Trigger Email, SMS, and WhatsApp Notifications
+          fetch('http://localhost:5000/api/notify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              name: formData.name,
+              email: formData.email,
+              phone: formData.phone,
+              date: today,
+              time: appointmentTimeVal,
+              form_type: 'HomePage Appointment Form'
+            })
+          }).catch(err => console.error('Notification API dispatch error:', err));
+
           setIsSubmitted(true);
           toast.success('Your message has been sent successfully! We will contact you shortly.');
           setFormData({ name: '', email: '', phone: '', message: '' });
