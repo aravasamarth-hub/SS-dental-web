@@ -174,11 +174,11 @@ function AboutPage() {
                   viewport={{ once: true }}
                   className="bg-card rounded-2xl overflow-hidden shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 cursor-pointer h-full"
                 >
-                  <div className="h-96 overflow-hidden bg-[#000000] flex items-center justify-center">
+                  <div className="h-[420px] overflow-hidden bg-slate-900/40 flex items-center justify-center">
                     <img
-                      src="https://horizons-cdn.hostinger.com/dc22980f-a9df-4839-96b8-627d622e799c/37a824af35a9003237db66be11bbe263.png"
+                      src="/dr-naveen-shamnur.png"
                       alt="Dr. Naveen Shamnur MDS - Orthodontist and Dentofacial Orthopedics"
-                      className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
+                      className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
                     />
                   </div>
                   <div className="p-6">
@@ -199,11 +199,11 @@ function AboutPage() {
                   transition={{ delay: 0.1 }}
                   className="bg-card rounded-2xl overflow-hidden shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 cursor-pointer h-full"
                 >
-                  <div className="h-96 overflow-hidden bg-[#000000] flex items-center justify-center">
+                  <div className="h-[420px] overflow-hidden bg-slate-900/40 flex items-center justify-center">
                     <img
-                      src="https://horizons-cdn.hostinger.com/dc22980f-a9df-4839-96b8-627d622e799c/478df36d82fc64b544111f8c6fd0f1dc.png"
+                      src="/dr-sunitha-shamnur.png"
                       alt="Dr. Sunitha N Shamnur MDS - Prosthodontist and Implantologist"
-                      className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
+                      className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
                     />
                   </div>
                   <div className="p-6">

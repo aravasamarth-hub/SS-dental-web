@@ -156,14 +156,14 @@ function HomePage() {
       name: 'Dr. Naveen Shamnur',
       qualification: 'MDS - Orthodontist and Dentofacial Orthopedics',
       specialization: 'Braces, Aligners & Orthodontic Surgery',
-      image: 'https://horizons-cdn.hostinger.com/dc22980f-a9df-4839-96b8-627d622e799c/37a824af35a9003237db66be11bbe263.png',
+      image: '/dr-naveen-shamnur.png',
       slug: 'naveen-shamnur'
     },
     {
       name: 'Dr. Sunitha N Shamnur',
       qualification: 'MDS - Prosthodontist',
       specialization: 'Dental Implants, Dentures & Smile Design',
-      image: 'https://horizons-cdn.hostinger.com/dc22980f-a9df-4839-96b8-627d622e799c/478df36d82fc64b544111f8c6fd0f1dc.png',
+      image: '/dr-sunitha-shamnur.png',
       slug: 'sunitha-shamnur'
     }
   ];
@@ -245,8 +245,8 @@ function HomePage() {
         <meta name="description" content="Discover the best dental clinic in Davangere offering top-notch services including dental implants, aligners, and whitening treatments." />
         <meta name="keywords" content="best dental clinic in davangere, dental implants davangere, aligners davangere" />
         <link rel="preload" fetchPriority="high" as="image" href="/hero-bg.jpg" type="image/jpeg" />
-        <link rel="preload" fetchPriority="high" as="image" href="https://horizons-cdn.hostinger.com/dc22980f-a9df-4839-96b8-627d622e799c/37a824af35a9003237db66be11bbe263.png" type="image/png" />
-        <link rel="preload" fetchPriority="high" as="image" href="https://horizons-cdn.hostinger.com/dc22980f-a9df-4839-96b8-627d622e799c/478df36d82fc64b544111f8c6fd0f1dc.png" type="image/png" />
+        <link rel="preload" fetchPriority="high" as="image" href="/dr-naveen-shamnur.png" type="image/png" />
+        <link rel="preload" fetchPriority="high" as="image" href="/dr-sunitha-shamnur.png" type="image/png" />
       </Helmet>
 
       <div className="min-h-screen">
@@ -327,7 +327,7 @@ function HomePage() {
                   <Link to="/doctors/naveen-shamnur" className="flex flex-col items-center text-center group cursor-pointer">
                     <div className="relative overflow-hidden p-2">
                       <img
-                        src="https://horizons-cdn.hostinger.com/dc22980f-a9df-4839-96b8-627d622e799c/37a824af35a9003237db66be11bbe263.png"
+                        src="/dr-naveen-shamnur.png"
                         alt="Dr. Naveen Shamnur"
                         fetchPriority="high"
                         width={176}
@@ -347,7 +347,7 @@ function HomePage() {
                   <Link to="/doctors/sunitha-shamnur" className="flex flex-col items-center text-center group cursor-pointer">
                     <div className="relative overflow-hidden p-2">
                       <img
-                        src="https://horizons-cdn.hostinger.com/dc22980f-a9df-4839-96b8-627d622e799c/478df36d82fc64b544111f8c6fd0f1dc.png"
+                        src="/dr-sunitha-shamnur.png"
                         alt="Dr. Sunitha N Shamnur"
                         fetchPriority="high"
                         width={176}
