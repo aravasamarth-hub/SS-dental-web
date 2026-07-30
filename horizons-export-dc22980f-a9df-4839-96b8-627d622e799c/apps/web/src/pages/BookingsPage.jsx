@@ -114,7 +114,7 @@ function BookingsPage() {
         const ampm = hours >= 12 ? 'PM' : 'AM';
         hours = hours % 12 || 12;
         const strHours = String(hours).padStart(2, '0');
-        return `${day}/${month}/${year} ${strHours}:${minutes}:${seconds} ${ampm}`;
+        return `${day}/${month}/${year}, ${strHours}:${minutes}:${seconds} ${ampm}`;
       };
 
       const dateStr = typeof selectedDay === 'string' && selectedDay.includes('-')

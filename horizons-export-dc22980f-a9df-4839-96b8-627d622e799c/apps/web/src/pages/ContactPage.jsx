@@ -61,7 +61,7 @@ function ContactPage() {
           const ampm = hours >= 12 ? 'PM' : 'AM';
           hours = hours % 12 || 12;
           const strHours = String(hours).padStart(2, '0');
-          return `${day}/${month}/${year} ${strHours}:${minutes}:${seconds} ${ampm}`;
+          return `${day}/${month}/${year}, ${strHours}:${minutes}:${seconds} ${ampm}`;
         };
 
         const today = new Date().toISOString().split('T')[0];
