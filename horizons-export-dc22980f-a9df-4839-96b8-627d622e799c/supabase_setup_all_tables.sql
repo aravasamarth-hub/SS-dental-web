@@ -4,12 +4,20 @@
 -- =========================================================================
 
 -- -------------------------------------------------------------------------
--- PART 1: `public.appointments` TABLE & PERMISSIONS
+-- PART 1: `public.appointments` TABLE & CLEANUP (REMOVE PAYMENT COLUMNS)
 -- -------------------------------------------------------------------------
 -- Change created_at to VARCHAR(100) for formatted timestamp string (DD/MM/YYYY hh:mm:ss AM/PM)
 ALTER TABLE public.appointments ALTER COLUMN created_at TYPE VARCHAR(100) USING created_at::text;
 ALTER TABLE public.appointments ALTER COLUMN created_at SET DEFAULT NULL;
 
+-- Remove unused payment columns from appointments table
+ALTER TABLE public.appointments DROP COLUMN IF EXISTS payment_method;
+ALTER TABLE public.appointments DROP COLUMN IF EXISTS payment_status;
+ALTER TABLE public.appointments DROP COLUMN IF EXISTS payment_id;
+ALTER TABLE public.appointments DROP COLUMN IF EXISTS order_id;
+ALTER TABLE public.appointments DROP COLUMN IF EXISTS amount_paid;
+
+-- Enable Row Level Security (RLS) & Policies
 ALTER TABLE public.appointments ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "Allow authenticated users to modify appointments" ON public.appointments;

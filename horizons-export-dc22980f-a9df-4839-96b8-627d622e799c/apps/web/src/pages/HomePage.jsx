@@ -217,10 +217,7 @@ function HomePage() {
             email: formData.email || '',
             phone: formData.phone,
             appointment_date: today,
-            appointment_time: appointmentTimeVal,
-            payment_method: 'Message / Form',
-            payment_status: 'pending',
-            amount_paid: 0.00
+            appointment_time: appointmentTimeVal
           }
         ]);
         if (error) {
