@@ -174,11 +174,11 @@ function AboutPage() {
                   viewport={{ once: true }}
                   className="bg-card rounded-2xl overflow-hidden shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 cursor-pointer h-full"
                 >
-                  <div className="h-[420px] overflow-hidden bg-card flex items-center justify-center">
+                  <div className="h-[420px] overflow-hidden bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 flex items-end justify-center pt-4">
                     <img
-                      src="/dr-naveen-shamnur.jpg"
+                      src="/dr-naveen-shamnur.png"
                       alt="Dr. Naveen Shamnur MDS - Orthodontist and Dentofacial Orthopedics"
-                      className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
+                      className="h-full object-contain group-hover:scale-105 transition-transform duration-500"
                     />
                   </div>
                   <div className="p-6">
@@ -199,11 +199,11 @@ function AboutPage() {
                   transition={{ delay: 0.1 }}
                   className="bg-card rounded-2xl overflow-hidden shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 cursor-pointer h-full"
                 >
-                  <div className="h-[420px] overflow-hidden bg-card flex items-center justify-center">
+                  <div className="h-[420px] overflow-hidden bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 flex items-end justify-center pt-4">
                     <img
-                      src="/dr-sunitha-shamnur.jpg"
+                      src="/dr-sunitha-shamnur.png"
                       alt="Dr. Sunitha N Shamnur MDS - Prosthodontist and Implantologist"
-                      className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500"
+                      className="h-full object-contain group-hover:scale-105 transition-transform duration-500"
                     />
                   </div>
                   <div className="p-6">

@@ -102,11 +102,11 @@ function DoctorNaveen() {
                 animate={{ opacity: 1, x: 0 }}
                 className="order-1 lg:order-2 lg:col-span-5 flex justify-center lg:justify-start"
               >
-                <div className="rounded-2xl overflow-hidden shadow-xl max-w-sm md:max-w-md lg:max-w-[380px] w-full">
+                <div className="rounded-2xl overflow-hidden shadow-xl max-w-sm md:max-w-md lg:max-w-[380px] w-full bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 p-4 flex justify-center">
                   <img
-                    src="/dr-naveen-shamnur.jpg"
+                    src="/dr-naveen-shamnur.png"
                     alt="Dr. Naveen Shamnur MDS - Orthodontist and Dentofacial Orthopedics"
-                    className="w-full h-auto object-cover object-top"
+                    className="w-full h-auto object-contain"
                   />
                 </div>
               </motion.div>
