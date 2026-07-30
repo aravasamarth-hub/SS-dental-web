@@ -156,14 +156,14 @@ function HomePage() {
       name: 'Dr. Naveen Shamnur',
       qualification: 'MDS - Orthodontist and Dentofacial Orthopedics',
       specialization: 'Braces, Aligners & Orthodontic Surgery',
-      image: '/dr-naveen-shamnur.png',
+      image: '/dr-naveen-shamnur.jpg',
       slug: 'naveen-shamnur'
     },
     {
       name: 'Dr. Sunitha N Shamnur',
       qualification: 'MDS - Prosthodontist',
       specialization: 'Dental Implants, Dentures & Smile Design',
-      image: '/dr-sunitha-shamnur.png',
+      image: '/dr-sunitha-shamnur.jpg',
       slug: 'sunitha-shamnur'
     }
   ];
@@ -245,8 +245,8 @@ function HomePage() {
         <meta name="description" content="Discover the best dental clinic in Davangere offering top-notch services including dental implants, aligners, and whitening treatments." />
         <meta name="keywords" content="best dental clinic in davangere, dental implants davangere, aligners davangere" />
         <link rel="preload" fetchPriority="high" as="image" href="/hero-bg.jpg" type="image/jpeg" />
-        <link rel="preload" fetchPriority="high" as="image" href="/dr-naveen-shamnur.png" type="image/png" />
-        <link rel="preload" fetchPriority="high" as="image" href="/dr-sunitha-shamnur.png" type="image/png" />
+        <link rel="preload" fetchPriority="high" as="image" href="/dr-naveen-shamnur.jpg" type="image/png" />
+        <link rel="preload" fetchPriority="high" as="image" href="/dr-sunitha-shamnur.jpg" type="image/png" />
       </Helmet>
 
       <div className="min-h-screen">
@@ -327,7 +327,7 @@ function HomePage() {
                   <Link to="/doctors/naveen-shamnur" className="flex flex-col items-center text-center group cursor-pointer">
                     <div className="relative overflow-hidden p-2">
                       <img
-                        src="/dr-naveen-shamnur.png"
+                        src="/dr-naveen-shamnur.jpg"
                         alt="Dr. Naveen Shamnur"
                         fetchPriority="high"
                         width={176}
@@ -347,7 +347,7 @@ function HomePage() {
                   <Link to="/doctors/sunitha-shamnur" className="flex flex-col items-center text-center group cursor-pointer">
                     <div className="relative overflow-hidden p-2">
                       <img
-                        src="/dr-sunitha-shamnur.png"
+                        src="/dr-sunitha-shamnur.jpg"
                         alt="Dr. Sunitha N Shamnur"
                         fetchPriority="high"
                         width={176}

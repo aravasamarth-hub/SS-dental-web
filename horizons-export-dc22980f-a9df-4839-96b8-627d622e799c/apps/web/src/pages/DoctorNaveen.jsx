@@ -104,7 +104,7 @@ function DoctorNaveen() {
               >
                 <div className="rounded-2xl overflow-hidden shadow-xl max-w-sm md:max-w-md lg:max-w-[380px] w-full">
                   <img
-                    src="/dr-naveen-shamnur.png"
+                    src="/dr-naveen-shamnur.jpg"
                     alt="Dr. Naveen Shamnur MDS - Orthodontist and Dentofacial Orthopedics"
                     className="w-full h-auto object-cover object-top"
                   />

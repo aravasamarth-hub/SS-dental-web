@@ -107,7 +107,7 @@ function DoctorSunitha() {
               >
                 <div className="rounded-2xl overflow-hidden shadow-xl max-w-sm md:max-w-md lg:max-w-[380px] w-full">
                   <img
-                    src="/dr-sunitha-shamnur.png"
+                    src="/dr-sunitha-shamnur.jpg"
                     alt="Dr. Sunitha N Shamnur MDS - Prosthodontist and Implantologist"
                     className="w-full h-auto object-cover object-top"
                   />
