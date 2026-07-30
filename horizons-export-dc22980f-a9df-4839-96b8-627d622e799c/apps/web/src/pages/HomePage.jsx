@@ -240,8 +240,13 @@ function HomePage() {
             })
           }).catch(err => console.error('Notification API dispatch error:', err));
 
+          // Open WhatsApp directly with pre-filled appointment confirmation details!
+          const waMessage = `Hello SS Dental Care! 🦷\n\nI have submitted an appointment request on your website:\n• Name: ${formData.name}\n• Phone: ${formData.phone}\n• Consult/Message: ${formData.message || 'General Consult'}\n• Submitted Date: ${today}\n\nPlease confirm my appointment. Thank you!`;
+          const whatsappUrl = `https://wa.me/917619267764?text=${encodeURIComponent(waMessage)}`;
+          window.open(whatsappUrl, '_blank');
+
           setIsSubmitted(true);
-          toast.success('Your message has been sent successfully! We will contact you shortly.');
+          toast.success('Appointment sent! Opening WhatsApp confirmation...');
           setFormData({ name: '', email: '', phone: '', message: '' });
         }
       }

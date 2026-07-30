@@ -96,8 +96,13 @@ function ContactPage() {
             })
           }).catch(err => console.error('Notification API dispatch error:', err));
 
+          // Open WhatsApp directly with pre-filled message!
+          const waMessage = `Hello SS Dental Care! 🦷\n\nI have sent a message via your Contact page:\n• Name: ${formData.name}\n• Phone: ${formData.phone}\n• Message: ${formData.message || 'General Inquiry'}\n\nPlease get in touch with me. Thank you!`;
+          const whatsappUrl = `https://wa.me/917619267764?text=${encodeURIComponent(waMessage)}`;
+          window.open(whatsappUrl, '_blank');
+
           setIsSubmitted(true);
-          toast.success('Your message has been sent successfully. We will contact you soon.');
+          toast.success('Message sent! Opening WhatsApp confirmation...');
           setFormData({ name: '', email: '', phone: '', message: '' });
         }
       }
