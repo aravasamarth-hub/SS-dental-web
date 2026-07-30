@@ -110,7 +110,8 @@ async function sendWhatsAppNotification({ phone, message }) {
 // 5. Unified Dispatcher for Appointments & Paid Bookings
 async function notifyNewBooking(bookingDetails) {
   const { name, email, phone, date, time, payment_method, payment_status, amount_paid, created_at } = bookingDetails;
-  const clinicEmail = process.env.NOTIFICATION_EMAIL || 'ssdentalcare.in@gmail.com';
+  const clinicEmail = process.env.NOTIFICATION_EMAIL || 'aravasamarth@gmail.com';
+  const targetPhone = phone || process.env.DEMO_TEST_PHONE || '7619267764';
 
   const title = payment_status === 'paid' ? '💳 New Paid Booking Received!' : '📅 New Appointment Request Received!';
   
@@ -139,9 +140,9 @@ async function notifyNewBooking(bookingDetails) {
     </div>
   `;
 
-  const summaryText = `New Booking from ${name}: Phone: ${phone}, Date: ${date}, Time: ${time}, Payment: ${payment_status || 'pending'}`;
+  const summaryText = `New Booking from ${name}: Phone: ${targetPhone}, Date: ${date}, Time: ${time}, Payment: ${payment_status || 'pending'}`;
 
-  // 1. Send Email to Clinic
+  // 1. Send Email to Clinic / Demo Recipient
   await sendEmailNotification({
     to: clinicEmail,
     subject: `[SS Dental Care] ${title} - ${name}`,
@@ -150,7 +151,7 @@ async function notifyNewBooking(bookingDetails) {
   });
 
   // 2. Send Email to Patient if email provided
-  if (email && email.includes('@')) {
+  if (email && email.includes('@') && email !== clinicEmail) {
     await sendEmailNotification({
       to: email,
       subject: `Appointment Confirmation - SS Dental Care Davangere`,
@@ -160,15 +161,15 @@ async function notifyNewBooking(bookingDetails) {
   }
 
   // 3. Send SMS Alert
-  if (phone) {
-    const smsText = `SS Dental Care: Hello ${name}, your booking request for ${date} at ${time} is received. We will call you shortly. Clinic Ph: +919448455699`;
-    await sendSMSNotification({ phone, message: smsText });
+  if (targetPhone) {
+    const smsText = `SS Dental Care: Hello ${name}, your booking request for ${date} at ${time} is received. Clinic Ph: +919448455699`;
+    await sendSMSNotification({ phone: targetPhone, message: smsText });
   }
 
   // 4. Send WhatsApp Alert
-  if (phone) {
+  if (targetPhone) {
     const waText = `Hello ${name}, thank you for choosing SS Dental Care! Your appointment booking details: Date: ${date}, Time: ${time}. Clinic Address: MCC B Block Davanagere.`;
-    await sendWhatsAppNotification({ phone, message: waText });
+    await sendWhatsAppNotification({ phone: targetPhone, message: waText });
   }
 }
 
