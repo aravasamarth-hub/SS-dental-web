@@ -65,6 +65,8 @@ const getFormattedTimestamp = () => {
   return `${day}/${month}/${year}, ${strHours}:${minutes}:${seconds} ${ampm}`;
 };
 
+const { notifyNewBooking } = require('./notifications');
+
 // Endpoint 2: Verify Payment & Confirm Booking
 app.post('/api/verify-payment', async (req, res) => {
   try {
@@ -72,18 +74,21 @@ app.post('/api/verify-payment', async (req, res) => {
 
     const saveBooking = async () => {
       if (!bookingDetails) return;
-      
+      const formattedTs = getFormattedTimestamp();
+      const apptDate = formatDate(bookingDetails.date);
+      const apptTime = (bookingDetails.time || 'General Consult').slice(0, 20);
+
       // Insert into paid_bookings table exclusively
       const { error: paidError } = await supabase
         .from('paid_bookings')
         .insert([
           {
-            created_at: getFormattedTimestamp(),
+            created_at: formattedTs,
             full_name: bookingDetails.name,
             email: bookingDetails.email,
             phone: bookingDetails.phone,
-            appointment_date: formatDate(bookingDetails.date),
-            appointment_time: (bookingDetails.time || 'General Consult').slice(0, 20),
+            appointment_date: apptDate,
+            appointment_time: apptTime,
             payment_method: 'Razorpay',
             payment_status: 'paid',
             payment_id: razorpay_payment_id,
@@ -96,6 +101,19 @@ app.post('/api/verify-payment', async (req, res) => {
       } else {
         console.log('Successfully saved paid booking to paid_bookings table in Supabase');
       }
+
+      // Trigger Email, SMS, & WhatsApp Notifications
+      notifyNewBooking({
+        name: bookingDetails.name,
+        email: bookingDetails.email,
+        phone: bookingDetails.phone,
+        date: apptDate,
+        time: apptTime,
+        payment_method: 'Razorpay',
+        payment_status: 'paid',
+        amount_paid: 250.00,
+        created_at: formattedTs
+      }).catch(err => console.error('Notification dispatch error:', err));
     };
 
     if (!process.env.RAZORPAY_KEY_SECRET) {
@@ -135,16 +153,20 @@ app.post('/api/create-booking', async (req, res) => {
       return res.status(400).json({ success: false, message: 'Missing required booking details' });
     }
 
+    const formattedTs = getFormattedTimestamp();
+    const apptDate = formatDate(date);
+    const apptTime = (time || 'General Consult').slice(0, 20);
+
     const { error } = await supabase
       .from('paid_bookings')
       .insert([
         {
-          created_at: getFormattedTimestamp(),
+          created_at: formattedTs,
           full_name: name,
           email: email || '',
           phone: phone,
-          appointment_date: formatDate(date),
-          appointment_time: (time || 'General Consult').slice(0, 20),
+          appointment_date: apptDate,
+          appointment_time: apptTime,
           payment_method: 'Visit to pay',
           payment_status: 'pending',
           amount_paid: 250.00
@@ -155,6 +177,19 @@ app.post('/api/create-booking', async (req, res) => {
       console.error('Error inserting booking into paid_bookings table:', error);
       return res.status(500).json({ success: false, message: 'Failed to create booking in database' });
     }
+
+    // Trigger Email, SMS, & WhatsApp Notifications
+    notifyNewBooking({
+      name,
+      email,
+      phone,
+      date: apptDate,
+      time: apptTime,
+      payment_method: 'Visit to pay',
+      payment_status: 'pending',
+      amount_paid: 250.00,
+      created_at: formattedTs
+    }).catch(err => console.error('Notification dispatch error:', err));
 
     res.json({ success: true, message: 'Appointment booked successfully!' });
   } catch (error) {
