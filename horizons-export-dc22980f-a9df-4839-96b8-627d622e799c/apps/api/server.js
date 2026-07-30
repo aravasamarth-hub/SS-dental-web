@@ -51,6 +51,20 @@ const formatDate = (dateVal) => {
   return `2026-07-${dateVal.toString().padStart(2, '0')}`;
 };
 
+const getFormattedTimestamp = () => {
+  const now = new Date();
+  const day = String(now.getDate()).padStart(2, '0');
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const year = now.getFullYear();
+  let hours = now.getHours();
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const seconds = String(now.getSeconds()).padStart(2, '0');
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  hours = hours % 12 || 12;
+  const strHours = String(hours).padStart(2, '0');
+  return `${day}/${month}/${year} ${strHours}:${minutes}:${seconds} ${ampm}`;
+};
+
 // Endpoint 2: Verify Payment & Confirm Booking
 app.post('/api/verify-payment', async (req, res) => {
   try {
@@ -64,6 +78,7 @@ app.post('/api/verify-payment', async (req, res) => {
         .from('paid_bookings')
         .insert([
           {
+            created_at: getFormattedTimestamp(),
             full_name: bookingDetails.name,
             email: bookingDetails.email,
             phone: bookingDetails.phone,
@@ -124,6 +139,7 @@ app.post('/api/create-booking', async (req, res) => {
       .from('paid_bookings')
       .insert([
         {
+          created_at: getFormattedTimestamp(),
           full_name: name,
           email: email || '',
           phone: phone,

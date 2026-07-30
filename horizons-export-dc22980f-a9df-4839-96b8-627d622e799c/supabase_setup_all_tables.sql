@@ -4,8 +4,12 @@
 -- =========================================================================
 
 -- -------------------------------------------------------------------------
--- PART 1: `public.appointments` TABLE PERMISSIONS
+-- PART 1: `public.appointments` TABLE & PERMISSIONS
 -- -------------------------------------------------------------------------
+-- Change created_at to VARCHAR(100) for formatted timestamp string (DD/MM/YYYY hh:mm:ss AM/PM)
+ALTER TABLE public.appointments ALTER COLUMN created_at TYPE VARCHAR(100) USING created_at::text;
+ALTER TABLE public.appointments ALTER COLUMN created_at SET DEFAULT NULL;
+
 ALTER TABLE public.appointments ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "Allow authenticated users to modify appointments" ON public.appointments;
@@ -33,7 +37,7 @@ GRANT ALL ON TABLE public.appointments TO anon, authenticated, service_role;
 -- -------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS public.paid_bookings (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
+    created_at VARCHAR(100),
     full_name VARCHAR(255) NOT NULL,
     email VARCHAR(255),
     phone VARCHAR(50) NOT NULL,
@@ -46,6 +50,9 @@ CREATE TABLE IF NOT EXISTS public.paid_bookings (
     order_id VARCHAR(255),
     amount_paid NUMERIC(10, 2) DEFAULT 250.00
 );
+
+ALTER TABLE public.paid_bookings ALTER COLUMN created_at TYPE VARCHAR(100) USING created_at::text;
+ALTER TABLE public.paid_bookings ALTER COLUMN created_at SET DEFAULT NULL;
 
 ALTER TABLE public.paid_bookings ENABLE ROW LEVEL SECURITY;
 

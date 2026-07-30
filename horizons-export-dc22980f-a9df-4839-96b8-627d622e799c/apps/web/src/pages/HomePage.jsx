@@ -194,10 +194,25 @@ function HomePage() {
         console.error('Supabase client is null because VITE_SUPABASE_ANON_KEY is missing!');
         toast.error('Database connection key is missing in website settings.');
       } else {
+        const getFormattedTimestamp = () => {
+          const now = new Date();
+          const day = String(now.getDate()).padStart(2, '0');
+          const month = String(now.getMonth() + 1).padStart(2, '0');
+          const year = now.getFullYear();
+          let hours = now.getHours();
+          const minutes = String(now.getMinutes()).padStart(2, '0');
+          const seconds = String(now.getSeconds()).padStart(2, '0');
+          const ampm = hours >= 12 ? 'PM' : 'AM';
+          hours = hours % 12 || 12;
+          const strHours = String(hours).padStart(2, '0');
+          return `${day}/${month}/${year} ${strHours}:${minutes}:${seconds} ${ampm}`;
+        };
+
         const today = new Date().toISOString().split('T')[0];
         const appointmentTimeVal = (formData.message ? `Msg: ${formData.message}` : 'General Consult').slice(0, 20);
         const { error } = await supabase.from('appointments').insert([
           {
+            created_at: getFormattedTimestamp(),
             full_name: formData.name,
             email: formData.email || '',
             phone: formData.phone,
