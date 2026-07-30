@@ -59,26 +59,7 @@ app.post('/api/verify-payment', async (req, res) => {
     const saveBooking = async () => {
       if (!bookingDetails) return;
       
-      // Insert into appointments table
-      const { error: apptError } = await supabase
-        .from('appointments')
-        .insert([
-          {
-            full_name: bookingDetails.name,
-            email: bookingDetails.email,
-            phone: bookingDetails.phone,
-            appointment_date: formatDate(bookingDetails.date),
-            appointment_time: (bookingDetails.time || 'General Consult').slice(0, 20),
-            payment_method: 'Razorpay',
-            payment_status: 'paid',
-            payment_id: razorpay_payment_id,
-            order_id: razorpay_order_id,
-            amount_paid: 250.00
-          }
-        ]);
-      if (apptError) console.error('Error inserting into appointments:', apptError);
-
-      // Insert into paid_bookings table
+      // Insert into paid_bookings table exclusively
       const { error: paidError } = await supabase
         .from('paid_bookings')
         .insert([
@@ -140,7 +121,7 @@ app.post('/api/create-booking', async (req, res) => {
     }
 
     const { error } = await supabase
-      .from('appointments')
+      .from('paid_bookings')
       .insert([
         {
           full_name: name,
@@ -155,7 +136,7 @@ app.post('/api/create-booking', async (req, res) => {
       ]);
 
     if (error) {
-      console.error('Error inserting booking into Supabase:', error);
+      console.error('Error inserting booking into paid_bookings table:', error);
       return res.status(500).json({ success: false, message: 'Failed to create booking in database' });
     }
 

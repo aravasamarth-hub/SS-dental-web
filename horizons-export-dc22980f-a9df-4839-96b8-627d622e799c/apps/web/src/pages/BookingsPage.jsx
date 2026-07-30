@@ -107,15 +107,15 @@ function BookingsPage() {
         ? selectedDay
         : `2026-07-${String(selectedDay).padStart(2, '0')}`;
         
-      const { data, error } = await supabase.from('appointments').insert([
+      const { data, error } = await supabase.from('paid_bookings').insert([
         {
           full_name: fullName,
           email: email || '',
           phone: phone,
           appointment_date: dateStr,
           appointment_time: (selectedTime || '05:00 PM').slice(0, 20),
-          payment_method: (paymentMethodType || 'Visit to pay').slice(0, 20),
-          payment_status: paymentStatus || 'pending',
+          payment_method: (paymentMethodType || paymentMethod || 'Visit to pay').slice(0, 20),
+          payment_status: paymentStatus || (paymentMethod === 'Razorpay' ? 'paid' : 'pending'),
           payment_id: paymentId || null,
           order_id: orderId || null,
           amount_paid: 250.00
@@ -125,32 +125,10 @@ function BookingsPage() {
         console.error('Supabase direct insert error:', error);
         toast.error(`Database error: ${error.message}`);
       } else {
-        console.log('Successfully inserted booking into appointments directly:', data);
-      }
-
-      if (paymentStatus === 'paid') {
-        const { error: paidErr } = await supabase.from('paid_bookings').insert([
-          {
-            full_name: fullName,
-            email: email || '',
-            phone: phone,
-            appointment_date: dateStr,
-            appointment_time: (selectedTime || '05:00 PM').slice(0, 20),
-            payment_method: (paymentMethodType || 'Razorpay').slice(0, 20),
-            payment_status: 'paid',
-            payment_id: paymentId || null,
-            order_id: orderId || null,
-            amount_paid: 250.00
-          }
-        ]);
-        if (paidErr) {
-          console.error('Error inserting into paid_bookings:', paidErr);
-        } else {
-          console.log('Successfully inserted into paid_bookings table directly');
-        }
+        console.log('Successfully inserted booking into paid_bookings table directly:', data);
       }
     } catch (err) {
-      console.error('Failed to save booking to Supabase directly:', err);
+      console.error('Failed to save booking to paid_bookings directly:', err);
     }
   };
 
