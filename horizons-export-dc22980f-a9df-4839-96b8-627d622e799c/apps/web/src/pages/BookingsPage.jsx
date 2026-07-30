@@ -563,34 +563,19 @@ function BookingsPage() {
                                 Complete payments for specific root canals, dental implants, aligners, braces, or checkup packages.
                               </p>
                             </div>
-                            <div className="flex flex-col sm:flex-row gap-3 flex-shrink-0">
-                              <a
-                                href="https://rzp.io/rzp/x1yhTQc"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="w-full sm:w-auto"
+                            <a
+                              href="https://rzp.io/rzp/x1yhTQc"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="w-full sm:w-auto flex-shrink-0"
+                            >
+                              <Button
+                                variant="outline"
+                                className="border-[#2563eb]/40 hover:bg-[#2563eb]/10 hover:border-[#2563eb] text-[#2563eb] dark:text-[#60a5fa] font-bold text-xs py-5 px-6 rounded-xl transition-all w-full sm:w-auto shadow-sm"
                               >
-                                <Button
-                                  variant="outline"
-                                  className="border-[#2563eb]/30 hover:bg-[#2563eb]/10 hover:border-[#2563eb] text-[#2563eb] dark:text-[#60a5fa] font-bold text-xs py-5 px-6 rounded-xl transition-all w-full sm:w-auto"
-                                >
-                                  Services Page Link 1
-                                </Button>
-                              </a>
-                              <a
-                                href="https://rzp.io/rzp/r5Sa6Fr"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="w-full sm:w-auto"
-                              >
-                                <Button
-                                  variant="outline"
-                                  className="border-[#2563eb]/30 hover:bg-[#2563eb]/10 hover:border-[#2563eb] text-[#2563eb] dark:text-[#60a5fa] font-bold text-xs py-5 px-6 rounded-xl transition-all w-full sm:w-auto"
-                                >
-                                  Services Page Link 2
-                                </Button>
-                              </a>
-                            </div>
+                                Services Payment Link
+                              </Button>
+                            </a>
                           </div>
                         </div>
                       </div>
