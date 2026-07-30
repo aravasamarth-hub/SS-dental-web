@@ -384,9 +384,9 @@ function ContactPage() {
                     </p>
                   </div>
                   <div className="bg-card p-6 rounded-xl border border-border/40 shadow-sm hover:shadow-md transition-shadow">
-                    <h3 className="font-bold text-sm mb-1.5 text-foreground">From City Hospital</h3>
+                    <h3 className="font-bold text-sm mb-1.5 text-foreground">From Bapuji Hospital</h3>
                     <p className="text-xs text-muted-foreground leading-relaxed">
-                      Approximately 1.5 km, 6 minutes by two wheeler via AVK College Road.
+                      Approximately 600m, 3 minutes by two wheeler via Church Rd.
                     </p>
                   </div>
                 </div>
