@@ -384,7 +384,7 @@ function HomePage() {
                         fetchPriority="high"
                         width={176}
                         height={176}
-                        className="h-36 md:h-44 object-contain drop-shadow-[0_8px_16px_rgba(0,0,0,0.6)] transform group-hover:scale-105 transition-transform duration-300"
+                        className="h-36 md:h-44 object-contain rounded-2xl shadow-md border border-white/20 transform group-hover:scale-105 transition-transform duration-300"
                       />
                     </div>
                     <div className="mt-2 h-20 md:h-24 flex flex-col justify-start drop-shadow-[0_2px_4px_rgba(0,0,0,0.85)]">
@@ -397,14 +397,14 @@ function HomePage() {
 
                   {/* Dr. Sunitha */}
                   <Link to="/doctors/sunitha-shamnur" className="flex flex-col items-center text-center group cursor-pointer">
-                    <div className="relative overflow-hidden p-2">
+                    <div className="relative overflow-hidden p-1">
                       <img
                         src="/dr-sunitha-shamnur.png"
                         alt="Dr. Sunitha N Shamnur"
                         fetchPriority="high"
                         width={176}
                         height={176}
-                        className="h-36 md:h-44 object-contain drop-shadow-[0_8px_16px_rgba(0,0,0,0.6)] transform group-hover:scale-105 transition-transform duration-300"
+                        className="h-36 md:h-44 object-contain rounded-2xl shadow-md border border-white/20 transform group-hover:scale-105 transition-transform duration-300"
                       />
                     </div>
                     <div className="mt-2 h-20 md:h-24 flex flex-col justify-start drop-shadow-[0_2px_4px_rgba(0,0,0,0.85)]">
