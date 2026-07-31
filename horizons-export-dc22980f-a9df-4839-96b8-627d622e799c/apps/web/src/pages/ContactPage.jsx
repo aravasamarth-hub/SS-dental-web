@@ -28,7 +28,7 @@ function ContactPage() {
 
   const submittingRef = React.useRef(false);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     if (isSubmitting || submittingRef.current) return;
 
@@ -46,68 +46,16 @@ function ContactPage() {
     setIsSubmitting(true);
 
     try {
-      if (!supabase) {
-        console.error('Supabase client is null because VITE_SUPABASE_ANON_KEY is missing!');
-        toast.error('Database connection key is missing in website settings.');
-      } else {
-        const getFormattedTimestamp = () => {
-          const now = new Date();
-          const day = String(now.getDate()).padStart(2, '0');
-          const month = String(now.getMonth() + 1).padStart(2, '0');
-          const year = now.getFullYear();
-          let hours = now.getHours();
-          const minutes = String(now.getMinutes()).padStart(2, '0');
-          const seconds = String(now.getSeconds()).padStart(2, '0');
-          const ampm = hours >= 12 ? 'PM' : 'AM';
-          hours = hours % 12 || 12;
-          const strHours = String(hours).padStart(2, '0');
-          return `${day}/${month}/${year}, ${strHours}:${minutes}:${seconds} ${ampm}`;
-        };
+      // Open WhatsApp directly with pre-filled message
+      const waMessage = `Hello SS Dental Care! 🦷\n\nI have sent a message via your Contact page:\n• Name: ${formData.name}\n• Phone: ${formData.phone}\n• Email: ${formData.email || 'N/A'}\n• Message: ${formData.message || 'General Inquiry'}\n\nPlease get in touch with me. Thank you!`;
+      const whatsappUrl = `https://wa.me/917619267764?text=${encodeURIComponent(waMessage)}`;
+      window.open(whatsappUrl, '_blank');
 
-        const today = new Date().toISOString().split('T')[0];
-        const appointmentTimeVal = (formData.message ? `Msg: ${formData.message}` : 'Contact Inquiry').slice(0, 20);
-        const { error } = await supabase.from('appointments').insert([
-          {
-            created_at: getFormattedTimestamp(),
-            full_name: formData.name,
-            email: formData.email || '',
-            phone: formData.phone,
-            appointment_date: today,
-            appointment_time: appointmentTimeVal
-          }
-        ]);
-        if (error) {
-          console.error('Error inserting into Supabase:', error);
-          toast.error(`Database error: ${error.message}`);
-        } else {
-          console.log('Successfully inserted contact message into Supabase');
-
-          // Trigger Email, SMS, and WhatsApp Notifications
-          fetch('http://localhost:5000/api/notify', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              name: formData.name,
-              email: formData.email,
-              phone: formData.phone,
-              date: today,
-              time: appointmentTimeVal,
-              form_type: 'Contact Us Form Message'
-            })
-          }).catch(err => console.error('Notification API dispatch error:', err));
-
-          // Open WhatsApp directly with pre-filled message!
-          const waMessage = `Hello SS Dental Care! 🦷\n\nI have sent a message via your Contact page:\n• Name: ${formData.name}\n• Phone: ${formData.phone}\n• Message: ${formData.message || 'General Inquiry'}\n\nPlease get in touch with me. Thank you!`;
-          const whatsappUrl = `https://wa.me/917619267764?text=${encodeURIComponent(waMessage)}`;
-          window.open(whatsappUrl, '_blank');
-
-          setIsSubmitted(true);
-          toast.success('Message sent! Opening WhatsApp confirmation...');
-          setFormData({ name: '', email: '', phone: '', message: '' });
-        }
-      }
+      setIsSubmitted(true);
+      toast.success('Redirecting to WhatsApp...');
+      setFormData({ name: '', email: '', phone: '', message: '' });
     } catch (err) {
-      console.error('Supabase submission exception:', err);
+      console.error('Contact form WhatsApp submission exception:', err);
     } finally {
       setIsSubmitting(false);
       submittingRef.current = false;

@@ -226,7 +226,7 @@ function HomePage() {
         } else {
           console.log('Successfully inserted inquiry into Supabase');
           
-          // Trigger Email, SMS, and WhatsApp Notifications
+          // Trigger Email and SMS Notifications via backend API
           fetch('http://localhost:5000/api/notify', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -240,13 +240,8 @@ function HomePage() {
             })
           }).catch(err => console.error('Notification API dispatch error:', err));
 
-          // Open WhatsApp directly with pre-filled appointment confirmation details!
-          const waMessage = `Hello SS Dental Care! 🦷\n\nI have submitted an appointment request on your website:\n• Name: ${formData.name}\n• Phone: ${formData.phone}\n• Consult/Message: ${formData.message || 'General Consult'}\n• Submitted Date: ${today}\n\nPlease confirm my appointment. Thank you!`;
-          const whatsappUrl = `https://wa.me/917619267764?text=${encodeURIComponent(waMessage)}`;
-          window.open(whatsappUrl, '_blank');
-
           setIsSubmitted(true);
-          toast.success('Appointment sent! Opening WhatsApp confirmation...');
+          toast.success('Appointment request submitted successfully! We will contact you shortly.');
           setFormData({ name: '', email: '', phone: '', message: '' });
         }
       }
