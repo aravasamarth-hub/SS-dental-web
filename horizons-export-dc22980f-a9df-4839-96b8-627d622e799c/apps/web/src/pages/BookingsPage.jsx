@@ -219,7 +219,7 @@ function BookingsPage() {
             name: 'SS Dental Care',
             description: 'Dental Consultation Booking Fee',
             order_id: orderData.order_id,
-            image: 'https://horizons-cdn.hostinger.com/dc22980f-a9df-4839-96b8-627d622e799c/38c4b0b05acaa72021a2d891747924f2.jpg',
+            image: 'https://ssdentalcare.in/ss-dental-logo.png',
             handler: async function (response) {
               try {
                 // 3. Verify signature on backend server
@@ -284,7 +284,7 @@ function BookingsPage() {
           currency: 'INR',
           name: 'SS Dental Care',
           description: 'Dental Consultation Booking Fee',
-          image: 'https://horizons-cdn.hostinger.com/dc22980f-a9df-4839-96b8-627d622e799c/38c4b0b05acaa72021a2d891747924f2.jpg',
+          image: 'https://ssdentalcare.in/ss-dental-logo.png',
           handler: async function (response) {
             await saveToDatabaseDirect({
               paymentMethodType: 'Razorpay',

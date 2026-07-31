@@ -38,7 +38,7 @@ function Footer() {
           <div>
             <div className="flex items-center gap-3 mb-4">
               <img
-                src="https://horizons-cdn.hostinger.com/dc22980f-a9df-4839-96b8-627d622e799c/38c4b0b05acaa72021a2d891747924f2.jpg"
+                src="/ss-dental-logo.png"
                 alt="SS Dental Care logo"
                 className="h-12 w-12 rounded-lg object-cover border border-accent/20"
               />
