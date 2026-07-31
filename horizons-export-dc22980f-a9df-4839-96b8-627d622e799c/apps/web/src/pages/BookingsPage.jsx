@@ -159,10 +159,6 @@ function BookingsPage() {
           })
         }).catch(err => console.error('Notification API dispatch error:', err));
 
-        // Open WhatsApp directly with pre-filled booking confirmation details!
-        const waMessage = `Hello SS Dental Care! 🦷\n\nI have confirmed a booking on your website:\n• Name: ${fullName}\n• Phone: ${phone}\n• Date: ${dateStr}\n• Time: ${selectedTime || '05:00 PM'}\n• Payment: ${paymentMethodType || paymentMethod || 'Visit to pay'} (₹250)\n\nPlease verify my appointment!`;
-        const whatsappUrl = `https://wa.me/917619267764?text=${encodeURIComponent(waMessage)}`;
-        window.open(whatsappUrl, '_blank');
       }
     } catch (err) {
       console.error('Failed to save booking to paid_bookings directly:', err);
