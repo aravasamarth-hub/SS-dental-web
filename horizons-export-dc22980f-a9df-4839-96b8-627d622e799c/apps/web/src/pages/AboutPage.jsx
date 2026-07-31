@@ -36,8 +36,10 @@ function AboutPage() {
   return (
     <>
       <Helmet>
-        <title>About Us - SS Dental Care | Expert Dental Team in Davangere</title>
-        <meta name="description" content="Learn about SS Dental Care's mission, values, and expert team. Serving Davangere with quality dental care since 2014." />
+        <title>About SS Dental Care | Best Dental Clinic Specialists in Davangere</title>
+        <meta name="description" content="Learn about SS Dental Care, the best dental clinic in Davangere led by Dr. Naveen Shamnur (Orthodontist) and Dr. Sunitha Shamnur (Prosthodontist & Implantologist)." />
+        <meta name="keywords" content="about ss dental care, best dental clinic in davangere doctors, dr naveen shamnur, dr sunitha shamnur, dental specialists davangere" />
+        <link rel="canonical" href="https://ssdentalcare.in/about" />
       </Helmet>
 
       <div className="min-h-screen">

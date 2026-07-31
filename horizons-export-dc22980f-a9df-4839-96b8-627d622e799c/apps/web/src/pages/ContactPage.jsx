@@ -65,8 +65,14 @@ function ContactPage() {
   return (
     <>
       <Helmet>
-        <title>Contact Us - SS Dental Care | Get in Touch</title>
-        <meta name="description" content="Contact SS Dental Care in Davangere. Call us at +91 9448455699 or email ssdentalcare.in@gmail.com for appointments and inquiries." />
+        <title>Contact Best Dental Clinic in Davangere | SS Dental Care Location & Map</title>
+        <meta name="description" content="Contact SS Dental Care, the best dental clinic in Davangere. Located at MCC B Block, S S Plaza. Call +91 9448455699 or get instant directions." />
+        <meta name="keywords" content="dental clinic davangere contact, best dental clinic in davangere address, dr naveen shamnur phone number, ss dental care location davangere" />
+        <link rel="canonical" href="https://ssdentalcare.in/contact" />
+        <meta name="geo.region" content="IN-KA" />
+        <meta name="geo.placename" content="Davangere" />
+        <meta name="geo.position" content="14.4646;75.9218" />
+        <meta name="ICBM" content="14.4646, 75.9218" />
       </Helmet>
 
       <div className="min-h-screen bg-background">

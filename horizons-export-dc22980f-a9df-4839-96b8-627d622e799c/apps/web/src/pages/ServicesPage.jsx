@@ -128,8 +128,10 @@ function ServicesPage() {
   return (
     <>
       <Helmet>
-        <title>Our Services - SS Dental Care Davangere</title>
-        <meta name="description" content="Discover our wide range of professional dental treatments in Davangere. From teeth whitening and veneers to dental implants, braces, and advanced oral surgery." />
+        <title>Best Dental Services in Davangere | Implants, Aligners, Whitening | SS Dental Care</title>
+        <meta name="description" content="Explore top dental treatments at SS Dental Care Davangere: Dental Implants, Clear Aligners, Teeth Whitening, Digital Dentures, Root Canals & Laser Treatment." />
+        <meta name="keywords" content="best dental services davangere, dental implants davangere, aligners davangere, teeth whitening davangere, root canal treatment davangere" />
+        <link rel="canonical" href="https://ssdentalcare.in/services" />
       </Helmet>
 
       <div className="min-h-screen bg-background text-foreground flex flex-col justify-between">

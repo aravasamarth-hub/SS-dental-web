@@ -46,8 +46,10 @@ function DoctorNaveen() {
   return (
     <>
       <Helmet>
-        <title>Dr. Naveen Shamnur MDS - Orthodontist and Dentofacial Orthopedics | SS Dental Care Davangere</title>
-        <meta name="description" content="Meet Dr. Naveen Shamnur MDS, Senior Orthodontist and Dentofacial Orthopedics at SS Dental Care Davangere. 25+ years of experience in braces, aligners, orthognathic surgery, and dentofacial orthopedics." />
+        <title>Dr. Naveen Shamnur MDS - Best Orthodontist in Davangere | SS Dental Care</title>
+        <meta name="description" content="Consult Dr. Naveen Shamnur MDS, Senior Orthodontist & Dentofacial Orthopedist at SS Dental Care Davangere. Specialist in Braces, Clear Aligners & Jaw Surgery." />
+        <meta name="keywords" content="dr naveen shamnur, orthodontist davangere, best braces doctor davangere, aligners specialist davangere, ss dental care" />
+        <link rel="canonical" href="https://ssdentalcare.in/doctors/naveen-shamnur" />
       </Helmet>
 
       <div className="min-h-screen">

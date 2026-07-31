@@ -366,8 +366,10 @@ function BookingsPage() {
   return (
     <>
       <Helmet>
-        <title>Book Your Visit - SS Dental Care Davangere</title>
-        <meta name="description" content="Schedule your appointment at SS Dental Care in Davangere. Choose a convenient time and let our expert team take care of your smile." />
+        <title>Book Dental Appointment Online | SS Dental Care Davangere</title>
+        <meta name="description" content="Book your dental appointment online at SS Dental Care Davangere. Schedule consultation with Dr. Naveen Shamnur & Dr. Sunitha Shamnur." />
+        <meta name="keywords" content="book dentist appointment davangere, dental consultation davangere, ss dental care booking" />
+        <link rel="canonical" href="https://ssdentalcare.in/bookings" />
       </Helmet>
 
       <div className="min-h-screen bg-background">

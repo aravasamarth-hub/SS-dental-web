@@ -256,12 +256,49 @@ function HomePage() {
   return (
     <>
       <Helmet>
-        <title>Best Dental Clinic in Davangere - Implants & Aligners | SS Dental Care</title>
-        <meta name="description" content="Discover the best dental clinic in Davangere offering top-notch services including dental implants, aligners, and whitening treatments." />
-        <meta name="keywords" content="best dental clinic in davangere, dental implants davangere, aligners davangere" />
+        <title>Best Dental Clinic in Davangere | SS Dental Care | Top Rated Dentists</title>
+        <meta name="description" content="SS Dental Care is the best dental clinic in Davangere. Expert dentists Dr. Naveen Shamnur & Dr. Sunitha Shamnur specialize in Dental Implants, Invisible Aligners, Teeth Whitening, & Digital Dentures. Call +91 9448455699." />
+        <meta name="keywords" content="best dental clinic in davangere, dental clinic davangere, dentist in davangere, dental hospital in davangere, top dentist davangere, dental implants davangere, aligners davangere, teeth whitening davangere, dr naveen shamnur, dr sunitha shamnur" />
+        <link rel="canonical" href="https://ssdentalcare.in/" />
+        <meta name="geo.region" content="IN-KA" />
+        <meta name="geo.placename" content="Davangere" />
+        <meta name="geo.position" content="14.4646;75.9218" />
+        <meta name="ICBM" content="14.4646, 75.9218" />
         <link rel="preload" fetchPriority="high" as="image" href="/hero-bg.jpg" type="image/jpeg" />
         <link rel="preload" fetchPriority="high" as="image" href="/dr-naveen-shamnur.jpg" type="image/png" />
         <link rel="preload" fetchPriority="high" as="image" href="/dr-sunitha-shamnur.jpg" type="image/png" />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "Which is the best dental clinic in Davangere?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "SS Dental Care is recognized as the best dental clinic in Davangere, featuring expert specialists Dr. Naveen Shamnur (Orthodontist) and Dr. Sunitha Shamnur (Prosthodontist & Implantologist) with over 550+ 5-star Google ratings."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "What dental treatments are offered at SS Dental Care Davangere?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "SS Dental Care provides comprehensive dental treatments including Dental Implants, Invisible Aligners, Teeth Whitening, Digital Dentures, Laser Dentistry, Root Canal Treatment, Veneers, and Orthognathic Surgery."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "How to book an appointment at SS Dental Care Davangere?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "You can book an appointment online via our website, call us directly at +91 9448455699, or visit our clinic at 2873, S S Plaza, 1st Floor, MCC B Block, Davangere."
+                }
+              }
+            ]
+          })}
+        </script>
       </Helmet>
 
       <div className="min-h-screen">

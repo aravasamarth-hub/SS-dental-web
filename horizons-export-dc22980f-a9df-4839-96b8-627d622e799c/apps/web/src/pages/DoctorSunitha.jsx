@@ -51,8 +51,10 @@ function DoctorSunitha() {
   return (
     <>
       <Helmet>
-        <title>Dr. Sunitha N Shamnur MDS - Prosthodontist and Implantologist | SS Dental Care Davangere</title>
-        <meta name="description" content="Meet Dr. Sunitha N Shamnur MDS, Senior Prosthodontist and Implantologist at SS Dental Care. Expert in dental implants, dentures, crowns & bridges, and smile design." />
+        <title>Dr. Sunitha Shamnur MDS - Best Dental Implantologist in Davangere | SS Dental Care</title>
+        <meta name="description" content="Consult Dr. Sunitha N Shamnur MDS, Senior Prosthodontist & Implantologist at SS Dental Care Davangere. Specialist in Dental Implants, Digital Dentures & Smile Design." />
+        <meta name="keywords" content="dr sunitha shamnur, prosthodontist davangere, dental implantologist davangere, digital dentures davangere, ss dental care" />
+        <link rel="canonical" href="https://ssdentalcare.in/doctors/sunitha-shamnur" />
       </Helmet>
 
       <div className="min-h-screen">
