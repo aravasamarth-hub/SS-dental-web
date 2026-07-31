@@ -265,8 +265,8 @@ function HomePage() {
         <meta name="geo.position" content="14.4646;75.9218" />
         <meta name="ICBM" content="14.4646, 75.9218" />
         <link rel="preload" fetchPriority="high" as="image" href="/hero-bg.jpg" type="image/jpeg" />
-        <link rel="preload" fetchPriority="high" as="image" href="/dr-naveen-shamnur.jpg" type="image/png" />
-        <link rel="preload" fetchPriority="high" as="image" href="/dr-sunitha-shamnur.jpg" type="image/png" />
+        <link rel="preload" fetchPriority="high" as="image" href="/dr-naveen-shamnur.png" type="image/png" />
+        <link rel="preload" fetchPriority="high" as="image" href="/dr-sunitha-shamnur.png" type="image/png" />
         <script type="application/ld+json">
           {JSON.stringify({
             "@context": "https://schema.org",
@@ -379,7 +379,7 @@ function HomePage() {
                   <Link to="/doctors/naveen-shamnur" className="flex flex-col items-center text-center group cursor-pointer">
                     <div className="relative overflow-hidden p-2">
                       <img
-                        src="/dr-naveen-shamnur.jpg"
+                        src="/dr-naveen-shamnur.png"
                         alt="Dr. Naveen Shamnur"
                         fetchPriority="high"
                         width={176}
@@ -399,7 +399,7 @@ function HomePage() {
                   <Link to="/doctors/sunitha-shamnur" className="flex flex-col items-center text-center group cursor-pointer">
                     <div className="relative overflow-hidden p-2">
                       <img
-                        src="/dr-sunitha-shamnur.jpg"
+                        src="/dr-sunitha-shamnur.png"
                         alt="Dr. Sunitha N Shamnur"
                         fetchPriority="high"
                         width={176}
