@@ -306,7 +306,7 @@ function HomePage() {
         <FloatingWhatsAppButton />
         <BackToTopButton />
 
-        <section className="hero-section relative min-h-[90vh] flex items-center justify-center overflow-hidden" style={{ backgroundImage: `url('/hero-bg.jpg')` }}>
+        <section className="hero-section relative min-h-[90vh] flex items-center justify-center overflow-hidden" style={{ backgroundImage: `url('/hero-bg.jpg')`, backgroundPosition: 'center center', backgroundSize: 'cover' }}>
           {/* Transparent overlay so the background image is fully bright and visible */}
           <div className="absolute inset-0 bg-transparent z-0"></div>
           
