@@ -37,10 +37,26 @@
 		<meta property="twitter:description" content="Top rated dental clinic in Davangere by Dr. Naveen Shamnur & Dr. Sunitha Shamnur." />
 		<meta property="twitter:image" content="https://ssdentalcare.in/clinic-interior.jpg" />
 
-		<!-- Web Fonts Preconnect & Styling -->
+		<!-- Web Fonts Preconnect & Non-Render-Blocking Load -->
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-		<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+		<!-- Load fonts async so they don't block first paint -->
+		<link rel="preload" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+		<noscript><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" /></noscript>
+
+		<!-- DNS prefetch for third-party services -->
+		<link rel="dns-prefetch" href="https://www.youtube-nocookie.com" />
+		<link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+		<link rel="preconnect" href="https://www.youtube-nocookie.com" crossorigin />
+
+		<!-- Preload LCP image (hero background) -->
+		<link rel="preload" as="image" href="/hero-bg.jpg" fetchpriority="high" type="image/jpeg" />
+
+		<!-- System font stack fallback while custom fonts load -->
+		<style>
+			body { font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+			h1,h2,h3,h4,h5,h6 { font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+		</style>
 
 		<!-- Schema.org Structured Data (Dentist / LocalBusiness / MedicalClinic) -->
 		<script type="application/ld+json">

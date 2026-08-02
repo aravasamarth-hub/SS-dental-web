@@ -265,8 +265,6 @@ function HomePage() {
         <meta name="geo.position" content="14.4646;75.9218" />
         <meta name="ICBM" content="14.4646, 75.9218" />
         <link rel="preload" fetchPriority="high" as="image" href="/hero-bg.jpg" type="image/jpeg" />
-        <link rel="preload" fetchPriority="high" as="image" href="/dr-naveen-shamnur.png" type="image/png" />
-        <link rel="preload" fetchPriority="high" as="image" href="/dr-sunitha-shamnur.png" type="image/png" />
         <script type="application/ld+json">
           {JSON.stringify({
             "@context": "https://schema.org",
@@ -379,11 +377,12 @@ function HomePage() {
                   <Link to="/doctors/naveen-shamnur" className="flex flex-col items-center text-center group cursor-pointer">
                     <div className="relative overflow-hidden p-2">
                       <img
-                        src="/dr-naveen-shamnur.png"
-                        alt="Dr. Naveen Shamnur"
+                        src="/dr-naveen-shamnur.jpg"
+                        alt="Dr. Naveen Shamnur - Orthodontist"
                         fetchPriority="high"
+                        decoding="async"
                         width={176}
-                        height={176}
+                        height={264}
                         className="h-36 md:h-44 object-contain rounded-2xl shadow-md border border-white/20 transform group-hover:scale-105 transition-transform duration-300"
                       />
                     </div>
@@ -399,11 +398,12 @@ function HomePage() {
                   <Link to="/doctors/sunitha-shamnur" className="flex flex-col items-center text-center group cursor-pointer">
                     <div className="relative overflow-hidden p-1">
                       <img
-                        src="/dr-sunitha-shamnur.png"
-                        alt="Dr. Sunitha N Shamnur"
+                        src="/dr-sunitha-shamnur.jpg"
+                        alt="Dr. Sunitha N Shamnur - Prosthodontist"
                         fetchPriority="high"
+                        decoding="async"
                         width={176}
-                        height={176}
+                        height={264}
                         className="h-36 md:h-44 object-contain rounded-2xl shadow-md border border-white/20 transform group-hover:scale-105 transition-transform duration-300"
                       />
                     </div>

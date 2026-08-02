@@ -19,6 +19,7 @@ function ServiceCard({ title, description, image, slug, index, imageFit = 'cover
               src={image}
               alt={title}
               loading="lazy"
+              decoding="async"
               width={400}
               height={300}
               className={`w-full h-full transition-transform duration-500 ${imageFit === 'contain' ? 'object-contain group-hover:scale-110' : 'object-cover scale-[1.02] group-hover:scale-110'}`}

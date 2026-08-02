@@ -1,13 +1,58 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+
 import { Check, Calendar } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import FloatingWhatsAppButton from '@/components/FloatingWhatsAppButton';
 import BackToTopButton from '@/components/BackToTopButton';
 import { Button } from '@/components/ui/button';
+
+// Lazy YouTube: loads iframe only on click, saving ~500KB of 3rd-party scripts on initial load
+function LazyYouTube({ videoId, title }) {
+  const [active, setActive] = useState(false);
+  const thumb = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+
+  if (active) {
+    return (
+      <iframe
+        className="absolute inset-0 w-full h-full"
+        src={`https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1`}
+        title={title}
+        frameBorder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowFullScreen
+      />
+    );
+  }
+
+  return (
+    <button
+      onClick={() => setActive(true)}
+      className="absolute inset-0 w-full h-full flex items-center justify-center group focus:outline-none"
+      aria-label={`Play ${title}`}
+      style={{ background: 'transparent', border: 'none', padding: 0, cursor: 'pointer' }}
+    >
+      <img
+        src={thumb}
+        alt={title}
+        loading="lazy"
+        decoding="async"
+        className="absolute inset-0 w-full h-full object-cover"
+        width={480}
+        height={270}
+      />
+      {/* Play button overlay */}
+      <div className="relative z-10 w-16 h-16 bg-red-600 rounded-full flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform duration-200">
+        <svg className="w-7 h-7 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M8 5v14l11-7z" />
+        </svg>
+      </div>
+    </button>
+  );
+}
 
 function ServiceDetailLayout({
   title,
@@ -74,6 +119,10 @@ function ServiceDetailLayout({
                   <img
                     src={imageSrc}
                     alt={title}
+                    loading="lazy"
+                    decoding="async"
+                    width={600}
+                    height={450}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none" />
@@ -169,16 +218,10 @@ function ServiceDetailLayout({
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
                     {/* Video Player */}
                     <div className="lg:col-span-7 bg-card p-3 rounded-2xl border border-border/50 shadow-2xl relative">
-                      <div className="aspect-video rounded-xl overflow-hidden relative">
-                        <iframe
-                          className="absolute inset-0 w-full h-full"
-                          src={`https://www.youtube-nocookie.com/embed/${youtubeVideoId}`}
-                          title={`${title} Video Demonstration`}
-                          frameBorder="0"
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                          allowFullScreen
-                        />
-                      </div>
+                    {/* Lazy YouTube Player */}
+                    <div className="aspect-video rounded-xl overflow-hidden relative bg-black">
+                      <LazyYouTube videoId={youtubeVideoId} title={`${title} Video Demonstration`} />
+                    </div>
                     </div>
 
                     {/* What you observe in the video */}

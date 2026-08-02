@@ -319,6 +319,10 @@ export default defineConfig({
 		},
 	},
 	build: {
+		// Enable CSS code splitting for smaller initial CSS payload
+		cssCodeSplit: true,
+		// Raise chunk size warning threshold (framer-motion is large but worth it)
+		chunkSizeWarningLimit: 600,
 		rollupOptions: {
 			external: [
 				'@babel/parser',
@@ -327,12 +331,34 @@ export default defineConfig({
 				'@babel/types'
 			],
 			output: {
-				manualChunks: {
-					'vendor-react': ['react', 'react-dom', 'react-router-dom'],
-					'vendor-icons': ['lucide-react'],
-					'vendor-animation': ['framer-motion']
+				manualChunks(id) {
+					// Core React - smallest possible critical chunk
+					if (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/') || id.includes('node_modules/scheduler/')) {
+						return 'vendor-react';
+					}
+					// Router - loaded on first navigation
+					if (id.includes('node_modules/react-router') || id.includes('node_modules/@remix-run')) {
+						return 'vendor-router';
+					}
+					// Animation - heavy, load separately
+					if (id.includes('node_modules/framer-motion')) {
+						return 'vendor-animation';
+					}
+					// Icons - large, separate chunk
+					if (id.includes('node_modules/lucide-react')) {
+						return 'vendor-icons';
+					}
+					// Supabase - not needed until form submit
+					if (id.includes('node_modules/@supabase') || id.includes('node_modules/supabase')) {
+						return 'vendor-supabase';
+					}
+					// UI component library
+					if (id.includes('node_modules/@radix-ui')) {
+						return 'vendor-ui';
+					}
 				}
 			}
 		}
 	}
 });
+
