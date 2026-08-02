@@ -138,14 +138,19 @@ function BlogPage() {
                 Follow us on social media for the latest dental health tips, clinic updates, and special offers.
               </p>
               <div className="flex flex-wrap gap-4 justify-center">
-                <a href="https://facebook.com/ssdentalcare" target="_blank" rel="noopener noreferrer">
+                <a href="https://www.facebook.com/share/1YjrBCiKj3/" target="_blank" rel="noopener noreferrer">
                   <Button variant="outline" className="transition-all duration-200 active:scale-98">
                     Follow on Facebook
                   </Button>
                 </a>
-                <a href="https://instagram.com/ssdentalcare" target="_blank" rel="noopener noreferrer">
+                <a href="https://www.instagram.com/ssdentalcare.in?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" target="_blank" rel="noopener noreferrer">
                   <Button variant="outline" className="transition-all duration-200 active:scale-98">
                     Follow on Instagram
+                  </Button>
+                </a>
+                <a href="https://youtube.com/@ss_dental_care?si=14cimh5fr1W33H4E" target="_blank" rel="noopener noreferrer">
+                  <Button variant="outline" className="transition-all duration-200 active:scale-98">
+                    Subscribe on YouTube
                   </Button>
                 </a>
               </div>

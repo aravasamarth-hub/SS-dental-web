@@ -26,9 +26,9 @@ function Footer() {
   const socialLinks = [
     { name: 'Call', icon: Phone, url: 'tel:+919448455699' },
     { name: 'WhatsApp', icon: WhatsAppIcon, url: 'https://wa.me/919448455699' },
-    { name: 'Instagram', icon: Instagram, url: 'https://instagram.com/ssdentalcare' },
-    { name: 'YouTube', icon: Youtube, url: 'https://youtube.com/@ssdentalcare' },
-    { name: 'Facebook', icon: Facebook, url: 'https://facebook.com/ssdentalcare' },
+    { name: 'Instagram', icon: Instagram, url: 'https://www.instagram.com/ssdentalcare.in?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==' },
+    { name: 'YouTube', icon: Youtube, url: 'https://youtube.com/@ss_dental_care?si=14cimh5fr1W33H4E' },
+    { name: 'Facebook', icon: Facebook, url: 'https://www.facebook.com/share/1YjrBCiKj3/' },
   ];
 
   return (

@@ -173,7 +173,7 @@ function Header() {
               <WhatsAppIcon className="h-4 w-4 md:h-6 md:w-6" />
             </a>
             <a
-              href="https://instagram.com/ssdentalcare"
+              href="https://www.instagram.com/ssdentalcare.in?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-[#E1306C] transition-colors duration-300"
@@ -182,7 +182,7 @@ function Header() {
               <Instagram className="h-4 w-4 md:h-6 md:w-6" strokeWidth={2.5} />
             </a>
             <a
-              href="https://youtube.com/@ssdentalcare"
+              href="https://youtube.com/@ss_dental_care?si=14cimh5fr1W33H4E"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-[#FF0000] transition-colors duration-300"
@@ -191,7 +191,7 @@ function Header() {
               <Youtube className="h-4 w-4 md:h-6 md:w-6" strokeWidth={2.5} />
             </a>
             <a
-              href="https://facebook.com/ssdentalcare"
+              href="https://www.facebook.com/share/1YjrBCiKj3/"
               target="_blank"
               rel="noopener noreferrer"
               className="hover:text-[#1877F2] transition-colors duration-300"
@@ -651,7 +651,7 @@ function Header() {
                     <WhatsAppIcon className="h-5 w-5" />
                   </a>
                   <a
-                    href="https://instagram.com/ssdentalcare"
+                    href="https://www.instagram.com/ssdentalcare.in?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-10 h-10 rounded-full border border-muted hover:border-accent hover:text-accent flex items-center justify-center transition-all duration-200 active:scale-95 text-foreground"
@@ -660,7 +660,7 @@ function Header() {
                     <Instagram className="h-5 w-5" strokeWidth={2.5} />
                   </a>
                   <a
-                    href="https://youtube.com/@ssdentalcare"
+                    href="https://youtube.com/@ss_dental_care?si=14cimh5fr1W33H4E"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-10 h-10 rounded-full border border-muted hover:border-accent hover:text-accent flex items-center justify-center transition-all duration-200 active:scale-95 text-foreground"
@@ -669,7 +669,7 @@ function Header() {
                     <Youtube className="h-5 w-5" strokeWidth={2.5} />
                   </a>
                   <a
-                    href="https://facebook.com/ssdentalcare"
+                    href="https://www.facebook.com/share/1YjrBCiKj3/"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-10 h-10 rounded-full border border-muted hover:border-accent hover:text-accent flex items-center justify-center transition-all duration-200 active:scale-95 text-foreground"
