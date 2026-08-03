@@ -264,7 +264,8 @@ function HomePage() {
         <meta name="geo.placename" content="Davangere" />
         <meta name="geo.position" content="14.4646;75.9218" />
         <meta name="ICBM" content="14.4646, 75.9218" />
-        <link rel="preload" fetchPriority="high" as="image" href="/hero-bg.jpg" type="image/jpeg" />
+        <link rel="preload" fetchPriority="high" as="image" href="/hero-bg-mobile.jpg" type="image/jpeg" media="(max-width: 768px)" />
+        <link rel="preload" fetchPriority="high" as="image" href="/hero-bg.jpg" type="image/jpeg" media="(min-width: 769px)" />
         <script type="application/ld+json">
           {JSON.stringify({
             "@context": "https://schema.org",
@@ -304,18 +305,9 @@ function HomePage() {
         <FloatingWhatsAppButton />
         <BackToTopButton />
 
-        <section
-          className="hero-section relative min-h-[90vh] flex items-center justify-center"
-          style={{
-            backgroundImage: "url('/hero-bg.jpg')",
-            backgroundPosition: 'center center',
-            backgroundSize: 'cover',
-            backgroundRepeat: 'no-repeat',
-            backgroundAttachment: 'fixed',
-          }}
-        >
-          {/* Transparent overlay */}
-          <div className="absolute inset-0 bg-transparent z-0" />
+        <section className="hero-section relative min-h-[90vh] flex items-center justify-center">
+          {/* Overlay to improve text legibility on mobile & desktop */}
+          <div className="absolute inset-0 bg-black/35 md:bg-black/10 z-0 pointer-events-none" />
           
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 py-12 md:py-16">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
