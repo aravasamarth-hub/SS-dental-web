@@ -16,4 +16,9 @@
 	<If "%{REQUEST_URI} =~ m#^/assets/.*$#">
 		Header set Cache-Control "public, max-age=604800"
 	</If>
+
+	# Cache static images and fonts for 30 days in browser
+	<FilesMatch "\.(ico|jpg|jpeg|png|gif|webp|svg|woff|woff2)$">
+		Header set Cache-Control "public, max-age=2592000, immutable"
+	</FilesMatch>
 </IfModule>
