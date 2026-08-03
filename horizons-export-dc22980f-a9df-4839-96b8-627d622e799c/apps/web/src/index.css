@@ -141,17 +141,15 @@
   }
 }
 
-/* Hero section responsive background positioning */
+/* Hero section — background-attachment: fixed gives parallax on desktop.
+   iOS Safari ignores fixed, so it gracefully falls back to scroll on mobile. */
 .hero-section {
-  background-position: center center;
-  background-size: cover;
-  background-repeat: no-repeat;
-  background-attachment: scroll;
+  position: relative;
 }
 
 @media (max-width: 768px) {
   .hero-section {
-    background-position: 50% center;
+    background-attachment: scroll !important;
   }
 }
 

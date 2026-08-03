@@ -304,9 +304,18 @@ function HomePage() {
         <FloatingWhatsAppButton />
         <BackToTopButton />
 
-        <section className="hero-section relative min-h-[90vh] flex items-center justify-center overflow-hidden" style={{ backgroundImage: `url('/hero-bg.jpg')`, backgroundPosition: 'center center', backgroundSize: 'cover' }}>
-          {/* Transparent overlay so the background image is fully bright and visible */}
-          <div className="absolute inset-0 bg-transparent z-0"></div>
+        <section
+          className="hero-section relative min-h-[90vh] flex items-center justify-center"
+          style={{
+            backgroundImage: "url('/hero-bg.jpg')",
+            backgroundPosition: 'center center',
+            backgroundSize: 'cover',
+            backgroundRepeat: 'no-repeat',
+            backgroundAttachment: 'fixed',
+          }}
+        >
+          {/* Transparent overlay */}
+          <div className="absolute inset-0 bg-transparent z-0" />
           
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 py-12 md:py-16">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
@@ -386,9 +395,9 @@ function HomePage() {
                         className="h-36 md:h-44 object-contain rounded-2xl shadow-md border border-white/20 transform group-hover:scale-105 transition-transform duration-300"
                       />
                     </div>
-                    <div className="mt-2 h-20 md:h-24 flex flex-col justify-start drop-shadow-[0_2px_4px_rgba(0,0,0,0.85)]">
-                      <h3 className="text-white font-bold text-lg md:text-xl group-hover:text-accent transition-colors duration-200">Dr. Naveen Shamnur</h3>
-                      <p className="text-accent text-xs md:text-sm font-bold mt-0.5 tracking-wide uppercase">
+                    <div className="mt-2 flex flex-col justify-start drop-shadow-[0_2px_4px_rgba(0,0,0,0.85)]">
+                      <h3 className="text-white font-bold text-sm sm:text-base md:text-xl group-hover:text-accent transition-colors duration-200">Dr. Naveen Shamnur</h3>
+                      <p className="text-accent text-[10px] sm:text-xs md:text-sm font-bold mt-0.5 tracking-wide uppercase leading-tight">
                         orthodontist and dentofacial orthopedics
                       </p>
                     </div>
@@ -407,9 +416,9 @@ function HomePage() {
                         className="h-36 md:h-44 object-contain rounded-2xl shadow-md border border-white/20 transform group-hover:scale-105 transition-transform duration-300"
                       />
                     </div>
-                    <div className="mt-2 h-20 md:h-24 flex flex-col justify-start drop-shadow-[0_2px_4px_rgba(0,0,0,0.85)]">
-                      <h3 className="text-white font-bold text-lg md:text-xl group-hover:text-accent transition-colors duration-200">Dr. Sunitha Shamnur</h3>
-                      <p className="text-accent text-xs md:text-sm font-bold mt-0.5 tracking-wide uppercase">
+                    <div className="mt-2 flex flex-col justify-start drop-shadow-[0_2px_4px_rgba(0,0,0,0.85)]">
+                      <h3 className="text-white font-bold text-sm sm:text-base md:text-xl group-hover:text-accent transition-colors duration-200">Dr. Sunitha Shamnur</h3>
+                      <p className="text-accent text-[10px] sm:text-xs md:text-sm font-bold mt-0.5 tracking-wide uppercase leading-tight">
                         Prosthodontist and Implantologist
                       </p>
                     </div>
