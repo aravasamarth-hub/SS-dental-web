@@ -3,10 +3,7 @@
 @tailwind utilities;
 
 /* ========== Performance: Font Display ========== */
-/* Ensures system font is used immediately while Poppins/DM Sans loads */
-@font-face {
-  font-display: swap;
-}
+/* Poppins and DM Sans are loaded via Google Fonts with display=swap parameter */
 
 @layer base {
   :root {

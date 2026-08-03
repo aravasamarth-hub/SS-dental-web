@@ -454,7 +454,17 @@ function Header() {
 
           <div className="flex items-center gap-2">
             <DarkModeToggle />
-            
+
+            {/* Book Appointment — mobile only */}
+            <Link to="/bookings" className="lg:hidden">
+              <Button
+                variant="accent"
+                className="text-xs font-semibold h-8 px-3 rounded-full transition-all duration-200 active:scale-95"
+              >
+                Book Appointment
+              </Button>
+            </Link>
+
             {/* Mobile Sheet Menu */}
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
               <SheetTrigger asChild className="lg:hidden">
