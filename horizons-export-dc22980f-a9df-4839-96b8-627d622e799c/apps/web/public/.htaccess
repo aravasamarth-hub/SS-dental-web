@@ -27,8 +27,11 @@
 <IfModule mod_headers.c>
 	Header set X-Powered-By "Hostinger Horizons"
 
-	# Cache everything on CDN by default
-	Header set Cache-Control "public, s-maxage=604800, max-age=0"
+	# FORCE HTML pages (index.html) to NEVER be cached by CDN or Browser
+	# This ensures visitors immediately see code updates without pressing Ctrl+Shift+R
+	Header set Cache-Control "no-cache, no-store, must-revalidate, max-age=0, s-maxage=0"
+	Header set Pragma "no-cache"
+	Header set Expires "0"
 
 	# Cache JS/CSS assets for 1 year (Vite adds content hashes so they're cache-safe)
 	<FilesMatch "\.(js|css|mjs)$">

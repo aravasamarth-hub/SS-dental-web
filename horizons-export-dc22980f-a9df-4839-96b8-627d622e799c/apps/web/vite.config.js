@@ -319,6 +319,7 @@ export default defineConfig({
 		},
 	},
 	build: {
+		emptyOutDir: true,
 		// Enable CSS code splitting for smaller initial CSS payload
 		cssCodeSplit: true,
 		// Raise chunk size warning threshold (framer-motion is large but worth it)
