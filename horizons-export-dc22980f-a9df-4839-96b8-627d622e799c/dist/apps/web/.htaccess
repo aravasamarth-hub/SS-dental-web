@@ -27,11 +27,17 @@
 <IfModule mod_headers.c>
 	Header set X-Powered-By "Hostinger Horizons"
 
-	# HTML pages & version.json → always fetched fresh (no-cache).
-	# HTML references hashed JS/CSS filenames that change every build,
-	# so stale HTML = stale everything. version.json is polled by the
-	# auto-update checker to detect new deployments.
-	<FilesMatch "\.(html|json)$">
+	# HTML pages → always fetched fresh (no-cache). HTML references hashed
+	# JS/CSS filenames that change every build, so stale HTML = stale everything.
+	<FilesMatch "\.html$">
+		Header set Cache-Control "no-cache, no-store, must-revalidate"
+		Header set Pragma "no-cache"
+		Header set Expires "0"
+	</FilesMatch>
+
+	# version.json → always fetched fresh. Polled by the auto-update checker
+	# to detect new deployments and silently reload for visitors.
+	<FilesMatch "version\.json$">
 		Header set Cache-Control "no-cache, no-store, must-revalidate"
 		Header set Pragma "no-cache"
 		Header set Expires "0"

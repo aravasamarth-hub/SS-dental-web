@@ -1,17 +1,20 @@
 /**
  * generate-version.cjs
- * 
- * Creates a version.json file in public/ with the current build timestamp.
+ *
+ * Creates a version.json file in public/ with a fresh timestamp.
  * The live site polls this file to detect new deployments and auto-reload.
  */
 const fs = require('fs');
 const path = require('path');
 
-const version = {
-  buildTime: new Date().toISOString(),
-  hash: Date.now().toString(36)
-};
+const version = Date.now().toString();
+const outputDir = path.join(__dirname, '..', 'public');
 
-const outPath = path.join(__dirname, '..', 'public', 'version.json');
-fs.writeFileSync(outPath, JSON.stringify(version, null, 2));
-console.log(`[version] Generated version.json → hash: ${version.hash}`);
+if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
+
+fs.writeFileSync(
+  path.join(outputDir, 'version.json'),
+  JSON.stringify({ version })
+);
+
+console.log(`Generated version.json: ${version}`);

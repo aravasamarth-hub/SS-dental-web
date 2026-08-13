@@ -2,6 +2,7 @@
 import React, { lazy, Suspense } from 'react';
 import { Route, Routes, BrowserRouter as Router } from 'react-router-dom';
 import ScrollToTop from './components/ScrollToTop';
+import { useVersionCheck } from './hooks/useVersionCheck';
 import HomePage from './pages/HomePage';
 
 const AboutPage = lazy(() => import('./pages/AboutPage'));
@@ -42,6 +43,8 @@ const PageLoader = () => (
 );
 
 function App() {
+  useVersionCheck();
+
   return (
     <Router>
       <ScrollToTop />
