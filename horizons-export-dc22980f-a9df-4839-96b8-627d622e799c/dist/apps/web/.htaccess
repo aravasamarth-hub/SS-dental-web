@@ -27,30 +27,27 @@
 <IfModule mod_headers.c>
 	Header set X-Powered-By "Hostinger Horizons"
 
-	# FORCE HTML pages (index.html) to NEVER be cached by CDN or Browser
-	# This ensures visitors immediately see code updates without pressing Ctrl+Shift+R
-	Header set Cache-Control "no-cache, no-store, must-revalidate, max-age=0, s-maxage=0"
-	Header set Pragma "no-cache"
-	Header set Expires "0"
+	# HTML pages → always fetched fresh (no-cache). This is critical so visitors
+	# see new builds immediately — the HTML references hashed JS/CSS filenames
+	# that change every build, so stale HTML = stale everything.
+	<FilesMatch "\.html$">
+		Header set Cache-Control "no-cache, no-store, must-revalidate"
+		Header set Pragma "no-cache"
+		Header set Expires "0"
+	</FilesMatch>
 
-	# Cache JS/CSS assets for 1 year (Vite adds content hashes so they're cache-safe)
+	# JS/CSS assets → cached 1 year. Vite adds content hashes to filenames
+	# (e.g. index-BTF5RL-n.js) so new builds get new names automatically.
 	<FilesMatch "\.(js|css|mjs)$">
 		Header set Cache-Control "public, max-age=31536000, immutable"
 	</FilesMatch>
 
-	# Cache static images and fonts for 30 days in browser
+	# Images & fonts → cached 1 year. These rarely change and have stable names.
 	<FilesMatch "\.(ico|jpg|jpeg|png|gif|webp|avif|svg|woff|woff2)$">
-		Header set Cache-Control "public, max-age=2592000, immutable"
+		Header set Cache-Control "public, max-age=31536000, immutable"
 	</FilesMatch>
 
-	# Cache in browser all /assets/ (Vite build output)
-	<If "%{REQUEST_URI} =~ m#^/assets/.*$#">
-		Header set Cache-Control "public, max-age=31536000, immutable"
-	</If>
-</IfModule>
-
-# ========== Keep-Alive for faster repeat visits ==========
-<IfModule mod_headers.c>
+	# Keep-Alive for faster repeat visits
 	Header set Connection keep-alive
 </IfModule>
 
