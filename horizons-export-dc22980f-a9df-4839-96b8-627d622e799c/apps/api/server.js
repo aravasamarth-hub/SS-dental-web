@@ -13,6 +13,11 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Health Check Endpoint
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', service: 'SS Dental Care API', timestamp: new Date().toISOString() });
+});
+
 // Initialize Razorpay Instance
 // Store these values securely in a .env file!
 const razorpay = new Razorpay({

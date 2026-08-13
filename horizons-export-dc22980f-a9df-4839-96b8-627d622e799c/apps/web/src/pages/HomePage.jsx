@@ -155,14 +155,14 @@ function HomePage() {
       name: 'Dr. Naveen Shamnur',
       qualification: 'MDS - Orthodontist and Dentofacial Orthopedics',
       specialization: 'Braces, Aligners & Orthodontic Surgery',
-      image: '/dr-naveen-shamnur.jpg',
+      image: '/dr-naveen-shamnur.png',
       slug: 'naveen-shamnur'
     },
     {
       name: 'Dr. Sunitha N Shamnur',
       qualification: 'MDS - Prosthodontist',
       specialization: 'Dental Implants, Dentures & Smile Design',
-      image: '/dr-sunitha-shamnur.jpg',
+      image: '/dr-sunitha-shamnur.png',
       slug: 'sunitha-shamnur'
     }
   ];
@@ -376,41 +376,41 @@ function HomePage() {
                 >
                   {/* Dr. Naveen */}
                   <Link to="/doctors/naveen-shamnur" className="flex flex-col items-center text-center group cursor-pointer">
-                    <div className="relative overflow-hidden p-2">
+                    <div className="relative overflow-hidden p-2 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 shadow-xl group-hover:bg-white/20 group-hover:border-white/40 transition-all duration-300">
                       <img
-                        src="/dr-naveen-shamnur.jpg"
+                        src="/dr-naveen-shamnur.png"
                         alt="Dr. Naveen Shamnur - Orthodontist"
                         loading="lazy"
                         decoding="async"
                         width={176}
                         height={264}
-                        className="h-36 md:h-44 object-contain rounded-2xl shadow-md border border-white/20 transform group-hover:scale-105 transition-transform duration-300"
+                        className="h-36 md:h-44 object-contain rounded-xl transform group-hover:scale-105 transition-transform duration-300 drop-shadow-[0_8px_16px_rgba(0,0,0,0.5)]"
                       />
                     </div>
-                    <div className="mt-2 flex flex-col justify-start drop-shadow-[0_2px_4px_rgba(0,0,0,0.85)]">
-                      <h3 className="text-white font-bold text-sm sm:text-base md:text-xl group-hover:text-accent transition-colors duration-200">Dr. Naveen Shamnur</h3>
-                      <p className="text-accent text-[10px] sm:text-xs md:text-sm font-bold mt-0.5 tracking-wide uppercase leading-tight">
-                        orthodontist and dentofacial orthopedics
+                    <div className="mt-2.5 flex flex-col justify-start drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">
+                      <h3 className="text-white font-bold text-sm sm:text-base md:text-xl group-hover:text-amber-300 transition-colors duration-200">Dr. Naveen Shamnur</h3>
+                      <p className="text-amber-300 text-[10px] sm:text-xs md:text-sm font-semibold mt-0.5 tracking-wide uppercase leading-tight">
+                        Orthodontist and Dentofacial Orthopedics
                       </p>
                     </div>
                   </Link>
 
                   {/* Dr. Sunitha */}
                   <Link to="/doctors/sunitha-shamnur" className="flex flex-col items-center text-center group cursor-pointer">
-                    <div className="relative overflow-hidden p-1">
+                    <div className="relative overflow-hidden p-2 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 shadow-xl group-hover:bg-white/20 group-hover:border-white/40 transition-all duration-300">
                       <img
-                        src="/dr-sunitha-shamnur.jpg"
+                        src="/dr-sunitha-shamnur.png"
                         alt="Dr. Sunitha N Shamnur - Prosthodontist"
                         loading="lazy"
                         decoding="async"
                         width={176}
                         height={264}
-                        className="h-36 md:h-44 object-contain rounded-2xl shadow-md border border-white/20 transform group-hover:scale-105 transition-transform duration-300"
+                        className="h-36 md:h-44 object-contain rounded-xl transform group-hover:scale-105 transition-transform duration-300 drop-shadow-[0_8px_16px_rgba(0,0,0,0.5)]"
                       />
                     </div>
-                    <div className="mt-2 flex flex-col justify-start drop-shadow-[0_2px_4px_rgba(0,0,0,0.85)]">
-                      <h3 className="text-white font-bold text-sm sm:text-base md:text-xl group-hover:text-accent transition-colors duration-200">Dr. Sunitha Shamnur</h3>
-                      <p className="text-accent text-[10px] sm:text-xs md:text-sm font-bold mt-0.5 tracking-wide uppercase leading-tight">
+                    <div className="mt-2.5 flex flex-col justify-start drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">
+                      <h3 className="text-white font-bold text-sm sm:text-base md:text-xl group-hover:text-amber-300 transition-colors duration-200">Dr. Sunitha Shamnur</h3>
+                      <p className="text-amber-300 text-[10px] sm:text-xs md:text-sm font-semibold mt-0.5 tracking-wide uppercase leading-tight">
                         Prosthodontist and Implantologist
                       </p>
                     </div>
