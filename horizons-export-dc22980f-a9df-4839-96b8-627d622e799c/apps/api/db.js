@@ -1,24 +1,23 @@
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 const { createClient } = require('@supabase/supabase-js');
 
-const hasSupabaseCreds = !!(process.env.SUPABASE_URL && process.env.SUPABASE_API_KEY);
+const supabaseUrl = process.env.SUPABASE_URL || 'https://gthczioqtznvfxhqvslm.supabase.co';
+const supabaseKey = process.env.SUPABASE_API_KEY || 'sb_publishable_SgwUX2SPWcxT4RfLQoHeSg_7q2Nnkxj';
 
-const supabase = createClient(
-  process.env.SUPABASE_URL || 'https://placeholder.supabase.co',
-  process.env.SUPABASE_API_KEY || 'placeholder-key'
-);
+const supabase = createClient(supabaseUrl, supabaseKey);
 
-// Test the connection if credentials are provided
-if (hasSupabaseCreds) {
-  supabase
-    .from('appointments')
-    .select('*')
-    .limit(1)
-    .then(({ data, error }) => {
-      if (error) console.error('Connection error:', error);
-      else console.log('Connected to Supabase. Sample data:', data);
-    });
-} else {
-  console.log('Supabase environment variables not set. Skipping live database connection test.');
-}
+// Test connection
+supabase
+  .from('paid_bookings')
+  .select('id')
+  .limit(1)
+  .then(({ data, error }) => {
+    if (error) {
+      console.warn('⚠️ Supabase connection test to paid_bookings warning:', error.message);
+    } else {
+      console.log('✅ Connected to Supabase live database successfully.');
+    }
+  });
 
 module.exports = supabase;

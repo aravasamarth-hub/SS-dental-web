@@ -6,6 +6,16 @@
 -- -------------------------------------------------------------------------
 -- PART 1: `public.appointments` TABLE & CLEANUP (REMOVE PAYMENT COLUMNS)
 -- -------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.appointments (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    created_at VARCHAR(100),
+    full_name VARCHAR(255) NOT NULL,
+    email VARCHAR(255),
+    phone VARCHAR(50) NOT NULL,
+    appointment_date VARCHAR(50),
+    appointment_time VARCHAR(50)
+);
+
 -- Change created_at to VARCHAR(100) for formatted timestamp string (DD/MM/YYYY hh:mm:ss AM/PM)
 ALTER TABLE public.appointments ALTER COLUMN created_at TYPE VARCHAR(100) USING created_at::text;
 ALTER TABLE public.appointments ALTER COLUMN created_at SET DEFAULT NULL;

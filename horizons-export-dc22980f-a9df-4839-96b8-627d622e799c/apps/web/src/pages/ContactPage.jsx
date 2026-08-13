@@ -3,7 +3,7 @@ import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
-import { Mail, Phone, MapPin, Clock, Navigation } from 'lucide-react';
+import { Mail, Phone, MapPin, Clock, Navigation, CheckCircle2 } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import FloatingWhatsAppButton from '@/components/FloatingWhatsAppButton';
@@ -14,7 +14,6 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
-import { CheckCircle2 } from 'lucide-react';
 
 function ContactPage() {
   const [formData, setFormData] = useState({
@@ -28,7 +27,7 @@ function ContactPage() {
 
   const submittingRef = React.useRef(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (isSubmitting || submittingRef.current) return;
 
@@ -46,16 +45,64 @@ function ContactPage() {
     setIsSubmitting(true);
 
     try {
+      const getFormattedTimestamp = () => {
+        const now = new Date();
+        const day = String(now.getDate()).padStart(2, '0');
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const year = now.getFullYear();
+        let hours = now.getHours();
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12 || 12;
+        const strHours = String(hours).padStart(2, '0');
+        return `${day}/${month}/${year}, ${strHours}:${minutes}:${seconds} ${ampm}`;
+      };
+
+      const today = new Date().toISOString().split('T')[0];
+      const timeVal = (formData.message ? `Msg: ${formData.message}` : 'Contact Inquiry').slice(0, 20);
+
+      // Save inquiry to Supabase
+      if (supabase) {
+        await supabase.from('appointments').insert([
+          {
+            created_at: getFormattedTimestamp(),
+            full_name: formData.name,
+            email: formData.email || '',
+            phone: formData.phone,
+            appointment_date: today,
+            appointment_time: timeVal
+          }
+        ]).then(({ error }) => {
+          if (error) console.error('Supabase contact save warning:', error);
+        });
+      }
+
+      // Trigger Email, SMS & WhatsApp Notifications via backend API
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      fetch(`${apiUrl}/api/notify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          date: today,
+          time: timeVal,
+          form_type: 'Contact Page Form'
+        })
+      }).catch(err => console.error('Notification API dispatch error:', err));
+
       // Open WhatsApp directly with pre-filled message
       const waMessage = `Hello SS Dental Care! 🦷\n\nI have sent a message via your Contact page:\n• Name: ${formData.name}\n• Phone: ${formData.phone}\n• Email: ${formData.email || 'N/A'}\n• Message: ${formData.message || 'General Inquiry'}\n\nPlease get in touch with me. Thank you!`;
       const whatsappUrl = `https://wa.me/917619267764?text=${encodeURIComponent(waMessage)}`;
       window.open(whatsappUrl, '_blank');
 
       setIsSubmitted(true);
-      toast.success('Redirecting to WhatsApp...');
+      toast.success('Inquiry submitted! Redirecting to WhatsApp...');
       setFormData({ name: '', email: '', phone: '', message: '' });
     } catch (err) {
-      console.error('Contact form WhatsApp submission exception:', err);
+      console.error('Contact form submission exception:', err);
     } finally {
       setIsSubmitting(false);
       submittingRef.current = false;

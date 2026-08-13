@@ -143,7 +143,8 @@ function BookingsPage() {
         console.log('Successfully inserted booking into paid_bookings table directly:', data);
 
         // Trigger Email, SMS, and WhatsApp Notifications
-        fetch('http://localhost:5000/api/notify', {
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+        fetch(`${apiUrl}/api/notify`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -193,7 +194,7 @@ function BookingsPage() {
         return;
       }
 
-      const apiUrl = import.meta.env.VITE_API_URL;
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
       if (apiUrl) {
         // --- SECURE BACKEND INTEGRATION FLOW ---
@@ -316,7 +317,7 @@ function BookingsPage() {
         }
       }
     } else {
-      const apiUrl = import.meta.env.VITE_API_URL;
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
       if (apiUrl) {
         try {
           const response = await fetch(`${apiUrl}/api/create-booking`, {

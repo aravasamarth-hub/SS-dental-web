@@ -209,6 +209,9 @@ function Header() {
             <img
               src="/ss-dental-logo.png"
               alt="SS Dental Care logo"
+              width={48}
+              height={48}
+              decoding="async"
               className="h-12 w-auto object-contain drop-shadow-md"
             />
             <span className="font-extrabold text-xl md:text-2xl tracking-tight hidden sm:inline">SS Dental Care</span>

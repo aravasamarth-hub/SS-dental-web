@@ -19,6 +19,7 @@ function DoctorCard({ name, qualification, specialization, image, slug, index })
             src={image}
             alt={`${name} - ${qualification}`}
             loading="lazy"
+            decoding="async"
             width={400}
             height={320}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"

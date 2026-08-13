@@ -1,9 +1,11 @@
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
+
 const express = require('express');
 const Razorpay = require('razorpay');
 const cors = require('cors');
 const crypto = require('crypto');
 const supabase = require('./db');
-require('dotenv').config();
 
 const app = express();
 
@@ -23,8 +25,18 @@ app.post('/api/create-order', async (req, res) => {
   try {
     const { amount } = req.body; // Amount in INR, e.g. 250
     
+    if (!process.env.RAZORPAY_KEY_SECRET) {
+      console.warn('⚠️ RAZORPAY_KEY_SECRET is not configured in .env. Providing fallback order ID for Razorpay client checkout.');
+      return res.json({
+        success: true,
+        order_id: `order_client_${Date.now()}`,
+        amount: (amount || 250) * 100,
+        is_fallback: true
+      });
+    }
+
     const options = {
-      amount: amount * 100, // Razorpay expects amount in paise (25000 paise = ₹250)
+      amount: (amount || 250) * 100, // Razorpay expects amount in paise (25000 paise = ₹250)
       currency: 'INR',
       receipt: `receipt_booking_${Date.now()}`
     };

@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Star, Award, Zap, Sparkles, Calendar, MapPin, Clock, Mail, Phone as PhoneIcon } from 'lucide-react';
+import { Star, Award, Zap, Sparkles, Calendar, MapPin, Clock, Mail, Phone as PhoneIcon, CheckCircle2 } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ServiceCard from '@/components/ServiceCard';
@@ -18,7 +18,6 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
-import { CheckCircle2 } from 'lucide-react';
 
 function HomePage() {
   const [formData, setFormData] = useState({ name: '', email: '', phone: '', message: '' });
@@ -227,7 +226,8 @@ function HomePage() {
           console.log('Successfully inserted inquiry into Supabase');
           
           // Trigger Email and SMS Notifications via backend API
-          fetch('http://localhost:5000/api/notify', {
+          const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+          fetch(`${apiUrl}/api/notify`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -380,7 +380,7 @@ function HomePage() {
                       <img
                         src="/dr-naveen-shamnur.jpg"
                         alt="Dr. Naveen Shamnur - Orthodontist"
-                        fetchPriority="high"
+                        loading="lazy"
                         decoding="async"
                         width={176}
                         height={264}
@@ -401,7 +401,7 @@ function HomePage() {
                       <img
                         src="/dr-sunitha-shamnur.jpg"
                         alt="Dr. Sunitha N Shamnur - Prosthodontist"
-                        fetchPriority="high"
+                        loading="lazy"
                         decoding="async"
                         width={176}
                         height={264}

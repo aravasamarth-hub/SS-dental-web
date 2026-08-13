@@ -14,6 +14,23 @@
 	RewriteRule ^ index.html [L]
 </IfModule>
 
+# ========== GZIP Compression (reduces transferred bytes by 60-80%) ==========
+<IfModule mod_deflate.c>
+	AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css
+	AddOutputFilterByType DEFLATE text/javascript application/javascript application/x-javascript
+	AddOutputFilterByType DEFLATE application/json application/xml application/xhtml+xml
+	AddOutputFilterByType DEFLATE image/svg+xml font/woff font/woff2 application/font-woff application/font-woff2
+	SetEnvIfNoCase Request_URI \.(?:gif|jpe?g|png|webp|avif|gz|zip|bz2)$ no-gzip dont-vary
+	Header append Vary Accept-Encoding
+</IfModule>
+
+# ========== Brotli Compression (even better than GZIP) ==========
+<IfModule mod_brotli.c>
+	AddOutputFilterByType BROTLI_COMPRESS text/html text/plain text/xml text/css
+	AddOutputFilterByType BROTLI_COMPRESS text/javascript application/javascript application/x-javascript
+	AddOutputFilterByType BROTLI_COMPRESS application/json application/xml font/woff font/woff2
+</IfModule>
+
 <IfModule mod_headers.c>
 	Header set X-Powered-By "Hostinger Horizons"
 

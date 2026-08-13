@@ -40,6 +40,10 @@ function Footer() {
               <img
                 src="/ss-dental-logo.png"
                 alt="SS Dental Care logo"
+                width={48}
+                height={48}
+                loading="lazy"
+                decoding="async"
                 className="h-12 w-auto object-contain drop-shadow-md"
               />
               <span className="font-bold text-xl tracking-tight">SS Dental Care</span>

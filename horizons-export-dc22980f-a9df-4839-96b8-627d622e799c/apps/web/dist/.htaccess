@@ -6,14 +6,51 @@
 	RewriteRule ^ index.html [L]
 </IfModule>
 
+# ========== GZIP Compression (reduces transferred bytes by 60-80%) ==========
+<IfModule mod_deflate.c>
+	AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css
+	AddOutputFilterByType DEFLATE text/javascript application/javascript application/x-javascript
+	AddOutputFilterByType DEFLATE application/json application/xml application/xhtml+xml
+	AddOutputFilterByType DEFLATE image/svg+xml font/woff font/woff2 application/font-woff application/font-woff2
+	# Don't compress already-compressed formats
+	SetEnvIfNoCase Request_URI \.(?:gif|jpe?g|png|webp|avif|gz|zip|bz2)$ no-gzip dont-vary
+	Header append Vary Accept-Encoding
+</IfModule>
+
+# ========== Brotli Compression (even better than GZIP) ==========
+<IfModule mod_brotli.c>
+	AddOutputFilterByType BROTLI_COMPRESS text/html text/plain text/xml text/css
+	AddOutputFilterByType BROTLI_COMPRESS text/javascript application/javascript application/x-javascript
+	AddOutputFilterByType BROTLI_COMPRESS application/json application/xml font/woff font/woff2
+</IfModule>
+
 <IfModule mod_headers.c>
 	Header set X-Powered-By "Hostinger Horizons"
 
-	# Cache everything on CDN by default
-	Header set Cache-Control "public, s-maxage=604800, max-age=0"
+	# FORCE HTML pages (index.html) to NEVER be cached by CDN or Browser
+	# This ensures visitors immediately see code updates without pressing Ctrl+Shift+R
+	Header set Cache-Control "no-cache, no-store, must-revalidate, max-age=0, s-maxage=0"
+	Header set Pragma "no-cache"
+	Header set Expires "0"
 
-	# Cache in browser all assets
+	# Cache JS/CSS assets for 1 year (Vite adds content hashes so they're cache-safe)
+	<FilesMatch "\.(js|css|mjs)$">
+		Header set Cache-Control "public, max-age=31536000, immutable"
+	</FilesMatch>
+
+	# Cache static images and fonts for 30 days in browser
+	<FilesMatch "\.(ico|jpg|jpeg|png|gif|webp|avif|svg|woff|woff2)$">
+		Header set Cache-Control "public, max-age=2592000, immutable"
+	</FilesMatch>
+
+	# Cache in browser all /assets/ (Vite build output)
 	<If "%{REQUEST_URI} =~ m#^/assets/.*$#">
-		Header set Cache-Control "public, max-age=604800"
+		Header set Cache-Control "public, max-age=31536000, immutable"
 	</If>
 </IfModule>
+
+# ========== Keep-Alive for faster repeat visits ==========
+<IfModule mod_headers.c>
+	Header set Connection keep-alive
+</IfModule>
+
