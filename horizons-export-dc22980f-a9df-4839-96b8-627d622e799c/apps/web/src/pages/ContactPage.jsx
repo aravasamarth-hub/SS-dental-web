@@ -14,6 +14,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
+import { sendBookingNotification } from '@/lib/sendNotification';
 
 function ContactPage() {
   const [formData, setFormData] = useState({
@@ -78,20 +79,15 @@ function ContactPage() {
         });
       }
 
-      // Trigger Email, SMS & WhatsApp Notifications via backend API
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-      fetch(`${apiUrl}/api/notify`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          phone: formData.phone,
-          date: today,
-          time: timeVal,
-          form_type: 'Contact Page Form'
-        })
-      }).catch(err => console.error('Notification API dispatch error:', err));
+      // Trigger Email, SMS & WhatsApp Notifications via unified helper
+      sendBookingNotification({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        date: today,
+        time: timeVal,
+        form_type: 'Contact Page Form'
+      });
 
       // Open WhatsApp directly with pre-filled message
       const waMessage = `Hello SS Dental Care! 🦷\n\nI have sent a message via your Contact page:\n• Name: ${formData.name}\n• Phone: ${formData.phone}\n• Email: ${formData.email || 'N/A'}\n• Message: ${formData.message || 'General Inquiry'}\n\nPlease get in touch with me. Thank you!`;

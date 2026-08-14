@@ -6,7 +6,7 @@ require('dotenv').config({ path: path.join(__dirname, '.env') });
 const createTransporter = () => {
   const host = process.env.SMTP_HOST || 'smtp.gmail.com';
   const port = parseInt(process.env.SMTP_PORT || '587', 10);
-  const user = process.env.SMTP_USER || process.env.NOTIFICATION_EMAIL || 'ssdentalcare.in@gmail.com';
+  const user = process.env.SMTP_USER || process.env.NOTIFICATION_EMAIL || 'aravasamarth@gmail.com';
   const pass = process.env.SMTP_PASS || process.env.GMAIL_APP_PASSWORD;
 
   if (!pass) {
@@ -18,14 +18,20 @@ const createTransporter = () => {
     host,
     port,
     secure: port === 465,
-    auth: { user, pass }
+    auth: { user, pass },
+    tls: {
+      rejectUnauthorized: false
+    },
+    connectionTimeout: 15000,
+    greetingTimeout: 15000,
+    socketTimeout: 15000
   });
 };
 
 // 2. Email Notification Handler
 async function sendEmailNotification({ to, subject, html, text }) {
   const transporter = createTransporter();
-  const recipient = to || process.env.NOTIFICATION_EMAIL || 'ssdentalcare.in@gmail.com';
+  const recipient = to || process.env.NOTIFICATION_EMAIL || 'aravasamarth@gmail.com, ssdentalcare.in@gmail.com';
 
   console.log(`[Email Notification Triggered] To: ${recipient} | Subject: ${subject}`);
 
@@ -36,7 +42,7 @@ async function sendEmailNotification({ to, subject, html, text }) {
 
   try {
     const info = await transporter.sendMail({
-      from: `"SS Dental Care" <${process.env.SMTP_USER || 'ssdentalcare.in@gmail.com'}>`,
+      from: `"SS Dental Care" <${process.env.SMTP_USER || 'aravasamarth@gmail.com'}>`,
       to: recipient,
       subject: subject,
       text: text,
@@ -112,7 +118,7 @@ async function sendWhatsAppNotification({ phone, message }) {
 // 5. Unified Dispatcher for Appointments & Paid Bookings
 async function notifyNewBooking(bookingDetails) {
   const { name, email, phone, date, time, payment_method, payment_status, amount_paid, created_at } = bookingDetails;
-  const clinicEmail = process.env.NOTIFICATION_EMAIL || 'aravasamarth@gmail.com';
+  const clinicEmail = process.env.NOTIFICATION_EMAIL || 'aravasamarth@gmail.com, ssdentalcare.in@gmail.com';
   const targetPhone = phone || process.env.DEMO_TEST_PHONE || '7619267764';
 
   const title = payment_status === 'paid' ? '💳 New Paid Booking Received!' : '📅 New Appointment Request Received!';

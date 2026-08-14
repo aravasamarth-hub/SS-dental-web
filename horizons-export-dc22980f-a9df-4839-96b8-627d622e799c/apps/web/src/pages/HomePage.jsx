@@ -18,6 +18,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
+import { sendBookingNotification } from '@/lib/sendNotification';
 
 function HomePage() {
   const [formData, setFormData] = useState({ name: '', email: '', phone: '', message: '' });
@@ -225,20 +226,15 @@ function HomePage() {
         } else {
           console.log('Successfully inserted inquiry into Supabase');
           
-          // Trigger Email and SMS Notifications via backend API
-          const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-          fetch(`${apiUrl}/api/notify`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              name: formData.name,
-              email: formData.email,
-              phone: formData.phone,
-              date: today,
-              time: appointmentTimeVal,
-              form_type: 'HomePage Appointment Form'
-            })
-          }).catch(err => console.error('Notification API dispatch error:', err));
+          // Trigger Email and SMS Notifications via unified helper
+          sendBookingNotification({
+            name: formData.name,
+            email: formData.email,
+            phone: formData.phone,
+            date: today,
+            time: appointmentTimeVal,
+            form_type: 'HomePage Appointment Form'
+          });
 
           setIsSubmitted(true);
           toast.success('Appointment request submitted successfully! We will contact you shortly.');

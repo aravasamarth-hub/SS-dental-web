@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
+import { sendBookingNotification } from '@/lib/sendNotification';
 
 const INDIAN_STATES = [
   "Andhra Pradesh",
@@ -143,22 +144,17 @@ function BookingsPage() {
         console.log('Successfully inserted booking into paid_bookings table directly:', data);
 
         // Trigger Email, SMS, and WhatsApp Notifications
-        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-        fetch(`${apiUrl}/api/notify`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            name: fullName,
-            email: email,
-            phone: phone,
-            date: dateStr,
-            time: selectedTime || '05:00 PM',
-            payment_method: paymentMethodType || paymentMethod || 'Visit to pay',
-            payment_status: paymentStatus || (paymentMethod === 'Razorpay' ? 'paid' : 'pending'),
-            amount_paid: 250.00,
-            form_type: 'Paid Booking Page'
-          })
-        }).catch(err => console.error('Notification API dispatch error:', err));
+        sendBookingNotification({
+          name: fullName,
+          email: email,
+          phone: phone,
+          date: dateStr,
+          time: selectedTime || '05:00 PM',
+          payment_method: paymentMethodType || paymentMethod || 'Visit to pay',
+          payment_status: paymentStatus || (paymentMethod === 'Razorpay' ? 'paid' : 'pending'),
+          amount_paid: 250.00,
+          form_type: 'Paid Booking Page'
+        });
 
       }
     } catch (err) {

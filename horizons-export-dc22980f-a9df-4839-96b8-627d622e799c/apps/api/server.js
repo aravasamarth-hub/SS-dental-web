@@ -239,7 +239,10 @@ app.post('/api/notify', async (req, res) => {
   }
 });
 
+const { startWatcher } = require('./watcher');
+
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Secure payment & notification backend running on port ${PORT}`);
+  startWatcher(10000);
 });

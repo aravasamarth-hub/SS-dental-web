@@ -1,10 +1,47 @@
 -- =========================================================================
--- MASTER SUPABASE TABLES & RLS SECURITY PERMISSIONS SCRIPT
--- Project: SS DENTAL CARE
+-- MASTER SUPABASE TABLES, SECURITY PERMISSIONS & OPTIMIZATION SCRIPT
+-- Project: SS DENTAL CARE (SSDENTALCARE)
+-- Resolves: Security Advisor Warnings & Performance Advisor Warnings/Suggestions
 -- =========================================================================
 
 -- -------------------------------------------------------------------------
--- PART 1: `public.appointments` TABLE & CLEANUP (REMOVE PAYMENT COLUMNS)
+-- PART 1: DYNAMIC CLEANUP OF OLD POLICIES & UNUSED INDEXES
+-- -------------------------------------------------------------------------
+
+-- 1.1 Drop all existing policies on `public.appointments` and `public.paid_bookings`
+-- (Fixes "Multiple Permissive Policies" warning in Performance Advisor)
+DO $$
+DECLARE
+    pol record;
+BEGIN
+    FOR pol IN (SELECT policyname FROM pg_policies WHERE tablename = 'appointments' AND schemaname = 'public') LOOP
+        EXECUTE format('DROP POLICY IF EXISTS %I ON public.appointments', pol.policyname);
+    END LOOP;
+    
+    FOR pol IN (SELECT policyname FROM pg_policies WHERE tablename = 'paid_bookings' AND schemaname = 'public') LOOP
+        EXECUTE format('DROP POLICY IF EXISTS %I ON public.paid_bookings', pol.policyname);
+    END LOOP;
+END $$;
+
+-- 1.2 Drop non-primary key unused indexes on `public.appointments`
+-- (Fixes "Unused Index" suggestions in Performance Advisor)
+DO $$
+DECLARE
+    idx record;
+BEGIN
+    FOR idx IN (
+        SELECT indexname 
+        FROM pg_indexes 
+        WHERE tablename = 'appointments' 
+          AND schemaname = 'public' 
+          AND indexname NOT LIKE '%_pkey'
+    ) LOOP
+        EXECUTE format('DROP INDEX IF EXISTS public.%I', idx.indexname);
+    END LOOP;
+END $$;
+
+-- -------------------------------------------------------------------------
+-- PART 2: `public.appointments` TABLE & SECURE RLS POLICIES
 -- -------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS public.appointments (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -16,42 +53,43 @@ CREATE TABLE IF NOT EXISTS public.appointments (
     appointment_time VARCHAR(50)
 );
 
--- Change created_at to VARCHAR(100) for formatted timestamp string (DD/MM/YYYY hh:mm:ss AM/PM)
+-- Ensure created_at format
 ALTER TABLE public.appointments ALTER COLUMN created_at TYPE VARCHAR(100) USING created_at::text;
-ALTER TABLE public.appointments ALTER COLUMN created_at SET DEFAULT NULL;
 
--- Remove unused payment columns from appointments table
+-- Remove unused payment columns if they exist
 ALTER TABLE public.appointments DROP COLUMN IF EXISTS payment_method;
 ALTER TABLE public.appointments DROP COLUMN IF EXISTS payment_status;
 ALTER TABLE public.appointments DROP COLUMN IF EXISTS payment_id;
 ALTER TABLE public.appointments DROP COLUMN IF EXISTS order_id;
 ALTER TABLE public.appointments DROP COLUMN IF EXISTS amount_paid;
 
--- Enable Row Level Security (RLS) & Policies
+-- Enable Row Level Security (RLS)
 ALTER TABLE public.appointments ENABLE ROW LEVEL SECURITY;
 
-DROP POLICY IF EXISTS "Allow authenticated users to modify appointments" ON public.appointments;
-DROP POLICY IF EXISTS "Allow public/anonymous inserts" ON public.appointments;
-DROP POLICY IF EXISTS "Enable insert for public visitors" ON public.appointments;
-
-CREATE POLICY "Enable insert for public visitors"
+-- Secure Insert Policy for Anonymous & Authenticated Visitors (Validates input, avoids WITH CHECK (true))
+CREATE POLICY "Allow public appointments insertion"
 ON public.appointments
 FOR INSERT
-TO public
-WITH CHECK (true);
+TO anon, authenticated, service_role
+WITH CHECK (
+    full_name IS NOT NULL 
+    AND phone IS NOT NULL 
+    AND length(trim(full_name)) > 0 
+    AND length(trim(phone)) > 0
+);
 
-DROP POLICY IF EXISTS "Enable select for public visitors" ON public.appointments;
-CREATE POLICY "Enable select for public visitors"
+-- Secure Select Policy for Staff / Authenticated Users only (uses InitPlan subquery (select auth.role()) to prevent per-row evaluation)
+CREATE POLICY "Allow staff select appointments"
 ON public.appointments
 FOR SELECT
-TO public
-USING (true);
+TO authenticated, service_role
+USING ((select auth.role()) IN ('authenticated', 'service_role'));
 
 GRANT ALL ON TABLE public.appointments TO anon, authenticated, service_role;
 
 
 -- -------------------------------------------------------------------------
--- PART 2: `public.paid_bookings` TABLE & PERMISSIONS
+-- PART 3: `public.paid_bookings` TABLE & SECURE RLS POLICIES
 -- -------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS public.paid_bookings (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -69,26 +107,54 @@ CREATE TABLE IF NOT EXISTS public.paid_bookings (
     amount_paid NUMERIC(10, 2) DEFAULT 250.00
 );
 
+-- Ensure created_at format
 ALTER TABLE public.paid_bookings ALTER COLUMN created_at TYPE VARCHAR(100) USING created_at::text;
-ALTER TABLE public.paid_bookings ALTER COLUMN created_at SET DEFAULT NULL;
 
+-- Enable Row Level Security (RLS)
 ALTER TABLE public.paid_bookings ENABLE ROW LEVEL SECURITY;
 
-DROP POLICY IF EXISTS "Enable insert for public visitors" ON public.paid_bookings;
-CREATE POLICY "Enable insert for public visitors"
+-- Secure Insert Policy for Anonymous & Authenticated Visitors (Validates input, avoids WITH CHECK (true))
+CREATE POLICY "Allow public paid bookings insertion"
 ON public.paid_bookings
 FOR INSERT
-TO public
-WITH CHECK (true);
+TO anon, authenticated, service_role
+WITH CHECK (
+    full_name IS NOT NULL 
+    AND phone IS NOT NULL 
+    AND length(trim(full_name)) > 0 
+    AND length(trim(phone)) > 0
+);
 
-DROP POLICY IF EXISTS "Enable select for public visitors" ON public.paid_bookings;
-CREATE POLICY "Enable select for public visitors"
+-- Secure Select Policy for Staff / Authenticated Users only (uses InitPlan subquery (select auth.role()) to prevent per-row evaluation)
+CREATE POLICY "Allow staff select paid bookings"
 ON public.paid_bookings
 FOR SELECT
-TO public
-USING (true);
+TO authenticated, service_role
+USING ((select auth.role()) IN ('authenticated', 'service_role'));
 
 GRANT ALL ON TABLE public.paid_bookings TO anon, authenticated, service_role;
+
+
+-- -------------------------------------------------------------------------
+-- PART 4: FIX SECURITY DEFINER FUNCTION `public.rls_auto_enable()`
+-- (Fixes "Public Can Execute SECURITY DEFINER Function" and 
+--  "Signed-In Users Can Execute SECURITY DEFINER Function")
+-- -------------------------------------------------------------------------
+DO $$
+BEGIN
+    IF EXISTS (
+        SELECT 1 FROM pg_proc p 
+        JOIN pg_namespace n ON p.pronamespace = n.oid 
+        WHERE n.nspname = 'public' AND p.proname = 'rls_auto_enable'
+    ) THEN
+        -- Revoke execution permissions from public/anon/authenticated
+        REVOKE EXECUTE ON FUNCTION public.rls_auto_enable() FROM PUBLIC, anon, authenticated;
+        -- Grant execution permissions only to superuser/service_role
+        GRANT EXECUTE ON FUNCTION public.rls_auto_enable() TO postgres, service_role;
+        -- Secure search path against injection attacks
+        ALTER FUNCTION public.rls_auto_enable() SET search_path = public, pg_temp;
+    END IF;
+END $$;
 
 -- =========================================================================
 -- DONE! Copy and execute this SQL in your Supabase SQL Editor:
