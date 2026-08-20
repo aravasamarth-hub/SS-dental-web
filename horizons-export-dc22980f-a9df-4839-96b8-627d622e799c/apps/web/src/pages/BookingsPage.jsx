@@ -118,9 +118,12 @@ function BookingsPage() {
         return `${day}/${month}/${year}, ${strHours}:${minutes}:${seconds} ${ampm}`;
       };
 
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
       const dateStr = typeof selectedDay === 'string' && selectedDay.includes('-')
         ? selectedDay
-        : `2026-07-${String(selectedDay).padStart(2, '0')}`;
+        : `${year}-${month}-${String(selectedDay).padStart(2, '0')}`;
         
       const { data, error } = await supabase.from('paid_bookings').insert([
         {

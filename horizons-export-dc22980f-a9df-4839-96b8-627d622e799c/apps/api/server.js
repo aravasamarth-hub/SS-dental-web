@@ -65,7 +65,11 @@ const formatDate = (dateVal) => {
   if (typeof dateVal === 'string' && dateVal.includes('-')) {
     return dateVal;
   }
-  return `2026-07-${dateVal.toString().padStart(2, '0')}`;
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(dateVal).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 };
 
 const getFormattedTimestamp = () => {
