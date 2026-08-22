@@ -13,24 +13,24 @@ function GalleryPage() {
 
   const images = [
     {
-      url: 'https://horizons-cdn.hostinger.com/dc22980f-a9df-4839-96b8-627d622e799c/49d7bbcfbcca055c20b75b55c7aded8e.jpg',
-      title: 'Modern Reception Area',
+      url: '/clinic-interior.jpg',
+      title: 'Modern Reception Area & Consultation',
       description: 'Welcoming and comfortable waiting space for our patients'
     },
     {
-      url: 'https://horizons-cdn.hostinger.com/dc22980f-a9df-4839-96b8-627d622e799c/f34a68507a359606e1a967332f54aad0.jpg',
+      url: '/whatsapp-booking-dentist.jpg',
       title: 'Advanced Treatment Procedure',
       description: 'State-of-the-art dental procedures with precision equipment'
     },
     {
-      url: 'https://horizons-cdn.hostinger.com/dc22980f-a9df-4839-96b8-627d622e799c/9af403faf96bdb81357a2ca980031016.jpg',
-      title: 'Comfortable Waiting Area',
-      description: 'Relaxing environment designed for patient comfort'
+      url: '/services/services_hero_scan.jpg',
+      title: 'Digital Intraoral Scanning Setup',
+      description: '3D digital imaging for accurate diagnosis and treatments'
     },
     {
-      url: 'https://horizons-cdn.hostinger.com/dc22980f-a9df-4839-96b8-627d622e799c/600adc0c649fab36a9d76fa69829b794.jpg',
-      title: 'Clinic Interior',
-      description: 'Clean, modern facilities with advanced dental technology'
+      url: '/hero-bg.jpg',
+      title: 'Clean Modern Clinic Setup',
+      description: 'Relaxing environment designed for patient comfort and safety'
     }
   ];
 
