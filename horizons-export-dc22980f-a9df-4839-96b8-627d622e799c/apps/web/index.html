@@ -53,8 +53,9 @@
 		<link rel="dns-prefetch" href="https://www.googletagmanager.com" />
 		<link rel="preconnect" href="https://www.youtube-nocookie.com" crossorigin />
 
-		<!-- Preload LCP image (hero background) -->
-		<link rel="preload" as="image" href="/hero-bg.jpg" fetchpriority="high" type="image/jpeg" />
+		<!-- Preload LCP image (responsive for Mobile and Desktop) -->
+		<link rel="preload" as="image" href="/hero-bg-mobile.jpg" fetchpriority="high" type="image/jpeg" media="(max-width: 768px)" />
+		<link rel="preload" as="image" href="/hero-bg.jpg" fetchpriority="high" type="image/jpeg" media="(min-width: 769px)" />
 
 		<!-- System font stack fallback while custom fonts load -->
 		<style>
