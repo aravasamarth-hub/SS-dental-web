@@ -3,7 +3,7 @@
 -- Project: SS DENTAL CARE (SSDENTALCARE)
 -- =========================================================================
 
--- 1. DROP EXISTING POLICIES TO CLEAN UP ADVISOR WARNINGS
+-- 1. DROP ALL OLD & DUPLICATE POLICIES TO CLEAR SECURITY ADVISOR WARNINGS
 DROP POLICY IF EXISTS "Allow public appointments insertion" ON public.appointments;
 DROP POLICY IF EXISTS "Allow public appointments select" ON public.appointments;
 DROP POLICY IF EXISTS "Allow staff select appointments" ON public.appointments;
@@ -36,8 +36,9 @@ ON public.appointments FOR INSERT TO anon, authenticated, service_role
 WITH CHECK (full_name IS NOT NULL AND phone IS NOT NULL);
 
 -- Allow public web visitors & API watcher to select appointments
-CREATE POLICY "Allow service role appointments all"
-ON public.appointments FOR SELECT TO anon, authenticated, service_role USING (true);
+CREATE POLICY "Allow public appointments select"
+ON public.appointments FOR SELECT TO anon, authenticated, service_role 
+USING (true);
 
 GRANT SELECT, INSERT ON TABLE public.appointments TO anon, authenticated, service_role;
 
@@ -69,10 +70,8 @@ ON public.paid_bookings FOR INSERT TO anon, authenticated, service_role
 WITH CHECK (full_name IS NOT NULL AND phone IS NOT NULL);
 
 -- Allow public web visitors & API watcher to select paid bookings
-CREATE POLICY "Allow service role paid bookings all"
-ON public.paid_bookings FOR SELECT TO anon, authenticated, service_role USING (true);
+CREATE POLICY "Allow public paid bookings select"
+ON public.paid_bookings FOR SELECT TO anon, authenticated, service_role 
+USING (true);
 
 GRANT SELECT, INSERT ON TABLE public.paid_bookings TO anon, authenticated, service_role;
-
-
-
