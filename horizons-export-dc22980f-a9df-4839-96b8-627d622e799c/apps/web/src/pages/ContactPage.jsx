@@ -63,33 +63,43 @@ function ContactPage() {
       const today = new Date().toISOString().split('T')[0];
       const timeVal = (formData.message ? `Msg: ${formData.message}` : 'Contact Inquiry').slice(0, 20);
 
-      // Save inquiry to Supabase
-      if (supabase) {
-        await supabase.from('appointments').insert([
-          {
-            created_at: getFormattedTimestamp(),
-            full_name: formData.name,
-            email: formData.email || '',
-            phone: formData.phone,
-            appointment_date: today,
-            appointment_time: timeVal
-          }
-        ]).then(({ error }) => {
-          if (error) console.error('Supabase contact save warning:', error);
-        });
-      }
-
-      // Trigger Email, SMS & WhatsApp Notifications via unified helper
-      sendBookingNotification({
+      const notificationPayload = {
         name: formData.name,
         email: formData.email,
         phone: formData.phone,
         date: today,
         time: timeVal,
         form_type: 'Contact Page Form'
-      });
+      };
 
-      // Open WhatsApp directly with pre-filled message
+      // 1. GUARANTEED: Trigger Email & SMS Notifications + Save to Local Backup Queue
+      try {
+        sendBookingNotification(notificationPayload);
+      } catch (notifErr) {
+        console.warn('Notification dispatch error:', notifErr);
+      }
+
+      // 2. Try saving to Supabase database (Non-blocking fail-safe)
+      if (supabase) {
+        try {
+          await supabase.from('appointments').insert([
+            {
+              created_at: getFormattedTimestamp(),
+              full_name: formData.name,
+              email: formData.email || '',
+              phone: formData.phone,
+              appointment_date: today,
+              appointment_time: timeVal
+            }
+          ]).then(({ error }) => {
+            if (error) console.warn('⚠️ Supabase contact save warning (Handled gracefully via email fallback):', error.message);
+          });
+        } catch (dbErr) {
+          console.warn('⚠️ Supabase save exception:', dbErr);
+        }
+      }
+
+      // 3. Open WhatsApp directly with pre-filled message
       const waMessage = `Hello SS Dental Care! 🦷\n\nI have sent a message via your Contact page:\n• Name: ${formData.name}\n• Phone: ${formData.phone}\n• Email: ${formData.email || 'N/A'}\n• Message: ${formData.message || 'General Inquiry'}\n\nPlease get in touch with me. Thank you!`;
       const whatsappUrl = `https://wa.me/917619267764?text=${encodeURIComponent(waMessage)}`;
       window.open(whatsappUrl, '_blank');

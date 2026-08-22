@@ -14,7 +14,9 @@ async function checkNewSubmissions() {
       .order('id', { ascending: false })
       .limit(20);
 
-    if (!apptErr && appointments) {
+    if (apptErr) {
+      console.warn('⚠️ [Auto-Watcher] Supabase appointments check notice:', apptErr.message);
+    } else if (appointments) {
       for (const item of appointments) {
         if (!processedAppointments.has(item.id)) {
           processedAppointments.add(item.id);
@@ -45,7 +47,9 @@ async function checkNewSubmissions() {
       .order('id', { ascending: false })
       .limit(20);
 
-    if (!paidErr && paidBookings) {
+    if (paidErr) {
+      console.warn('⚠️ [Auto-Watcher] Supabase paid_bookings check notice:', paidErr.message);
+    } else if (paidBookings) {
       for (const item of paidBookings) {
         if (!processedPaidBookings.has(item.id)) {
           processedPaidBookings.add(item.id);
@@ -71,12 +75,18 @@ async function checkNewSubmissions() {
 
     if (isInitialRun) {
       isInitialRun = false;
-      console.log(`[Auto-Watcher] Initialized sync. Monitoring Supabase for new phone/email submissions...`);
+      console.log(`[Auto-Watcher] Initialized sync. Monitoring for new phone/email submissions...`);
     }
 
   } catch (err) {
-    console.error('Error in watcher check:', err);
+    console.warn('Notice in auto-watcher cycle (handing gracefully):', err.message);
   }
+}
+
+function markAsProcessed(table, id) {
+  if (!id) return;
+  if (table === 'appointments') processedAppointments.add(id);
+  if (table === 'paid_bookings') processedPaidBookings.add(id);
 }
 
 function startWatcher(intervalMs = 10000) {
@@ -86,4 +96,5 @@ function startWatcher(intervalMs = 10000) {
   setInterval(checkNewSubmissions, intervalMs);
 }
 
-module.exports = { startWatcher };
+module.exports = { startWatcher, markAsProcessed };
+

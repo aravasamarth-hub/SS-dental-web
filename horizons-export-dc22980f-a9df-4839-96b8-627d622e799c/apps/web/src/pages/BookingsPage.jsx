@@ -56,6 +56,8 @@ const INDIAN_STATES = [
 function BookingsPage() {
   const [step, setStep] = useState('intro'); // 'intro', 'checkout', 'success'
   const [showModal, setShowModal] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const submittingRef = React.useRef(false);
   
   // Date & Time selection states
   const [selectedDay, setSelectedDay] = useState(16); // Default 16th July 2026
@@ -99,11 +101,6 @@ function BookingsPage() {
 
   const saveToDatabaseDirect = async ({ paymentMethodType, paymentStatus, paymentId, orderId }) => {
     try {
-      if (!supabase) {
-        console.error('Supabase client is null because VITE_SUPABASE_ANON_KEY is missing!');
-        toast.error('Database connection key is missing in website settings.');
-        return;
-      }
       const getFormattedTimestamp = () => {
         const now = new Date();
         const day = String(now.getDate()).padStart(2, '0');
@@ -124,218 +121,244 @@ function BookingsPage() {
       const dateStr = typeof selectedDay === 'string' && selectedDay.includes('-')
         ? selectedDay
         : `${year}-${month}-${String(selectedDay).padStart(2, '0')}`;
-        
-      const { data, error } = await supabase.from('paid_bookings').insert([
-        {
-          created_at: getFormattedTimestamp(),
-          full_name: fullName,
-          email: email || '',
-          phone: phone,
-          appointment_date: dateStr,
-          appointment_time: (selectedTime || '05:00 PM').slice(0, 20),
-          payment_method: (paymentMethodType || paymentMethod || 'Visit to pay').slice(0, 20),
-          payment_status: paymentStatus || (paymentMethod === 'Razorpay' ? 'paid' : 'pending'),
-          payment_id: paymentId || null,
-          order_id: orderId || null,
-          amount_paid: 250.00
+
+      const notificationPayload = {
+        name: fullName,
+        email: email,
+        phone: phone,
+        date: dateStr,
+        time: selectedTime || '05:00 PM',
+        payment_method: paymentMethodType || paymentMethod || 'Visit to pay',
+        payment_status: paymentStatus || (paymentMethod === 'Razorpay' ? 'paid' : 'pending'),
+        amount_paid: 250.00,
+        form_type: 'Paid Booking Page'
+      };
+
+      // 1. GUARANTEED: Trigger Email & SMS Notifications + Save to Local Backup Queue
+      try {
+        sendBookingNotification(notificationPayload);
+      } catch (notifErr) {
+        console.warn('Booking notification error:', notifErr);
+      }
+
+      // 2. Try saving to Supabase database (Non-blocking fail-safe)
+      if (supabase) {
+        try {
+          const { data, error } = await supabase.from('paid_bookings').insert([
+            {
+              created_at: getFormattedTimestamp(),
+              full_name: fullName,
+              email: email || '',
+              phone: phone,
+              appointment_date: dateStr,
+              appointment_time: (selectedTime || '05:00 PM').slice(0, 20),
+              payment_method: (paymentMethodType || paymentMethod || 'Visit to pay').slice(0, 20),
+              payment_status: paymentStatus || (paymentMethod === 'Razorpay' ? 'paid' : 'pending'),
+              payment_id: paymentId || null,
+              order_id: orderId || null,
+              amount_paid: 250.00
+            }
+          ]);
+          if (error) {
+            console.warn('⚠️ Supabase direct insert warning (Handled gracefully via email fallback):', error.message);
+          } else {
+            console.log('✅ Successfully saved booking to Supabase paid_bookings table:', data);
+          }
+        } catch (dbErr) {
+          console.warn('⚠️ Supabase insert exception:', dbErr);
         }
-      ]);
-      if (error) {
-        console.error('Supabase direct insert error:', error);
-        toast.error(`Database error: ${error.message}`);
-      } else {
-        console.log('Successfully inserted booking into paid_bookings table directly:', data);
-
-        // Trigger Email, SMS, and WhatsApp Notifications
-        sendBookingNotification({
-          name: fullName,
-          email: email,
-          phone: phone,
-          date: dateStr,
-          time: selectedTime || '05:00 PM',
-          payment_method: paymentMethodType || paymentMethod || 'Visit to pay',
-          payment_status: paymentStatus || (paymentMethod === 'Razorpay' ? 'paid' : 'pending'),
-          amount_paid: 250.00,
-          form_type: 'Paid Booking Page'
-        });
-
       }
     } catch (err) {
-      console.error('Failed to save booking to paid_bookings directly:', err);
+      console.error('Failed to save booking details:', err);
     }
   };
 
   const handleCheckoutSubmit = async (e) => {
     e.preventDefault();
+    if (isSubmitting || submittingRef.current) return;
+
     if (!email || !fullName || !phone) {
       toast.error('Please fill in all required fields');
       return;
     }
 
-    if (paymentMethod === 'Razorpay') {
-      const loadScript = (src) => {
-        return new Promise((resolve) => {
-          if (window.Razorpay) {
-            resolve(true);
-            return;
-          }
-          const script = document.createElement('script');
-          script.src = src;
-          script.onload = () => resolve(true);
-          script.onerror = () => resolve(false);
-          document.body.appendChild(script);
-        });
-      };
+    submittingRef.current = true;
+    setIsSubmitting(true);
 
-      const sdkLoaded = await loadScript('https://checkout.razorpay.com/v1/checkout.js');
-      if (!sdkLoaded) {
-        toast.error('Razorpay SDK failed to load. Please check your internet connection.');
-        return;
-      }
-
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-
-      if (apiUrl) {
-        // --- SECURE BACKEND INTEGRATION FLOW ---
-        try {
-          // 1. Create order on the backend server
-          const response = await fetch(`${apiUrl}/api/create-order`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ amount: price })
+    try {
+      if (paymentMethod === 'Razorpay') {
+        const loadScript = (src) => {
+          return new Promise((resolve) => {
+            if (window.Razorpay) {
+              resolve(true);
+              return;
+            }
+            const script = document.createElement('script');
+            script.src = src;
+            script.onload = () => resolve(true);
+            script.onerror = () => resolve(false);
+            document.body.appendChild(script);
           });
-          const orderData = await response.json();
+        };
 
-          if (!orderData.success) {
-            toast.error('Failed to initialize payment order on server.');
-            return;
+        const sdkLoaded = await loadScript('https://checkout.razorpay.com/v1/checkout.js');
+        if (!sdkLoaded) {
+          toast.error('Razorpay SDK failed to load. Please check your internet connection.');
+          return;
+        }
+
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
+        if (apiUrl) {
+          // --- SECURE BACKEND INTEGRATION FLOW ---
+          try {
+            // 1. Create order on the backend server
+            const response = await fetch(`${apiUrl}/api/create-order`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ amount: price })
+            });
+            const orderData = await response.json();
+
+            if (!orderData.success) {
+              toast.error('Failed to initialize payment order on server.');
+              return;
+            }
+
+            // 2. Open checkout modal using backend Order ID
+            const options = {
+              key: 'rzp_live_SeQO0J84sbnMZb',
+              amount: orderData.amount,
+              currency: 'INR',
+              name: 'SS Dental Care',
+              description: 'Dental Consultation Booking Fee',
+              order_id: orderData.order_id,
+              image: 'https://ssdentalcare.in/ss-dental-logo.png',
+              handler: async function (response) {
+                try {
+                  // 3. Verify signature on backend server
+                  const verifyResponse = await fetch(`${apiUrl}/api/verify-payment`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      razorpay_order_id: response.razorpay_order_id,
+                      razorpay_payment_id: response.razorpay_payment_id,
+                      razorpay_signature: response.razorpay_signature,
+                      bookingDetails: {
+                        name: fullName,
+                        email,
+                        phone,
+                        date: selectedDay,
+                        time: selectedTime
+                      }
+                    })
+                  });
+                  const verificationResult = await verifyResponse.json();
+
+                  if (verificationResult.success) {
+                    setStep('success');
+                    toast.success('Appointment booked successfully!');
+                  } else {
+                    toast.error('Payment signature validation failed.');
+                  }
+                } catch (err) {
+                  console.error(err);
+                  // Fallback direct save if backend fails
+                  await saveToDatabaseDirect({
+                    paymentMethodType: 'Razorpay',
+                    paymentStatus: 'paid',
+                    paymentId: response.razorpay_payment_id,
+                    orderId: response.razorpay_order_id
+                  });
+                  setStep('success');
+                  toast.success('Appointment booked successfully!');
+                }
+              },
+              prefill: {
+                name: fullName,
+                email: email,
+                contact: phone,
+              },
+              theme: {
+                color: '#e63c0a',
+              },
+            };
+
+            const paymentObject = new window.Razorpay(options);
+            paymentObject.open();
+          } catch (err) {
+            console.error(err);
+            toast.error('Could not connect to payment server.');
           }
-
-          // 2. Open checkout modal using backend Order ID
+        } else {
+          // --- SECURE CLIENT-ONLY FALLBACK FLOW ---
           const options = {
             key: 'rzp_live_SeQO0J84sbnMZb',
-            amount: orderData.amount,
+            amount: price * 100,
             currency: 'INR',
             name: 'SS Dental Care',
             description: 'Dental Consultation Booking Fee',
-            order_id: orderData.order_id,
             image: 'https://ssdentalcare.in/ss-dental-logo.png',
             handler: async function (response) {
-              try {
-                // 3. Verify signature on backend server
-                const verifyResponse = await fetch(`${apiUrl}/api/verify-payment`, {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({
-                    razorpay_order_id: response.razorpay_order_id,
-                    razorpay_payment_id: response.razorpay_payment_id,
-                    razorpay_signature: response.razorpay_signature,
-                    bookingDetails: {
-                      name: fullName,
-                      email,
-                      phone,
-                      date: selectedDay,
-                      time: selectedTime
-                    }
-                  })
-                });
-                const verificationResult = await verifyResponse.json();
-
-                if (verificationResult.success) {
-                  setStep('success');
-                  toast.success('Appointment booked successfully!');
-                } else {
-                  toast.error('Payment signature validation failed.');
-                }
-              } catch (err) {
-                console.error(err);
-                // Fallback direct save if backend fails
-                await saveToDatabaseDirect({
-                  paymentMethodType: 'Razorpay',
-                  paymentStatus: 'paid',
-                  paymentId: response.razorpay_payment_id,
-                  orderId: response.razorpay_order_id
-                });
-                setStep('success');
-                toast.success('Appointment booked successfully!');
-              }
+              await saveToDatabaseDirect({
+                paymentMethodType: 'Razorpay',
+                paymentStatus: 'paid',
+                paymentId: response.razorpay_payment_id
+              });
+              setStep('success');
+              toast.success(`Payment successful! Payment ID: ${response.razorpay_payment_id}`);
             },
             prefill: {
               name: fullName,
               email: email,
               contact: phone,
             },
+            notes: {
+              booking_details: `Consultation on Jul ${selectedDay}, 2026 at ${selectedTime}`,
+            },
             theme: {
               color: '#e63c0a',
             },
           };
 
-          const paymentObject = new window.Razorpay(options);
-          paymentObject.open();
-        } catch (err) {
-          console.error(err);
-          toast.error('Could not connect to payment server.');
+          try {
+            const paymentObject = new window.Razorpay(options);
+            paymentObject.open();
+          } catch (err) {
+            console.error(err);
+            toast.error('Could not initiate checkout.');
+          }
         }
       } else {
-        // --- SECURE CLIENT-ONLY FALLBACK FLOW ---
-        const options = {
-          key: 'rzp_live_SeQO0J84sbnMZb',
-          amount: price * 100,
-          currency: 'INR',
-          name: 'SS Dental Care',
-          description: 'Dental Consultation Booking Fee',
-          image: 'https://ssdentalcare.in/ss-dental-logo.png',
-          handler: async function (response) {
-            await saveToDatabaseDirect({
-              paymentMethodType: 'Razorpay',
-              paymentStatus: 'paid',
-              paymentId: response.razorpay_payment_id
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+        if (apiUrl) {
+          try {
+            const response = await fetch(`${apiUrl}/api/create-booking`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                name: fullName,
+                email,
+                phone,
+                date: selectedDay,
+                time: selectedTime
+              })
             });
-            setStep('success');
-            toast.success(`Payment successful! Payment ID: ${response.razorpay_payment_id}`);
-          },
-          prefill: {
-            name: fullName,
-            email: email,
-            contact: phone,
-          },
-          notes: {
-            booking_details: `Consultation on Jul ${selectedDay}, 2026 at ${selectedTime}`,
-          },
-          theme: {
-            color: '#e63c0a',
-          },
-        };
-
-        try {
-          const paymentObject = new window.Razorpay(options);
-          paymentObject.open();
-        } catch (err) {
-          console.error(err);
-          toast.error('Could not initiate checkout.');
-        }
-      }
-    } else {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-      if (apiUrl) {
-        try {
-          const response = await fetch(`${apiUrl}/api/create-booking`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              name: fullName,
-              email,
-              phone,
-              date: selectedDay,
-              time: selectedTime
-            })
-          });
-          const result = await response.json();
-          if (result.success) {
-            setStep('success');
-            toast.success('Appointment booked successfully!');
-          } else {
-            // If backend returned error, attempt direct insert
+            const result = await response.json();
+            if (result.success) {
+              setStep('success');
+              toast.success('Appointment booked successfully!');
+            } else {
+              // If backend returned error, attempt direct insert
+              await saveToDatabaseDirect({
+                paymentMethodType: 'Visit to pay',
+                paymentStatus: 'pending'
+              });
+              setStep('success');
+              toast.success('Appointment booked successfully!');
+            }
+          } catch (err) {
+            console.error(err);
             await saveToDatabaseDirect({
               paymentMethodType: 'Visit to pay',
               paymentStatus: 'pending'
@@ -343,8 +366,7 @@ function BookingsPage() {
             setStep('success');
             toast.success('Appointment booked successfully!');
           }
-        } catch (err) {
-          console.error(err);
+        } else {
           await saveToDatabaseDirect({
             paymentMethodType: 'Visit to pay',
             paymentStatus: 'pending'
@@ -352,14 +374,10 @@ function BookingsPage() {
           setStep('success');
           toast.success('Appointment booked successfully!');
         }
-      } else {
-        await saveToDatabaseDirect({
-          paymentMethodType: 'Visit to pay',
-          paymentStatus: 'pending'
-        });
-        setStep('success');
-        toast.success('Appointment booked successfully!');
       }
+    } finally {
+      setIsSubmitting(false);
+      submittingRef.current = false;
     }
   };
 
@@ -765,8 +783,9 @@ function BookingsPage() {
                       <Button
                         type="submit"
                         className="w-full py-6 text-lg rounded-xl font-bold transition-all duration-200 active:scale-98"
+                        disabled={isSubmitting}
                       >
-                        Continue
+                        {isSubmitting ? 'Processing...' : 'Continue'}
                       </Button>
                     </form>
                   </div>

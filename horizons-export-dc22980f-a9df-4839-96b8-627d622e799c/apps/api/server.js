@@ -100,7 +100,7 @@ app.post('/api/verify-payment', async (req, res) => {
       const apptTime = (bookingDetails.time || 'General Consult').slice(0, 20);
 
       // Insert into paid_bookings table exclusively
-      const { error: paidError } = await supabase
+      const { data: insertedData, error: paidError } = await supabase
         .from('paid_bookings')
         .insert([
           {
@@ -116,11 +116,15 @@ app.post('/api/verify-payment', async (req, res) => {
             order_id: razorpay_order_id,
             amount_paid: 250.00
           }
-        ]);
+        ])
+        .select('id');
       if (paidError) {
         console.error('Error inserting into paid_bookings:', paidError);
       } else {
         console.log('Successfully saved paid booking to paid_bookings table in Supabase');
+        if (insertedData && insertedData[0] && insertedData[0].id) {
+          markAsProcessed('paid_bookings', insertedData[0].id);
+        }
       }
 
       // Trigger Email, SMS, & WhatsApp Notifications
@@ -178,7 +182,7 @@ app.post('/api/create-booking', async (req, res) => {
     const apptDate = formatDate(date);
     const apptTime = (time || 'General Consult').slice(0, 20);
 
-    const { error } = await supabase
+    const { data: insertedData, error } = await supabase
       .from('paid_bookings')
       .insert([
         {
@@ -192,11 +196,16 @@ app.post('/api/create-booking', async (req, res) => {
           payment_status: 'pending',
           amount_paid: 250.00
         }
-      ]);
+      ])
+      .select('id');
 
     if (error) {
       console.error('Error inserting booking into paid_bookings table:', error);
       return res.status(500).json({ success: false, message: 'Failed to create booking in database' });
+    }
+
+    if (insertedData && insertedData[0] && insertedData[0].id) {
+      markAsProcessed('paid_bookings', insertedData[0].id);
     }
 
     // Trigger Email, SMS, & WhatsApp Notifications
@@ -243,10 +252,38 @@ app.post('/api/notify', async (req, res) => {
   }
 });
 
-const { startWatcher } = require('./watcher');
+// Endpoint 5: Sync Offline Backup Queue
+app.post('/api/sync-backup', async (req, res) => {
+  try {
+    const { items } = req.body;
+    if (Array.isArray(items)) {
+      console.log(`[Backup Sync] Received ${items.length} backed up patient records for notification sync...`);
+      for (const item of items) {
+        await notifyNewBooking({
+          name: item.name || 'Valued Patient',
+          email: item.email || '',
+          phone: item.phone || '',
+          date: item.date || new Date().toISOString().split('T')[0],
+          time: item.time || 'General Consult',
+          payment_method: item.payment_method || 'Offline Backup Sync',
+          payment_status: item.payment_status || 'pending',
+          amount_paid: item.amount_paid || 0.00,
+          created_at: item.timestamp || getFormattedTimestamp()
+        }).catch(err => console.warn('Backup item notify warning:', err.message));
+      }
+    }
+    res.json({ success: true, count: items ? items.length : 0 });
+  } catch (error) {
+    console.error('Error syncing backup items:', error);
+    res.status(500).json({ success: false, message: 'Failed to sync backup queue' });
+  }
+});
+
+const { startWatcher, markAsProcessed } = require('./watcher');
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Secure payment & notification backend running on port ${PORT}`);
   startWatcher(10000);
 });
+
