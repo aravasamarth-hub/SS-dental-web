@@ -35,12 +35,11 @@ CREATE POLICY "Allow public appointments insertion"
 ON public.appointments FOR INSERT TO anon, authenticated, service_role 
 WITH CHECK (full_name IS NOT NULL AND phone IS NOT NULL);
 
--- Allow authenticated users & service role to select appointments
+-- Allow public web visitors & API watcher to select appointments
 CREATE POLICY "Allow service role appointments all"
-ON public.appointments FOR SELECT TO authenticated, service_role USING (true);
+ON public.appointments FOR SELECT TO anon, authenticated, service_role USING (true);
 
-GRANT INSERT ON TABLE public.appointments TO anon;
-GRANT ALL ON TABLE public.appointments TO authenticated, service_role;
+GRANT SELECT, INSERT ON TABLE public.appointments TO anon, authenticated, service_role;
 
 
 -- 3. `public.paid_bookings` TABLE & SECURE RLS POLICIES
@@ -69,11 +68,11 @@ CREATE POLICY "Allow public paid bookings insertion"
 ON public.paid_bookings FOR INSERT TO anon, authenticated, service_role 
 WITH CHECK (full_name IS NOT NULL AND phone IS NOT NULL);
 
--- Allow authenticated users & service role to select paid bookings
+-- Allow public web visitors & API watcher to select paid bookings
 CREATE POLICY "Allow service role paid bookings all"
-ON public.paid_bookings FOR SELECT TO authenticated, service_role USING (true);
+ON public.paid_bookings FOR SELECT TO anon, authenticated, service_role USING (true);
 
-GRANT INSERT ON TABLE public.paid_bookings TO anon;
-GRANT ALL ON TABLE public.paid_bookings TO authenticated, service_role;
+GRANT SELECT, INSERT ON TABLE public.paid_bookings TO anon, authenticated, service_role;
+
 
 
