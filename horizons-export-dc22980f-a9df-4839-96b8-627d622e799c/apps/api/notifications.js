@@ -8,6 +8,9 @@ const recentEmailDispatches = new Map();
 let isProcessingEmailQueue = false;
 
 // 1. Create Nodemailer Transport
+// Default fallback recipients (override via .env NOTIFICATION_EMAIL)
+const DEFAULT_CLINIC_EMAIL = process.env.NOTIFICATION_EMAIL || 'aravasamarth@gmail.com';
+
 const createTransporter = () => {
   const host = process.env.SMTP_HOST || 'smtp.gmail.com';
   const port = parseInt(process.env.SMTP_PORT || '587', 10);
@@ -24,9 +27,6 @@ const createTransporter = () => {
     port,
     secure: port === 465,
     auth: { user, pass },
-    tls: {
-      rejectUnauthorized: false
-    },
     connectionTimeout: 15000,
     greetingTimeout: 15000,
     socketTimeout: 15000
@@ -123,7 +123,7 @@ setInterval(processEmailQueue, 20000);
 // Helper function to send email directly with 3 retries
 async function sendEmailNotificationDirect({ to, subject, html, text }) {
   const transporter = createTransporter();
-  const recipient = to || process.env.NOTIFICATION_EMAIL || 'aravasamarth@gmail.com, ssdentalcare.in@gmail.com';
+  const recipient = to || DEFAULT_CLINIC_EMAIL;
 
   if (!transporter) {
     console.log(`[Email Console Backup] To: ${recipient} | Subject: ${subject}`);
@@ -159,7 +159,7 @@ async function sendEmailNotificationDirect({ to, subject, html, text }) {
 
 // 4. Public Email Notification Handler (with Deduplication & Queue Fallback)
 async function sendEmailNotification({ to, subject, html, text }) {
-  const recipient = to || process.env.NOTIFICATION_EMAIL || 'aravasamarth@gmail.com, ssdentalcare.in@gmail.com';
+  const recipient = to || DEFAULT_CLINIC_EMAIL;
   
   // Deduplication check (10-minute window for identical recipient + subject)
   const hashKey = `${recipient}_${subject}`;
@@ -185,11 +185,9 @@ async function sendEmailNotification({ to, subject, html, text }) {
   return result;
 }
 
-// 5. SMS Notification Handler (Fast2SMS / Twilio)
+// 5. SMS Notification Handler (Fast2SMS)
 async function sendSMSNotification({ phone, message }) {
   const apiKey = process.env.FAST2SMS_API_KEY;
-  const twilioSid = process.env.TWILIO_ACCOUNT_SID;
-  const twilioAuth = process.env.TWILIO_AUTH_TOKEN;
 
   console.log(`[SMS Notification Triggered] To Phone: ${phone}`);
 
@@ -214,9 +212,8 @@ async function sendSMSNotification({ phone, message }) {
       return { success: true, data };
     } catch (err) {
       console.error('❌ Error sending SMS via Fast2SMS:', err.message);
+      return { success: false, error: err.message };
     }
-  } else if (twilioSid && twilioAuth) {
-    console.log('ℹ️ Twilio SMS credentials configured.');
   } else {
     console.log(`[SMS Notification Console Backup] To: ${phone} | Text: ${message}`);
   }
@@ -231,11 +228,8 @@ async function sendWhatsAppNotification({ phone, message }) {
   console.log(`[WhatsApp Notification Triggered] To Phone: ${phone}`);
 
   if (whatsappKey) {
-    try {
-      console.log('✅ WhatsApp API key configured. Triggering WhatsApp message...');
-    } catch (err) {
-      console.error('❌ Error sending WhatsApp message:', err.message);
-    }
+    // WhatsApp API integration — add your provider's API call here
+    console.log('✅ WhatsApp API key configured. Ready to send message.');
   } else {
     console.log(`[WhatsApp Notification Console Backup] To: ${phone} | Text: ${message}`);
   }
@@ -246,8 +240,8 @@ async function sendWhatsAppNotification({ phone, message }) {
 // 7. Unified Dispatcher for Appointments & Paid Bookings
 async function notifyNewBooking(bookingDetails) {
   const { name, email, phone, date, time, payment_method, payment_status, amount_paid, created_at } = bookingDetails;
-  const clinicEmail = process.env.NOTIFICATION_EMAIL || 'aravasamarth@gmail.com, ssdentalcare.in@gmail.com';
-  const targetPhone = phone || process.env.DEMO_TEST_PHONE || '7619267764';
+  const clinicEmail = DEFAULT_CLINIC_EMAIL;
+  const targetPhone = phone || process.env.DEMO_TEST_PHONE || '';
 
   const title = payment_status === 'paid' ? '💳 New Paid Booking Received!' : '📅 New Appointment Request Received!';
   

@@ -47,17 +47,18 @@ async function checkNewSubmissions() {
     // 1. Check `public.appointments`
     const { data: appointments, error: apptErr } = await supabase
       .from('appointments')
-      .select('*')
+      .select('id, full_name, email, phone, appointment_date, appointment_time, created_at')
       .order('id', { ascending: false })
       .limit(50);
 
-    if (apptErr) {
+      if (apptErr) {
       console.warn('⚠️ [Auto-Watcher] Supabase appointments check notice:', apptErr.message);
     } else if (appointments && appointments.length > 0) {
+      let hasNew = false;
       for (const item of appointments) {
         if (!processedAppointments.has(item.id)) {
           processedAppointments.add(item.id);
-          savePersistedIds();
+          hasNew = true;
 
           if (!isInitialRun) {
             console.log(`📧 [Auto-Watcher] Processing NEW appointment record for ${item.full_name || 'Patient'} (ID: ${item.id}). Dispatching email...`);
@@ -75,22 +76,24 @@ async function checkNewSubmissions() {
           }
         }
       }
+      if (hasNew) savePersistedIds(); // save once after processing all new items
     }
 
     // 2. Check `public.paid_bookings`
     const { data: paidBookings, error: paidErr } = await supabase
       .from('paid_bookings')
-      .select('*')
+      .select('id, full_name, email, phone, appointment_date, appointment_time, payment_method, payment_status, amount_paid, created_at')
       .order('id', { ascending: false })
       .limit(50);
 
-    if (paidErr) {
+      if (paidErr) {
       console.warn('⚠️ [Auto-Watcher] Supabase paid_bookings check notice:', paidErr.message);
     } else if (paidBookings && paidBookings.length > 0) {
+      let hasNew = false;
       for (const item of paidBookings) {
         if (!processedPaidBookings.has(item.id)) {
           processedPaidBookings.add(item.id);
-          savePersistedIds();
+          hasNew = true;
 
           if (!isInitialRun) {
             console.log(`📧 [Auto-Watcher] Processing NEW paid booking record for ${item.full_name || 'Patient'} (ID: ${item.id}). Dispatching email...`);
@@ -108,6 +111,7 @@ async function checkNewSubmissions() {
           }
         }
       }
+      if (hasNew) savePersistedIds(); // save once after processing all new items
     }
 
     if (isInitialRun) {
