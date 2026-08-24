@@ -5,7 +5,16 @@ const express = require('express');
 const Razorpay = require('razorpay');
 const cors = require('cors');
 const crypto = require('crypto');
+
+// Import DB module — supabase client + self-healing queue helpers
 const supabase = require('./db');
+const { getDbHealthStatus, saveToDbQueue, processDbQueue } = require('./db');
+
+// Import notifications
+const { notifyNewBooking, getEmailQueueStatus } = require('./notifications');
+
+// Import watcher — MUST be at top so markAsProcessed is defined before route handlers run
+const { startWatcher, markAsProcessed } = require('./watcher');
 
 const app = express();
 
@@ -13,13 +22,18 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Health Check Endpoint
+// Health Check Endpoint with Detailed Diagnostics
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', service: 'SS Dental Care API', timestamp: new Date().toISOString() });
+  res.json({
+    status: 'ok',
+    service: 'SS Dental Care API',
+    timestamp: new Date().toISOString(),
+    database: getDbHealthStatus(),
+    emailQueue: getEmailQueueStatus()
+  });
 });
 
 // Initialize Razorpay Instance
-// Store these values securely in a .env file!
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID || 'rzp_live_SeQO0J84sbnMZb',
   key_secret: process.env.RAZORPAY_KEY_SECRET
@@ -28,10 +42,10 @@ const razorpay = new Razorpay({
 // Endpoint 1: Create an Order
 app.post('/api/create-order', async (req, res) => {
   try {
-    const { amount } = req.body; // Amount in INR, e.g. 250
-    
+    const { amount } = req.body;
+
     if (!process.env.RAZORPAY_KEY_SECRET) {
-      console.warn('⚠️ RAZORPAY_KEY_SECRET is not configured in .env. Providing fallback order ID for Razorpay client checkout.');
+      console.warn('⚠️ RAZORPAY_KEY_SECRET is not configured in .env. Providing fallback order ID for client checkout.');
       return res.json({
         success: true,
         order_id: `order_client_${Date.now()}`,
@@ -41,20 +55,20 @@ app.post('/api/create-order', async (req, res) => {
     }
 
     const options = {
-      amount: (amount || 250) * 100, // Razorpay expects amount in paise (25000 paise = ₹250)
+      amount: (amount || 250) * 100,
       currency: 'INR',
       receipt: `receipt_booking_${Date.now()}`
     };
 
     const order = await razorpay.orders.create(options);
-    
+
     res.json({
       success: true,
       order_id: order.id,
       amount: order.amount
     });
   } catch (error) {
-    console.error('Error creating order:', error);
+    console.error('Error creating order:', error.message);
     res.status(500).json({ success: false, message: 'Could not initiate payment' });
   }
 });
@@ -86,8 +100,6 @@ const getFormattedTimestamp = () => {
   return `${day}/${month}/${year}, ${strHours}:${minutes}:${seconds} ${ampm}`;
 };
 
-const { notifyNewBooking } = require('./notifications');
-
 // Endpoint 2: Verify Payment & Confirm Booking
 app.post('/api/verify-payment', async (req, res) => {
   try {
@@ -99,32 +111,38 @@ app.post('/api/verify-payment', async (req, res) => {
       const apptDate = formatDate(bookingDetails.date);
       const apptTime = (bookingDetails.time || 'General Consult').slice(0, 20);
 
-      // Insert into paid_bookings table exclusively
-      const { data: insertedData, error: paidError } = await supabase
-        .from('paid_bookings')
-        .insert([
-          {
-            created_at: formattedTs,
-            full_name: bookingDetails.name,
-            email: bookingDetails.email,
-            phone: bookingDetails.phone,
-            appointment_date: apptDate,
-            appointment_time: apptTime,
-            payment_method: 'Razorpay',
-            payment_status: 'paid',
-            payment_id: razorpay_payment_id,
-            order_id: razorpay_order_id,
-            amount_paid: 250.00
+      const record = {
+        created_at: formattedTs,
+        full_name: bookingDetails.name,
+        email: bookingDetails.email || '',
+        phone: bookingDetails.phone,
+        appointment_date: apptDate,
+        appointment_time: apptTime,
+        payment_method: 'Razorpay',
+        payment_status: 'paid',
+        payment_id: razorpay_payment_id || null,
+        order_id: razorpay_order_id || null,
+        amount_paid: 250.00
+      };
+
+      try {
+        const { data: insertedData, error: paidError } = await supabase
+          .from('paid_bookings')
+          .insert([record])
+          .select('id');
+
+        if (paidError) {
+          console.warn('⚠️ [Supabase DB Issue] Insert to paid_bookings failed. Saving to self-healing retry queue:', paidError.message);
+          saveToDbQueue('paid_bookings', record);
+        } else {
+          console.log('✅ Successfully saved paid booking to Supabase paid_bookings table.');
+          if (insertedData && insertedData[0] && insertedData[0].id) {
+            markAsProcessed('paid_bookings', insertedData[0].id);
           }
-        ])
-        .select('id');
-      if (paidError) {
-        console.error('Error inserting into paid_bookings:', paidError);
-      } else {
-        console.log('Successfully saved paid booking to paid_bookings table in Supabase');
-        if (insertedData && insertedData[0] && insertedData[0].id) {
-          markAsProcessed('paid_bookings', insertedData[0].id);
         }
+      } catch (dbEx) {
+        console.warn('⚠️ Supabase exception during insert. Saving to self-healing DB queue:', dbEx.message);
+        saveToDbQueue('paid_bookings', record);
       }
 
       // Trigger Email, SMS, & WhatsApp Notifications
@@ -138,7 +156,7 @@ app.post('/api/verify-payment', async (req, res) => {
         payment_status: 'paid',
         amount_paid: 250.00,
         created_at: formattedTs
-      }).catch(err => console.error('Notification dispatch error:', err));
+      }).catch(err => console.error('Notification dispatch error:', err.message));
     };
 
     if (!process.env.RAZORPAY_KEY_SECRET) {
@@ -147,7 +165,6 @@ app.post('/api/verify-payment', async (req, res) => {
       return res.json({ success: true, message: 'Skipped signature validation due to missing credentials' });
     }
 
-    // Verify signature
     const text = razorpay_order_id + '|' + razorpay_payment_id;
     const expectedSignature = crypto
       .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
@@ -164,7 +181,7 @@ app.post('/api/verify-payment', async (req, res) => {
       res.status(400).json({ success: false, message: 'Invalid payment signature' });
     }
   } catch (error) {
-    console.error('Error verifying payment:', error);
+    console.error('Error verifying payment:', error.message);
     res.status(500).json({ success: false, message: 'Verification process failed' });
   }
 });
@@ -182,30 +199,33 @@ app.post('/api/create-booking', async (req, res) => {
     const apptDate = formatDate(date);
     const apptTime = (time || 'General Consult').slice(0, 20);
 
-    const { data: insertedData, error } = await supabase
-      .from('paid_bookings')
-      .insert([
-        {
-          created_at: formattedTs,
-          full_name: name,
-          email: email || '',
-          phone: phone,
-          appointment_date: apptDate,
-          appointment_time: apptTime,
-          payment_method: 'Visit to pay',
-          payment_status: 'pending',
-          amount_paid: 250.00
-        }
-      ])
-      .select('id');
+    const record = {
+      created_at: formattedTs,
+      full_name: name,
+      email: email || '',
+      phone: phone,
+      appointment_date: apptDate,
+      appointment_time: apptTime,
+      payment_method: 'Visit to pay',
+      payment_status: 'pending',
+      amount_paid: 250.00
+    };
 
-    if (error) {
-      console.error('Error inserting booking into paid_bookings table:', error);
-      return res.status(500).json({ success: false, message: 'Failed to create booking in database' });
-    }
+    try {
+      const { data: insertedData, error } = await supabase
+        .from('paid_bookings')
+        .insert([record])
+        .select('id');
 
-    if (insertedData && insertedData[0] && insertedData[0].id) {
-      markAsProcessed('paid_bookings', insertedData[0].id);
+      if (error) {
+        console.warn('⚠️ Supabase insert notice. Saving to self-healing DB queue:', error.message);
+        saveToDbQueue('paid_bookings', record);
+      } else if (insertedData && insertedData[0] && insertedData[0].id) {
+        markAsProcessed('paid_bookings', insertedData[0].id);
+      }
+    } catch (dbEx) {
+      console.warn('⚠️ Supabase exception during booking create. Queueing for retry:', dbEx.message);
+      saveToDbQueue('paid_bookings', record);
     }
 
     // Trigger Email, SMS, & WhatsApp Notifications
@@ -219,11 +239,11 @@ app.post('/api/create-booking', async (req, res) => {
       payment_status: 'pending',
       amount_paid: 250.00,
       created_at: formattedTs
-    }).catch(err => console.error('Notification dispatch error:', err));
+    }).catch(err => console.error('Notification dispatch error:', err.message));
 
     res.json({ success: true, message: 'Appointment booked successfully!' });
   } catch (error) {
-    console.error('Error creating booking:', error);
+    console.error('Error creating booking:', error.message);
     res.status(500).json({ success: false, message: 'Internal server error' });
   }
 });
@@ -247,7 +267,7 @@ app.post('/api/notify', async (req, res) => {
 
     res.json({ success: true, message: 'Notification dispatched successfully!' });
   } catch (error) {
-    console.error('Error dispatching notification:', error);
+    console.error('Error dispatching notification:', error.message);
     res.status(500).json({ success: false, message: 'Failed to dispatch notification' });
   }
 });
@@ -274,16 +294,16 @@ app.post('/api/sync-backup', async (req, res) => {
     }
     res.json({ success: true, count: items ? items.length : 0 });
   } catch (error) {
-    console.error('Error syncing backup items:', error);
+    console.error('Error syncing backup items:', error.message);
     res.status(500).json({ success: false, message: 'Failed to sync backup queue' });
   }
 });
 
-const { startWatcher, markAsProcessed } = require('./watcher');
-
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Secure payment & notification backend running on port ${PORT}`);
+  console.log(`🚀 SS Dental Care API running on port ${PORT}`);
+  // Start watcher to detect new Supabase entries and send email for new ones
   startWatcher(10000);
+  // Flush any previously queued DB inserts that failed before last restart
+  processDbQueue();
 });
-

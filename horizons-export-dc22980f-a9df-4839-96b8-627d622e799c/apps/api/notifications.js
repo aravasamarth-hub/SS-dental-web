@@ -1,6 +1,11 @@
 const nodemailer = require('nodemailer');
+const fs = require('fs');
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '.env') });
+
+const EMAIL_QUEUE_FILE = path.join(__dirname, 'email_queue.json');
+const recentEmailDispatches = new Map();
+let isProcessingEmailQueue = false;
 
 // 1. Create Nodemailer Transport
 const createTransporter = () => {
@@ -10,7 +15,7 @@ const createTransporter = () => {
   const pass = process.env.SMTP_PASS || process.env.GMAIL_APP_PASSWORD;
 
   if (!pass) {
-    console.warn('⚠️ SMTP_PASS / GMAIL_APP_PASSWORD is not configured in .env file. Email notifications will be logged to console.');
+    console.warn('⚠️ SMTP_PASS / GMAIL_APP_PASSWORD is not configured in .env file. Email notifications will log to console & local queue.');
     return null;
   }
 
@@ -28,35 +33,159 @@ const createTransporter = () => {
   });
 };
 
-// 2. Email Notification Handler
-async function sendEmailNotification({ to, subject, html, text }) {
+// Verify Transporter Health on startup
+const verifyTransporter = async () => {
   const transporter = createTransporter();
-  const recipient = to || process.env.NOTIFICATION_EMAIL || 'aravasamarth@gmail.com, ssdentalcare.in@gmail.com';
-
-  console.log(`[Email Notification Triggered] To: ${recipient} | Subject: ${subject}`);
-
-  if (!transporter) {
-    console.log(`[Email Notification Console Backup] To: ${recipient}\nSubject: ${subject}\nText:\n${text || html}`);
-    return { success: false, reason: 'SMTP_PASS missing' };
-  }
-
+  if (!transporter) return false;
   try {
-    const info = await transporter.sendMail({
-      from: `"SS Dental Care" <${process.env.SMTP_USER || 'aravasamarth@gmail.com'}>`,
-      to: recipient,
-      subject: subject,
-      text: text,
-      html: html
-    });
-    console.log('✅ Email notification sent successfully:', info.messageId);
-    return { success: true, messageId: info.messageId };
-  } catch (error) {
-    console.error('❌ Error sending email notification:', error);
-    return { success: false, error: error.message };
+    await transporter.verify();
+    console.log('✅ Nodemailer SMTP connection verified successfully.');
+    return true;
+  } catch (err) {
+    console.warn('⚠️ Nodemailer SMTP verification warning (Failed emails will automatically queue):', err.message);
+    return false;
+  }
+};
+verifyTransporter();
+
+// 2. Queue Operations for Offline / Failed Email Self-Healing
+function getEmailQueue() {
+  try {
+    if (fs.existsSync(EMAIL_QUEUE_FILE)) {
+      const data = fs.readFileSync(EMAIL_QUEUE_FILE, 'utf8');
+      return JSON.parse(data || '[]');
+    }
+  } catch (err) {
+    console.error('⚠️ Could not read email queue file:', err.message);
+  }
+  return [];
+}
+
+function saveToEmailQueue(emailTask) {
+  try {
+    const queue = getEmailQueue();
+    const newItem = {
+      id: `email_queue_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+      ...emailTask,
+      attempts: 0,
+      created_at: new Date().toISOString()
+    };
+    queue.push(newItem);
+    fs.writeFileSync(EMAIL_QUEUE_FILE, JSON.stringify(queue, null, 2), 'utf8');
+    console.log(`📦 [Email Self-Healing Queue] Saved failed email to local queue. Total pending emails: ${queue.length}`);
+    return newItem;
+  } catch (err) {
+    console.error('❌ Failed to write email queue file:', err.message);
   }
 }
 
-// 3. SMS Notification Handler (Fast2SMS / Twilio)
+// 3. Email Queue Processor
+async function processEmailQueue() {
+  if (isProcessingEmailQueue) return;
+  const queue = getEmailQueue();
+  if (queue.length === 0) return;
+
+  isProcessingEmailQueue = true;
+  console.log(`🔄 [Email Self-Healing Queue] Processing ${queue.length} pending queued emails...`);
+  const remainingQueue = [];
+
+  for (const item of queue) {
+    const result = await sendEmailNotificationDirect({
+      to: item.to,
+      subject: item.subject,
+      html: item.html,
+      text: item.text
+    });
+
+    if (result.success) {
+      console.log(`✅ [Email Queue Restored] Delivered queued email ID ${item.id} to ${item.to}`);
+    } else {
+      item.attempts = (item.attempts || 0) + 1;
+      if (item.attempts < 10) {
+        remainingQueue.push(item);
+      } else {
+        console.error(`❌ [Email Queue Max Retries] Dropping queued email ${item.id} after 10 failed attempts.`);
+      }
+    }
+  }
+
+  try {
+    fs.writeFileSync(EMAIL_QUEUE_FILE, JSON.stringify(remainingQueue, null, 2), 'utf8');
+  } catch (err) {
+    console.error('❌ Error updating email queue file:', err.message);
+  }
+  isProcessingEmailQueue = false;
+}
+
+// Start 20s Email Queue Drain Loop
+setInterval(processEmailQueue, 20000);
+
+// Helper function to send email directly with 3 retries
+async function sendEmailNotificationDirect({ to, subject, html, text }) {
+  const transporter = createTransporter();
+  const recipient = to || process.env.NOTIFICATION_EMAIL || 'aravasamarth@gmail.com, ssdentalcare.in@gmail.com';
+
+  if (!transporter) {
+    console.log(`[Email Console Backup] To: ${recipient} | Subject: ${subject}`);
+    return { success: false, reason: 'SMTP_PASS missing' };
+  }
+
+  let attempts = 0;
+  const maxAttempts = 3;
+
+  while (attempts < maxAttempts) {
+    attempts++;
+    try {
+      const info = await transporter.sendMail({
+        from: `"SS Dental Care" <${process.env.SMTP_USER || 'aravasamarth@gmail.com'}>`,
+        to: recipient,
+        subject: subject,
+        text: text,
+        html: html
+      });
+      console.log(`✅ Email notification sent successfully (Attempt ${attempts}):`, info.messageId);
+      return { success: true, messageId: info.messageId };
+    } catch (error) {
+      console.warn(`⚠️ Email send attempt ${attempts} failed:`, error.message);
+      if (attempts < maxAttempts) {
+        await new Promise(res => setTimeout(res, 1500 * attempts)); // Backoff delay
+      } else {
+        return { success: false, error: error.message };
+      }
+    }
+  }
+  return { success: false, error: 'Max attempts reached' };
+}
+
+// 4. Public Email Notification Handler (with Deduplication & Queue Fallback)
+async function sendEmailNotification({ to, subject, html, text }) {
+  const recipient = to || process.env.NOTIFICATION_EMAIL || 'aravasamarth@gmail.com, ssdentalcare.in@gmail.com';
+  
+  // Deduplication check (10-minute window for identical recipient + subject)
+  const hashKey = `${recipient}_${subject}`;
+  const now = Date.now();
+  if (recentEmailDispatches.has(hashKey)) {
+    const lastSent = recentEmailDispatches.get(hashKey);
+    if (now - lastSent < 600000) { // 10 minutes
+      console.log(`ℹ️ [Email Suppressed] Duplicate email for ${hashKey} within 10 min window.`);
+      return { success: true, duplicateSuppressed: true };
+    }
+  }
+  recentEmailDispatches.set(hashKey, now);
+
+  console.log(`[Email Notification Triggered] To: ${recipient} | Subject: ${subject}`);
+
+  const result = await sendEmailNotificationDirect({ to: recipient, subject, html, text });
+  
+  if (!result.success && result.reason !== 'SMTP_PASS missing') {
+    // Save to queue for self-healing automatic background delivery
+    saveToEmailQueue({ to: recipient, subject, html, text });
+  }
+
+  return result;
+}
+
+// 5. SMS Notification Handler (Fast2SMS / Twilio)
 async function sendSMSNotification({ phone, message }) {
   const apiKey = process.env.FAST2SMS_API_KEY;
   const twilioSid = process.env.TWILIO_ACCOUNT_SID;
@@ -84,7 +213,7 @@ async function sendSMSNotification({ phone, message }) {
       console.log('✅ Fast2SMS response:', data);
       return { success: true, data };
     } catch (err) {
-      console.error('❌ Error sending SMS via Fast2SMS:', err);
+      console.error('❌ Error sending SMS via Fast2SMS:', err.message);
     }
   } else if (twilioSid && twilioAuth) {
     console.log('ℹ️ Twilio SMS credentials configured.');
@@ -95,10 +224,9 @@ async function sendSMSNotification({ phone, message }) {
   return { success: true, logged: true };
 }
 
-// 4. WhatsApp Notification Handler
+// 6. WhatsApp Notification Handler
 async function sendWhatsAppNotification({ phone, message }) {
   const whatsappKey = process.env.WHATSAPP_API_KEY;
-  const twilioSid = process.env.TWILIO_ACCOUNT_SID;
 
   console.log(`[WhatsApp Notification Triggered] To Phone: ${phone}`);
 
@@ -106,7 +234,7 @@ async function sendWhatsAppNotification({ phone, message }) {
     try {
       console.log('✅ WhatsApp API key configured. Triggering WhatsApp message...');
     } catch (err) {
-      console.error('❌ Error sending WhatsApp message:', err);
+      console.error('❌ Error sending WhatsApp message:', err.message);
     }
   } else {
     console.log(`[WhatsApp Notification Console Backup] To: ${phone} | Text: ${message}`);
@@ -115,7 +243,7 @@ async function sendWhatsAppNotification({ phone, message }) {
   return { success: true, logged: true };
 }
 
-// 5. Unified Dispatcher for Appointments & Paid Bookings
+// 7. Unified Dispatcher for Appointments & Paid Bookings
 async function notifyNewBooking(bookingDetails) {
   const { name, email, phone, date, time, payment_method, payment_status, amount_paid, created_at } = bookingDetails;
   const clinicEmail = process.env.NOTIFICATION_EMAIL || 'aravasamarth@gmail.com, ssdentalcare.in@gmail.com';
@@ -185,5 +313,8 @@ module.exports = {
   sendEmailNotification,
   sendSMSNotification,
   sendWhatsAppNotification,
-  notifyNewBooking
+  notifyNewBooking,
+  getEmailQueueStatus: () => ({ pendingCount: getEmailQueue().length }),
+  processEmailQueue
 };
+
