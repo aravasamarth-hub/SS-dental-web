@@ -206,20 +206,7 @@ function ContactPage() {
                       </div>
                     </a>
 
-                    <a
-                      href="mailto:ssdentalcare.in@gmail.com"
-                      className="flex items-start gap-5 group cursor-pointer"
-                    >
-                      <div className="w-12 h-12 rounded-xl bg-accent/15 flex items-center justify-center flex-shrink-0 group-hover:bg-accent/25 transition-all">
-                        <Mail className="h-6 w-6 text-accent" />
-                      </div>
-                      <div>
-                        <h3 className="font-bold text-lg mb-1 text-foreground group-hover:text-accent transition-colors">Email</h3>
-                        <p className="text-muted-foreground leading-relaxed group-hover:text-foreground transition-colors">
-                          ssdentalcare.in@gmail.com
-                        </p>
-                      </div>
-                    </a>
+
                   </div>
                 </div>
 

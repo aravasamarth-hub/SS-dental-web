@@ -828,8 +828,7 @@ function HomePage() {
                     <div>
                       <p className="font-medium mb-1">Contact</p>
                       <p className="text-muted-foreground">
-                        Phone: <a href="tel:+919448455699" className="hover:text-accent transition-colors">+91 9448455699</a><br />
-                        Email: <a href="mailto:ssdentalcare.in@gmail.com" className="hover:text-accent transition-colors">ssdentalcare.in@gmail.com</a>
+                        Phone: <a href="tel:+919448455699" className="hover:text-accent transition-colors">+91 9448455699</a>
                       </p>
                     </div>
                   </div>
