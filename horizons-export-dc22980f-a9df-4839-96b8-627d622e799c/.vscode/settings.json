@@ -1,6 +1,16 @@
 {
   "css.lint.unknownAtRules": "ignore",
   "files.associations": {
-    ".htaccess": "apacheconf"
+    ".htaccess": "apacheconf",
+    "LICENSE": "plaintext"
+  },
+  "markdownlint.ignore": [
+    ".node/**/*",
+    "node_modules/**/*",
+    "dist/**/*"
+  ],
+  "search.exclude": {
+    "**/.node": true
   }
 }
+

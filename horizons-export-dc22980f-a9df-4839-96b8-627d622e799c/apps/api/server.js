@@ -9,7 +9,7 @@ const { z } = require('zod');
 
 // Import DB module — supabase client + self-healing queue helpers + idempotency
 const supabase = require('./db');
-const { getDbHealthStatus, saveToDbQueue, processDbQueue, checkRecordAlreadyExists } = require('./db');
+const { getDbHealthStatus, saveToDbQueue, processDbQueue, checkRecordAlreadyExists, withDbRetry } = require('./db');
 
 // Import notifications
 const { notifyNewBooking, getEmailQueueStatus } = require('./notifications');
@@ -167,10 +167,12 @@ app.post('/api/verify-payment', async (req, res, next) => {
       };
 
       try {
-        const { data: insertedData, error: paidError } = await supabase
-          .from('paid_bookings')
-          .insert([record])
-          .select('id');
+        const { data: insertedData, error: paidError } = await withDbRetry(() =>
+          supabase
+            .from('paid_bookings')
+            .insert([record])
+            .select('id')
+        );
 
         if (paidError) {
           // Check for unique constraint violation on idempotency_key
@@ -269,10 +271,12 @@ app.post('/api/create-booking', async (req, res, next) => {
     };
 
     try {
-      const { data: insertedData, error } = await supabase
-        .from('paid_bookings')
-        .insert([record])
-        .select('id');
+      const { data: insertedData, error } = await withDbRetry(() =>
+        supabase
+          .from('paid_bookings')
+          .insert([record])
+          .select('id')
+      );
 
       if (error) {
         // Check for unique constraint violation on idempotency_key

@@ -17,7 +17,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { supabase } from '@/lib/supabase';
+import { supabase, withAuthRetry } from '@/lib/supabase';
 import { sendBookingNotification } from '@/lib/sendNotification';
 
 function HomePage() {
@@ -230,17 +230,19 @@ function HomePage() {
     // 2. Try saving to Supabase database (Non-blocking fail-safe)
     try {
       if (supabase) {
-        const { error } = await supabase.from('appointments').insert([
-          {
-            created_at: getFormattedTimestamp(),
-            full_name: formData.name,
-            email: formData.email || '',
-            phone: formData.phone,
-            appointment_date: today,
-            appointment_time: appointmentTimeVal,
-            idempotency_key: attemptIdempotencyKey
-          }
-        ]);
+        const { error } = await withAuthRetry(() =>
+          supabase.from('appointments').insert([
+            {
+              created_at: getFormattedTimestamp(),
+              full_name: formData.name,
+              email: formData.email || '',
+              phone: formData.phone,
+              appointment_date: today,
+              appointment_time: appointmentTimeVal,
+              idempotency_key: attemptIdempotencyKey
+            }
+          ])
+        );
         if (error) {
           if (error.code === '23505' || (error.message && error.message.includes('idempotency_key'))) {
             console.log('ℹ️ [Appointments Idempotency] Appointment with this key already recorded.');

@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { supabase } from '@/lib/supabase';
+import { supabase, withAuthRetry } from '@/lib/supabase';
 import { sendBookingNotification } from '@/lib/sendNotification';
 
 const INDIAN_STATES = [
@@ -144,22 +144,24 @@ function BookingsPage() {
       // 2. Try saving to Supabase database (Non-blocking fail-safe)
       if (supabase) {
         try {
-          const { data, error } = await supabase.from('paid_bookings').insert([
-            {
-              created_at: getFormattedTimestamp(),
-              full_name: fullName,
-              email: email || '',
-              phone: phone,
-              appointment_date: dateStr,
-              appointment_time: (selectedTime || '05:00 PM').slice(0, 20),
-              payment_method: (paymentMethodType || paymentMethod || 'Visit to pay').slice(0, 20),
-              payment_status: paymentStatus || (paymentMethod === 'Razorpay' ? 'paid' : 'pending'),
-              payment_id: paymentId || null,
-              order_id: orderId || null,
-              amount_paid: 250.00,
-              idempotency_key: idempotencyKey || null
-            }
-          ]);
+          const { data, error } = await withAuthRetry(() =>
+            supabase.from('paid_bookings').insert([
+              {
+                created_at: getFormattedTimestamp(),
+                full_name: fullName,
+                email: email || '',
+                phone: phone,
+                appointment_date: dateStr,
+                appointment_time: (selectedTime || '05:00 PM').slice(0, 20),
+                payment_method: (paymentMethodType || paymentMethod || 'Visit to pay').slice(0, 20),
+                payment_status: paymentStatus || (paymentMethod === 'Razorpay' ? 'paid' : 'pending'),
+                payment_id: paymentId || null,
+                order_id: orderId || null,
+                amount_paid: 250.00,
+                idempotency_key: idempotencyKey || null
+              }
+            ])
+          );
           if (error) {
             if (error.code === '23505' || (error.message && error.message.includes('idempotency_key'))) {
               console.log('ℹ️ [Supabase Direct] Record with this idempotency key already exists.');
