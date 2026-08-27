@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const supabase = require('./db');
+const { withDbRetry } = require('./db');
 const { notifyNewBooking } = require('./notifications');
 
 const WATCHER_IDS_FILE = path.join(__dirname, 'processed_watcher_ids.json');
@@ -44,12 +45,14 @@ loadPersistedIds();
 
 async function checkNewSubmissions() {
   try {
-    // 1. Check `public.appointments`
-    const { data: appointments, error: apptErr } = await supabase
-      .from('appointments')
-      .select('id, full_name, email, phone, appointment_date, appointment_time, created_at')
-      .order('id', { ascending: false })
-      .limit(50);
+    // 1. Check `public.appointments` with retry on pooler drops
+    const { data: appointments, error: apptErr } = await withDbRetry(() =>
+      supabase
+        .from('appointments')
+        .select('id, full_name, email, phone, appointment_date, appointment_time, created_at')
+        .order('id', { ascending: false })
+        .limit(50)
+    );
 
       if (apptErr) {
       console.warn('⚠️ [Auto-Watcher] Supabase appointments check notice:', apptErr.message);
@@ -79,12 +82,14 @@ async function checkNewSubmissions() {
       if (hasNew) savePersistedIds(); // save once after processing all new items
     }
 
-    // 2. Check `public.paid_bookings`
-    const { data: paidBookings, error: paidErr } = await supabase
-      .from('paid_bookings')
-      .select('id, full_name, email, phone, appointment_date, appointment_time, payment_method, payment_status, amount_paid, created_at')
-      .order('id', { ascending: false })
-      .limit(50);
+    // 2. Check `public.paid_bookings` with retry on pooler drops
+    const { data: paidBookings, error: paidErr } = await withDbRetry(() =>
+      supabase
+        .from('paid_bookings')
+        .select('id, full_name, email, phone, appointment_date, appointment_time, payment_method, payment_status, amount_paid, created_at')
+        .order('id', { ascending: false })
+        .limit(50)
+    );
 
       if (paidErr) {
       console.warn('⚠️ [Auto-Watcher] Supabase paid_bookings check notice:', paidErr.message);

@@ -63,13 +63,18 @@ function ContactPage() {
       const today = new Date().toISOString().split('T')[0];
       const timeVal = (formData.message ? `Msg: ${formData.message}` : 'Contact Inquiry').slice(0, 20);
 
+      const attemptIdempotencyKey = (typeof crypto !== 'undefined' && crypto.randomUUID)
+        ? crypto.randomUUID()
+        : `appt_contact_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
+
       const notificationPayload = {
         name: formData.name,
         email: formData.email,
         phone: formData.phone,
         date: today,
         time: timeVal,
-        form_type: 'Contact Page Form'
+        form_type: 'Contact Page Inquiry',
+        idempotency_key: attemptIdempotencyKey
       };
 
       // 1. GUARANTEED: Trigger Email & SMS Notifications + Save to Local Backup Queue
@@ -89,10 +94,17 @@ function ContactPage() {
               email: formData.email || '',
               phone: formData.phone,
               appointment_date: today,
-              appointment_time: timeVal
+              appointment_time: timeVal,
+              idempotency_key: attemptIdempotencyKey
             }
           ]).then(({ error }) => {
-            if (error) console.warn('⚠️ Supabase contact save warning (Handled gracefully via email fallback):', error.message);
+            if (error) {
+              if (error.code === '23505' || (error.message && error.message.includes('idempotency_key'))) {
+                console.log('ℹ️ [Appointments Idempotency] Contact appointment with this key already recorded.');
+              } else {
+                console.warn('⚠️ Supabase contact save warning (Handled gracefully via email fallback):', error.message);
+              }
+            }
           });
         } catch (dbErr) {
           console.warn('⚠️ Supabase save exception:', dbErr);

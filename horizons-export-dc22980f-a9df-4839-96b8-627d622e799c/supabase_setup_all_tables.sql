@@ -17,6 +17,7 @@ DROP POLICY IF EXISTS "Allow service role paid bookings all" ON public.paid_book
 -- 2. `public.appointments` TABLE & SECURE RLS POLICIES
 CREATE TABLE IF NOT EXISTS public.appointments (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    idempotency_key VARCHAR(255) UNIQUE,
     created_at VARCHAR(100),
     full_name VARCHAR(255) NOT NULL,
     email VARCHAR(255),
@@ -27,6 +28,7 @@ CREATE TABLE IF NOT EXISTS public.appointments (
 );
 
 ALTER TABLE public.appointments ALTER COLUMN created_at TYPE VARCHAR(100) USING created_at::text;
+ALTER TABLE public.appointments ADD COLUMN IF NOT EXISTS idempotency_key VARCHAR(255) UNIQUE;
 
 ALTER TABLE public.appointments ENABLE ROW LEVEL SECURITY;
 
@@ -35,9 +37,9 @@ CREATE POLICY "Allow public appointments insertion"
 ON public.appointments FOR INSERT TO anon, authenticated, service_role 
 WITH CHECK (full_name IS NOT NULL AND phone IS NOT NULL);
 
--- Allow public web visitors & API watcher to select appointments
-CREATE POLICY "Allow public appointments select"
-ON public.appointments FOR SELECT TO anon, authenticated, service_role 
+-- SELECT: service_role only (anon key is public; never allow patient PII enumeration)
+CREATE POLICY "Allow staff select appointments"
+ON public.appointments FOR SELECT TO service_role
 USING (true);
 
 GRANT SELECT, INSERT ON TABLE public.appointments TO anon, authenticated, service_role;
@@ -46,6 +48,7 @@ GRANT SELECT, INSERT ON TABLE public.appointments TO anon, authenticated, servic
 -- 3. `public.paid_bookings` TABLE & SECURE RLS POLICIES
 CREATE TABLE IF NOT EXISTS public.paid_bookings (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    idempotency_key VARCHAR(255) UNIQUE,
     created_at VARCHAR(100),
     full_name VARCHAR(255) NOT NULL,
     email VARCHAR(255),
@@ -61,6 +64,7 @@ CREATE TABLE IF NOT EXISTS public.paid_bookings (
 );
 
 ALTER TABLE public.paid_bookings ALTER COLUMN created_at TYPE VARCHAR(100) USING created_at::text;
+ALTER TABLE public.paid_bookings ADD COLUMN IF NOT EXISTS idempotency_key VARCHAR(255) UNIQUE;
 
 ALTER TABLE public.paid_bookings ENABLE ROW LEVEL SECURITY;
 
@@ -69,9 +73,9 @@ CREATE POLICY "Allow public paid bookings insertion"
 ON public.paid_bookings FOR INSERT TO anon, authenticated, service_role 
 WITH CHECK (full_name IS NOT NULL AND phone IS NOT NULL);
 
--- Allow public web visitors & API watcher to select paid bookings
-CREATE POLICY "Allow public paid bookings select"
-ON public.paid_bookings FOR SELECT TO anon, authenticated, service_role 
+-- SELECT: service_role only (anon key is public; never allow patient PII enumeration)
+CREATE POLICY "Allow staff select paid bookings"
+ON public.paid_bookings FOR SELECT TO service_role
 USING (true);
 
 GRANT SELECT, INSERT ON TABLE public.paid_bookings TO anon, authenticated, service_role;

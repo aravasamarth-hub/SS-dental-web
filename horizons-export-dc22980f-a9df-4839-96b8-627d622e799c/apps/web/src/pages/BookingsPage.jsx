@@ -99,7 +99,7 @@ function BookingsPage() {
     }
   };
 
-  const saveToDatabaseDirect = async ({ paymentMethodType, paymentStatus, paymentId, orderId }) => {
+  const saveToDatabaseDirect = async ({ paymentMethodType, paymentStatus, paymentId, orderId, idempotencyKey }) => {
     try {
       const getFormattedTimestamp = () => {
         const now = new Date();
@@ -156,11 +156,16 @@ function BookingsPage() {
               payment_status: paymentStatus || (paymentMethod === 'Razorpay' ? 'paid' : 'pending'),
               payment_id: paymentId || null,
               order_id: orderId || null,
-              amount_paid: 250.00
+              amount_paid: 250.00,
+              idempotency_key: idempotencyKey || null
             }
           ]);
           if (error) {
-            console.warn('⚠️ Supabase direct insert warning (Handled gracefully via email fallback):', error.message);
+            if (error.code === '23505' || (error.message && error.message.includes('idempotency_key'))) {
+              console.log('ℹ️ [Supabase Direct] Record with this idempotency key already exists.');
+            } else {
+              console.warn('⚠️ Supabase direct insert warning (Handled gracefully via email fallback):', error.message);
+            }
           } else {
             console.log('✅ Successfully saved booking to Supabase paid_bookings table:', data);
           }
@@ -184,6 +189,11 @@ function BookingsPage() {
 
     submittingRef.current = true;
     setIsSubmitting(true);
+
+    // Generate collision-resistant idempotency key once per user submission attempt
+    const attemptIdempotencyKey = (typeof crypto !== 'undefined' && crypto.randomUUID)
+      ? crypto.randomUUID()
+      : `idem_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
 
     try {
       if (paymentMethod === 'Razorpay') {
@@ -236,7 +246,7 @@ function BookingsPage() {
               image: 'https://ssdentalcare.in/ss-dental-logo.png',
               handler: async function (response) {
                 try {
-                  // 3. Verify signature on backend server
+                  // 3. Verify signature on backend server with attemptIdempotencyKey
                   const verifyResponse = await fetch(`${apiUrl}/api/verify-payment`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -244,6 +254,7 @@ function BookingsPage() {
                       razorpay_order_id: response.razorpay_order_id,
                       razorpay_payment_id: response.razorpay_payment_id,
                       razorpay_signature: response.razorpay_signature,
+                      idempotency_key: attemptIdempotencyKey,
                       bookingDetails: {
                         name: fullName,
                         email,
@@ -268,7 +279,8 @@ function BookingsPage() {
                     paymentMethodType: 'Razorpay',
                     paymentStatus: 'paid',
                     paymentId: response.razorpay_payment_id,
-                    orderId: response.razorpay_order_id
+                    orderId: response.razorpay_order_id,
+                    idempotencyKey: attemptIdempotencyKey
                   });
                   setStep('success');
                   toast.success('Appointment booked successfully!');
@@ -303,7 +315,8 @@ function BookingsPage() {
               await saveToDatabaseDirect({
                 paymentMethodType: 'Razorpay',
                 paymentStatus: 'paid',
-                paymentId: response.razorpay_payment_id
+                paymentId: response.razorpay_payment_id,
+                idempotencyKey: attemptIdempotencyKey
               });
               setStep('success');
               toast.success(`Payment successful! Payment ID: ${response.razorpay_payment_id}`);
@@ -341,7 +354,8 @@ function BookingsPage() {
                 email,
                 phone,
                 date: selectedDay,
-                time: selectedTime
+                time: selectedTime,
+                idempotency_key: attemptIdempotencyKey
               })
             });
             const result = await response.json();
@@ -352,7 +366,8 @@ function BookingsPage() {
               // If backend returned error, attempt direct insert
               await saveToDatabaseDirect({
                 paymentMethodType: 'Visit to pay',
-                paymentStatus: 'pending'
+                paymentStatus: 'pending',
+                idempotencyKey: attemptIdempotencyKey
               });
               setStep('success');
               toast.success('Appointment booked successfully!');
@@ -361,7 +376,8 @@ function BookingsPage() {
             console.error(err);
             await saveToDatabaseDirect({
               paymentMethodType: 'Visit to pay',
-              paymentStatus: 'pending'
+              paymentStatus: 'pending',
+              idempotencyKey: attemptIdempotencyKey
             });
             setStep('success');
             toast.success('Appointment booked successfully!');
@@ -369,12 +385,16 @@ function BookingsPage() {
         } else {
           await saveToDatabaseDirect({
             paymentMethodType: 'Visit to pay',
-            paymentStatus: 'pending'
+            paymentStatus: 'pending',
+            idempotencyKey: attemptIdempotencyKey
           });
           setStep('success');
           toast.success('Appointment booked successfully!');
         }
       }
+    } catch (err) {
+      console.error(err);
+      toast.error('Something went wrong. Please try again.');
     } finally {
       setIsSubmitting(false);
       submittingRef.current = false;

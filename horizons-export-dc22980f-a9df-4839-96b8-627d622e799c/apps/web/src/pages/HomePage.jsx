@@ -206,13 +206,18 @@ function HomePage() {
     const today = new Date().toISOString().split('T')[0];
     const appointmentTimeVal = (formData.message ? `Msg: ${formData.message}` : 'General Consult').slice(0, 20);
 
+    const attemptIdempotencyKey = (typeof crypto !== 'undefined' && crypto.randomUUID)
+      ? crypto.randomUUID()
+      : `appt_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
+
     const notificationPayload = {
       name: formData.name,
       email: formData.email,
       phone: formData.phone,
       date: today,
       time: appointmentTimeVal,
-      form_type: 'HomePage Appointment Form'
+      form_type: 'HomePage Appointment Form',
+      idempotency_key: attemptIdempotencyKey
     };
 
     // 1. GUARANTEED: Trigger Email & SMS Notifications + Save to Local Backup Queue
@@ -232,11 +237,16 @@ function HomePage() {
             email: formData.email || '',
             phone: formData.phone,
             appointment_date: today,
-            appointment_time: appointmentTimeVal
+            appointment_time: appointmentTimeVal,
+            idempotency_key: attemptIdempotencyKey
           }
         ]);
         if (error) {
-          console.warn('⚠️ Supabase save warning (Handled gracefully via email fallback):', error.message);
+          if (error.code === '23505' || (error.message && error.message.includes('idempotency_key'))) {
+            console.log('ℹ️ [Appointments Idempotency] Appointment with this key already recorded.');
+          } else {
+            console.warn('⚠️ Supabase save warning (Handled gracefully via email fallback):', error.message);
+          }
         } else {
           console.log('✅ Successfully saved appointment to Supabase database.');
         }
