@@ -136,7 +136,7 @@ function BookingsPage() {
 
       // 1. GUARANTEED: Trigger Email & SMS Notifications + Save to Local Backup Queue
       try {
-        sendBookingNotification(notificationPayload);
+        await sendBookingNotification(notificationPayload);
       } catch (notifErr) {
         console.warn('Booking notification error:', notifErr);
       }

@@ -8,6 +8,7 @@ const WATCHER_IDS_FILE = path.join(__dirname, 'processed_watcher_ids.json');
 
 const processedAppointments = new Set();
 const processedPaidBookings = new Set();
+let hasTrackedState = false;
 let isInitialRun = true;
 
 // Load persisted processed IDs on startup
@@ -21,6 +22,7 @@ function loadPersistedIds() {
       if (Array.isArray(data.paid_bookings)) {
         data.paid_bookings.forEach(id => processedPaidBookings.add(id));
       }
+      hasTrackedState = (processedAppointments.size > 0 || processedPaidBookings.size > 0);
       console.log(`📋 [Watcher State] Loaded ${processedAppointments.size} processed appointment IDs & ${processedPaidBookings.size} processed paid booking IDs.`);
     }
   } catch (err) {
@@ -54,7 +56,7 @@ async function checkNewSubmissions() {
         .limit(50)
     );
 
-      if (apptErr) {
+    if (apptErr) {
       console.warn('⚠️ [Auto-Watcher] Supabase appointments check notice:', apptErr.message);
     } else if (appointments && appointments.length > 0) {
       let hasNew = false;
@@ -63,7 +65,11 @@ async function checkNewSubmissions() {
           processedAppointments.add(item.id);
           hasNew = true;
 
-          if (!isInitialRun) {
+          // If we already had tracked state, this is a genuinely new appointment created while server was running/restarting
+          // If no state existed at all, send email only if created recently (or not initial run)
+          const shouldNotify = hasTrackedState || !isInitialRun;
+
+          if (shouldNotify) {
             console.log(`📧 [Auto-Watcher] Processing NEW appointment record for ${item.full_name || 'Patient'} (ID: ${item.id}). Dispatching email...`);
             await notifyNewBooking({
               name: item.full_name,
@@ -75,11 +81,13 @@ async function checkNewSubmissions() {
               payment_status: 'pending',
               amount_paid: 0.00,
               created_at: item.created_at
-            }).catch(err => console.error('Watcher email error:', err.message));
+            }).catch(err => console.error('🚨 [Auto-Watcher] Watcher email error:', err));
+          } else {
+            console.log(`ℹ️ [Auto-Watcher] Seeding historical appointment (ID: ${item.id}) without dispatching email.`);
           }
         }
       }
-      if (hasNew) savePersistedIds(); // save once after processing all new items
+      if (hasNew) savePersistedIds();
     }
 
     // 2. Check `public.paid_bookings` with retry on pooler drops
@@ -91,7 +99,7 @@ async function checkNewSubmissions() {
         .limit(50)
     );
 
-      if (paidErr) {
+    if (paidErr) {
       console.warn('⚠️ [Auto-Watcher] Supabase paid_bookings check notice:', paidErr.message);
     } else if (paidBookings && paidBookings.length > 0) {
       let hasNew = false;
@@ -100,7 +108,9 @@ async function checkNewSubmissions() {
           processedPaidBookings.add(item.id);
           hasNew = true;
 
-          if (!isInitialRun) {
+          const shouldNotify = hasTrackedState || !isInitialRun;
+
+          if (shouldNotify) {
             console.log(`📧 [Auto-Watcher] Processing NEW paid booking record for ${item.full_name || 'Patient'} (ID: ${item.id}). Dispatching email...`);
             await notifyNewBooking({
               name: item.full_name,
@@ -112,20 +122,23 @@ async function checkNewSubmissions() {
               payment_status: item.payment_status || 'paid',
               amount_paid: item.amount_paid || 250.00,
               created_at: item.created_at
-            }).catch(err => console.error('Watcher email error:', err.message));
+            }).catch(err => console.error('🚨 [Auto-Watcher] Watcher email error:', err));
+          } else {
+            console.log(`ℹ️ [Auto-Watcher] Seeding historical paid booking (ID: ${item.id}) without dispatching email.`);
           }
         }
       }
-      if (hasNew) savePersistedIds(); // save once after processing all new items
+      if (hasNew) savePersistedIds();
     }
 
     if (isInitialRun) {
       isInitialRun = false;
-      console.log(`✅ [Auto-Watcher] Initial sync complete. Historical emails suppressed. Active monitoring on new Supabase table entries...`);
+      hasTrackedState = true;
+      console.log(`✅ [Auto-Watcher] Initial sync complete. Active monitoring on new Supabase table entries...`);
     }
 
   } catch (err) {
-    console.warn('Notice in auto-watcher cycle:', err.message);
+    console.error('🚨 [Auto-Watcher Exception]:', err);
   }
 }
 

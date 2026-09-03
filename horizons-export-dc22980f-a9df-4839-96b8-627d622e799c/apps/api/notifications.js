@@ -146,11 +146,11 @@ async function sendEmailNotificationDirect({ to, subject, html, text }) {
       console.log(`✅ Email notification sent successfully (Attempt ${attempts}):`, info.messageId);
       return { success: true, messageId: info.messageId };
     } catch (error) {
-      console.warn(`⚠️ Email send attempt ${attempts} failed:`, error.message);
+      console.error(`🚨 [SMTP ERROR] Email send attempt ${attempts} failed:`, error);
       if (attempts < maxAttempts) {
         await new Promise(res => setTimeout(res, 1500 * attempts)); // Backoff delay
       } else {
-        return { success: false, error: error.message };
+        return { success: false, error: error.message, fullError: error };
       }
     }
   }
@@ -275,21 +275,39 @@ async function notifyNewBooking(bookingDetails) {
   const summaryText = `New Booking from ${name}: Phone: ${targetPhone}, Date: ${date}, Time: ${time}, Note: ${patientNotes || 'None'}, Payment: ${payment_status || 'pending'}`;
 
   // 1. Send Email to Clinic / Demo Recipient
-  await sendEmailNotification({
+  console.log(`📧 [notifyNewBooking] Dispatching clinic email to: ${clinicEmail}`);
+  const clinicEmailResult = await sendEmailNotification({
     to: clinicEmail,
     subject: `[SS Dental Care] ${title} - ${name}`,
     html: htmlContent,
     text: summaryText
   });
+  if (!clinicEmailResult.success) {
+    console.error('🚨 [notifyNewBooking CLINIC EMAIL FAILED]:', clinicEmailResult);
+  } else {
+    console.log('✅ [notifyNewBooking CLINIC EMAIL SENT]:', clinicEmailResult.messageId || 'Success');
+  }
 
   // 2. Send Email to Patient if email provided
-  if (email && email.includes('@') && email !== clinicEmail) {
-    await sendEmailNotification({
-      to: email,
-      subject: `Appointment Confirmation - SS Dental Care Davangere`,
-      html: htmlContent,
-      text: `Hello ${name}, your appointment request for ${date} at ${time} has been received!`
-    });
+  if (email && email.includes('@')) {
+    if (email.toLowerCase().trim() === clinicEmail.toLowerCase().trim()) {
+      console.log(`ℹ️ [notifyNewBooking] Patient email matches clinic email (${email}); clinic email already dispatched.`);
+    } else {
+      console.log(`📧 [notifyNewBooking] Dispatching patient email to: ${email}`);
+      const patientEmailResult = await sendEmailNotification({
+        to: email,
+        subject: `Appointment Confirmation - SS Dental Care Davangere`,
+        html: htmlContent,
+        text: `Hello ${name}, your appointment request for ${date} at ${time} has been received!`
+      });
+      if (!patientEmailResult.success) {
+        console.error('🚨 [notifyNewBooking PATIENT EMAIL FAILED]:', patientEmailResult);
+      } else {
+        console.log('✅ [notifyNewBooking PATIENT EMAIL SENT]:', patientEmailResult.messageId || 'Success');
+      }
+    }
+  } else {
+    console.log('ℹ️ [notifyNewBooking] No valid patient email provided, skipping patient email dispatch.');
   }
 
   // 3. Send SMS Alert

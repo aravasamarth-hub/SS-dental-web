@@ -315,6 +315,7 @@ app.post('/api/create-booking', async (req, res, next) => {
 
 // Endpoint 4: Direct Notification Trigger for General Inquiries & Form Submissions
 app.post('/api/notify', async (req, res, next) => {
+  console.log('🔔 [ROUTE TRIGGERED] POST /api/notify received payload:', JSON.stringify(req.body));
   try {
     const { name, email, phone, date, time, payment_method, payment_status, amount_paid, created_at, form_type, message, notes } = req.body;
 

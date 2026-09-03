@@ -114,10 +114,17 @@ export async function sendBookingNotification(details) {
       clearTimeout(timeoutId);
 
       if (response.ok) {
-        const json = await response.json();
-        console.log('✅ Email notification dispatched successfully via API:', json);
-        sentSuccessfully = true;
-        return { success: true, json };
+        const contentType = response.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+          const json = await response.json();
+          console.log('✅ Email notification dispatched successfully via API:', json);
+          sentSuccessfully = true;
+          return { success: true, json };
+        } else {
+          console.warn(`⚠️ [Notification Dispatch] ${url} returned non-JSON content-type (${contentType}). Skipping fallback...`);
+        }
+      } else {
+        console.warn(`⚠️ [Notification Dispatch] ${url} responded with error status ${response.status}`);
       }
     } catch (err) {
       console.warn(`[Notification Dispatch] Could not reach ${url}:`, err.message);
