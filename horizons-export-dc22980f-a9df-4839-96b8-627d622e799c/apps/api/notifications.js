@@ -239,9 +239,10 @@ async function sendWhatsAppNotification({ phone, message }) {
 
 // 7. Unified Dispatcher for Appointments & Paid Bookings
 async function notifyNewBooking(bookingDetails) {
-  const { name, email, phone, date, time, payment_method, payment_status, amount_paid, created_at } = bookingDetails;
+  const { name, email, phone, date, time, payment_method, payment_status, amount_paid, created_at, message, notes } = bookingDetails;
   const clinicEmail = DEFAULT_CLINIC_EMAIL;
   const targetPhone = phone || process.env.DEMO_TEST_PHONE || '';
+  const patientNotes = (message || notes || '').trim();
 
   const title = payment_status === 'paid' ? '💳 New Paid Booking Received!' : '📅 New Appointment Request Received!';
   
@@ -256,10 +257,11 @@ async function notifyNewBooking(bookingDetails) {
         <tr style="background-color: #f8fafc;"><td style="padding: 10px; font-weight: bold;">Email Address:</td><td style="padding: 10px;">${email || 'N/A'}</td></tr>
         <tr><td style="padding: 10px; font-weight: bold;">Appointment Date:</td><td style="padding: 10px;">${date || 'N/A'}</td></tr>
         <tr style="background-color: #f8fafc;"><td style="padding: 10px; font-weight: bold;">Appointment Time:</td><td style="padding: 10px;">${time || 'N/A'}</td></tr>
-        <tr><td style="padding: 10px; font-weight: bold;">Payment Method:</td><td style="padding: 10px;">${payment_method || 'Form / Inquiry'}</td></tr>
-        <tr style="background-color: #f8fafc;"><td style="padding: 10px; font-weight: bold;">Payment Status:</td><td style="padding: 10px; font-weight: bold; color: ${payment_status === 'paid' ? '#16a34a' : '#d97706'};">${(payment_status || 'Pending').toUpperCase()}</td></tr>
-        ${amount_paid ? `<tr><td style="padding: 10px; font-weight: bold;">Amount:</td><td style="padding: 10px; font-weight: bold; color: #2563eb;">₹${amount_paid}</td></tr>` : ''}
-        <tr style="background-color: #f8fafc;"><td style="padding: 10px; font-weight: bold;">Submitted At:</td><td style="padding: 10px;">${created_at || new Date().toLocaleString()}</td></tr>
+        ${patientNotes ? `<tr><td style="padding: 10px; font-weight: bold;">Patient Note / Concern:</td><td style="padding: 10px; color: #334155;">${patientNotes}</td></tr>` : ''}
+        <tr style="background-color: #f8fafc;"><td style="padding: 10px; font-weight: bold;">Payment Method:</td><td style="padding: 10px;">${payment_method || 'Form / Inquiry'}</td></tr>
+        <tr><td style="padding: 10px; font-weight: bold;">Payment Status:</td><td style="padding: 10px; font-weight: bold; color: ${payment_status === 'paid' ? '#16a34a' : '#d97706'};">${(payment_status || 'Pending').toUpperCase()}</td></tr>
+        ${amount_paid ? `<tr style="background-color: #f8fafc;"><td style="padding: 10px; font-weight: bold;">Amount:</td><td style="padding: 10px; font-weight: bold; color: #2563eb;">₹${amount_paid}</td></tr>` : ''}
+        <tr><td style="padding: 10px; font-weight: bold;">Submitted At:</td><td style="padding: 10px;">${created_at || new Date().toLocaleString()}</td></tr>
       </table>
 
       <div style="margin-top: 24px; padding: 16px; background-color: #eff6ff; border-radius: 8px; font-size: 13px; color: #1e40af;">
@@ -270,7 +272,7 @@ async function notifyNewBooking(bookingDetails) {
     </div>
   `;
 
-  const summaryText = `New Booking from ${name}: Phone: ${targetPhone}, Date: ${date}, Time: ${time}, Payment: ${payment_status || 'pending'}`;
+  const summaryText = `New Booking from ${name}: Phone: ${targetPhone}, Date: ${date}, Time: ${time}, Note: ${patientNotes || 'None'}, Payment: ${payment_status || 'pending'}`;
 
   // 1. Send Email to Clinic / Demo Recipient
   await sendEmailNotification({

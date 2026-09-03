@@ -51,7 +51,9 @@ export async function sendBookingNotification(details) {
     payment_method,
     payment_status,
     amount_paid,
-    form_type
+    form_type,
+    message,
+    notes
   } = details;
 
   // 1. Always save to local backup queue first
@@ -79,6 +81,7 @@ export async function sendBookingNotification(details) {
     payment_status: payment_status || 'pending',
     amount_paid: amount_paid || 0,
     form_type: form_type || 'Website Submission',
+    message: message || notes || '',
     created_at: new Date().toLocaleString()
   };
 

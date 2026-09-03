@@ -21,7 +21,7 @@ import { supabase, withAuthRetry } from '@/lib/supabase';
 import { sendBookingNotification } from '@/lib/sendNotification';
 
 function HomePage() {
-  const [formData, setFormData] = useState({ name: '', email: '', phone: '', message: '' });
+  const [formData, setFormData] = useState({ name: '', email: '', phone: '', date: '', time: '', message: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
@@ -186,6 +186,16 @@ function HomePage() {
       return;
     }
 
+    if (!formData.date) {
+      toast.error('Please select your preferred appointment date');
+      return;
+    }
+
+    if (!formData.time) {
+      toast.error('Please select your preferred time slot');
+      return;
+    }
+
     submittingRef.current = true;
     setIsSubmitting(true);
 
@@ -203,8 +213,8 @@ function HomePage() {
       return `${day}/${month}/${year}, ${strHours}:${minutes}:${seconds} ${ampm}`;
     };
 
-    const today = new Date().toISOString().split('T')[0];
-    const appointmentTimeVal = (formData.message ? `Msg: ${formData.message}` : 'General Consult').slice(0, 20);
+    const selectedDate = formData.date;
+    const selectedTime = formData.time;
 
     const attemptIdempotencyKey = (typeof crypto !== 'undefined' && crypto.randomUUID)
       ? crypto.randomUUID()
@@ -214,8 +224,9 @@ function HomePage() {
       name: formData.name,
       email: formData.email,
       phone: formData.phone,
-      date: today,
-      time: appointmentTimeVal,
+      date: selectedDate,
+      time: selectedTime,
+      message: formData.message || '',
       form_type: 'HomePage Appointment Form',
       idempotency_key: attemptIdempotencyKey
     };
@@ -237,8 +248,8 @@ function HomePage() {
               full_name: formData.name,
               email: formData.email || '',
               phone: formData.phone,
-              appointment_date: today,
-              appointment_time: appointmentTimeVal,
+              appointment_date: selectedDate,
+              appointment_time: selectedTime,
               idempotency_key: attemptIdempotencyKey
             }
           ])
@@ -259,7 +270,7 @@ function HomePage() {
       // 3. User experience is always successful
       setIsSubmitted(true);
       toast.success('Appointment request submitted successfully! We will contact you shortly.');
-      setFormData({ name: '', email: '', phone: '', message: '' });
+      setFormData({ name: '', email: '', phone: '', date: '', time: '', message: '' });
       setIsSubmitting(false);
       submittingRef.current = false;
     }
@@ -904,15 +915,16 @@ function HomePage() {
                   <div className="w-16 h-16 bg-emerald-500/10 text-emerald-500 rounded-full flex items-center justify-center mx-auto text-3xl">
                     <CheckCircle2 className="w-10 h-10 text-emerald-500" />
                   </div>
-                  <h3 className="text-2xl font-bold text-foreground">Message Sent Successfully!</h3>
+                  <h3 className="text-2xl font-bold text-foreground">Appointment Request Received!</h3>
                   <p className="text-muted-foreground max-w-md mx-auto">
-                    Thank you for reaching out. We have received your request and will contact you shortly.
+                    Thank you for reaching out to SS Dental Care. We have received your booking details and will contact you shortly to confirm your scheduled appointment.
                   </p>
                   <Button 
-                    asChild
+                    type="button"
+                    onClick={() => setIsSubmitted(false)}
                     className="mt-4 bg-primary text-primary-foreground hover:bg-primary/90"
                   >
-                    <Link to="/bookings">Book Appointment</Link>
+                    Book Another Appointment
                   </Button>
                 </div>
               ) : (
@@ -955,14 +967,68 @@ function HomePage() {
                     />
                   </div>
 
+                  {/* Date & Time Selectors */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="appointment_date" className="flex items-center gap-1.5 font-medium">
+                        <Calendar className="w-4 h-4 text-primary" />
+                        Preferred Date *
+                      </Label>
+                      <Input
+                        id="appointment_date"
+                        type="date"
+                        min={new Date().toISOString().split('T')[0]}
+                        value={formData.date}
+                        onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                        required
+                        className="mt-2 text-foreground placeholder:text-muted-foreground cursor-pointer"
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="appointment_time" className="flex items-center gap-1.5 font-medium">
+                        <Clock className="w-4 h-4 text-primary" />
+                        Preferred Time *
+                      </Label>
+                      <select
+                        id="appointment_time"
+                        value={formData.time}
+                        onChange={(e) => setFormData({ ...formData, time: e.target.value })}
+                        required
+                        className="mt-2 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 text-foreground cursor-pointer"
+                      >
+                        <option value="" disabled>Select time slot</option>
+                        <optgroup label="Morning (10:30 AM - 02:00 PM)">
+                          <option value="10:30 AM">10:30 AM</option>
+                          <option value="11:00 AM">11:00 AM</option>
+                          <option value="11:30 AM">11:30 AM</option>
+                          <option value="12:00 PM">12:00 PM</option>
+                          <option value="12:30 PM">12:30 PM</option>
+                          <option value="01:00 PM">01:00 PM</option>
+                          <option value="01:30 PM">01:30 PM</option>
+                        </optgroup>
+                        <optgroup label="Evening (05:00 PM - 08:30 PM)">
+                          <option value="05:00 PM">05:00 PM</option>
+                          <option value="05:30 PM">05:30 PM</option>
+                          <option value="06:00 PM">06:00 PM</option>
+                          <option value="06:30 PM">06:30 PM</option>
+                          <option value="07:00 PM">07:00 PM</option>
+                          <option value="07:30 PM">07:30 PM</option>
+                          <option value="08:00 PM">08:00 PM</option>
+                          <option value="08:30 PM">08:30 PM</option>
+                        </optgroup>
+                      </select>
+                    </div>
+                  </div>
+
                   <div>
-                    <Label htmlFor="message">Message</Label>
+                    <Label htmlFor="message">Message / Dental Concern (Optional)</Label>
                     <Textarea
                       id="message"
-                      placeholder="Tell us how we can help you"
+                      placeholder="Tell us about your dental concern or any specific preferences (Optional)"
                       value={formData.message}
                       onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                      rows={4}
+                      rows={3}
                       className="mt-2 text-foreground placeholder:text-muted-foreground resize-none"
                     />
                   </div>

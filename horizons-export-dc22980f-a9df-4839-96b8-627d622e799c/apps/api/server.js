@@ -316,7 +316,7 @@ app.post('/api/create-booking', async (req, res, next) => {
 // Endpoint 4: Direct Notification Trigger for General Inquiries & Form Submissions
 app.post('/api/notify', async (req, res, next) => {
   try {
-    const { name, email, phone, date, time, payment_method, payment_status, amount_paid, created_at, form_type } = req.body;
+    const { name, email, phone, date, time, payment_method, payment_status, amount_paid, created_at, form_type, message, notes } = req.body;
 
     await notifyNewBooking({
       name: name || 'Valued Patient',
@@ -327,7 +327,8 @@ app.post('/api/notify', async (req, res, next) => {
       payment_method: payment_method || form_type || 'General Form Inquiry',
       payment_status: payment_status || 'pending',
       amount_paid: amount_paid || 0.00,
-      created_at: created_at || getFormattedTimestamp()
+      created_at: created_at || getFormattedTimestamp(),
+      message: message || notes || ''
     });
 
     res.json({ success: true, message: 'Notification dispatched successfully!' });
