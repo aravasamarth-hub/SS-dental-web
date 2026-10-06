@@ -59,8 +59,12 @@ function BookingsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const submittingRef = React.useRef(false);
   
-  // Date & Time selection states
-  const [selectedDay, setSelectedDay] = useState(16); // Default 16th July 2026
+  // Date & Time selection states - dynamic live calendar
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const [currentMonthDate, setCurrentMonthDate] = useState(() => new Date(today.getFullYear(), today.getMonth(), 1));
+  const [selectedDate, setSelectedDate] = useState(() => new Date(today));
   const [selectedTime, setSelectedTime] = useState('05:00 PM'); // Default 5:00 PM
   
   // Checkout form states
@@ -73,13 +77,60 @@ function BookingsPage() {
   const [discountApplied, setDiscountApplied] = useState(false);
   const [price, setPrice] = useState(250);
 
+  // Helper date formatters
+  const formatDisplayDate = (d) => {
+    if (!d) return '';
+    return d.toLocaleDateString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    });
+  };
 
+  const formatIsoDate = (d) => {
+    if (!d) return new Date().toISOString().split('T')[0];
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const dayNum = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${dayNum}`;
+  };
 
-  // Calendar dates helper for July 2026
-  // July 1st starts on a Wednesday (index 2: Mon=0, Tue=1, Wed=2)
-  const emptyDays = [null, null];
-  const julyDays = Array.from({ length: 31 }, (_, i) => i + 1);
-  const calendarGrid = [...emptyDays, ...julyDays];
+  // Calendar grid calculations
+  const viewYear = currentMonthDate.getFullYear();
+  const viewMonth = currentMonthDate.getMonth();
+  const monthName = currentMonthDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+  const daysInCurrentMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+  const firstDayOfMonthWeekday = (new Date(viewYear, viewMonth, 1).getDay() + 6) % 7; // Monday = 0
+  const emptyDays = Array.from({ length: firstDayOfMonthWeekday }, () => null);
+  const daysList = Array.from({ length: daysInCurrentMonth }, (_, i) => i + 1);
+  const calendarGrid = [...emptyDays, ...daysList];
+
+  const canGoPrevMonth = viewYear > today.getFullYear() || (viewYear === today.getFullYear() && viewMonth > today.getMonth());
+
+  const handlePrevMonth = () => {
+    if (!canGoPrevMonth) return;
+    setCurrentMonthDate(new Date(viewYear, viewMonth - 1, 1));
+  };
+
+  const handleNextMonth = () => {
+    setCurrentMonthDate(new Date(viewYear, viewMonth + 1, 1));
+  };
+
+  const isDayInPast = (dayNum) => {
+    const checkDate = new Date(viewYear, viewMonth, dayNum);
+    checkDate.setHours(0, 0, 0, 0);
+    return checkDate < today;
+  };
+
+  const isDaySelected = (dayNum) => {
+    return (
+      selectedDate &&
+      selectedDate.getDate() === dayNum &&
+      selectedDate.getMonth() === viewMonth &&
+      selectedDate.getFullYear() === viewYear
+    );
+  };
 
   // List of slots
   const timeSlots = [
@@ -115,12 +166,7 @@ function BookingsPage() {
         return `${day}/${month}/${year}, ${strHours}:${minutes}:${seconds} ${ampm}`;
       };
 
-      const now = new Date();
-      const year = now.getFullYear();
-      const month = String(now.getMonth() + 1).padStart(2, '0');
-      const dateStr = typeof selectedDay === 'string' && selectedDay.includes('-')
-        ? selectedDay
-        : `${year}-${month}-${String(selectedDay).padStart(2, '0')}`;
+      const dateStr = formatIsoDate(selectedDate);
 
       const notificationPayload = {
         name: fullName,
@@ -287,7 +333,7 @@ function BookingsPage() {
                         name: fullName,
                         email,
                         phone,
-                        date: selectedDay,
+                        date: formatIsoDate(selectedDate),
                         time: selectedTime
                       }
                     })
@@ -355,7 +401,7 @@ function BookingsPage() {
               contact: phone,
             },
             notes: {
-              booking_details: `Consultation on Jul ${selectedDay}, 2026 at ${selectedTime}`,
+              booking_details: `Consultation on ${formatDisplayDate(selectedDate)} at ${selectedTime}`,
             },
             theme: {
               color: '#e63c0a',
@@ -381,7 +427,7 @@ function BookingsPage() {
                 name: fullName,
                 email,
                 phone,
-                date: selectedDay,
+                date: formatIsoDate(selectedDate),
                 time: selectedTime,
                 idempotency_key: attemptIdempotencyKey
               })
@@ -855,7 +901,7 @@ function BookingsPage() {
                         <div className="text-xs text-muted-foreground space-y-1.5 mt-2">
                           <p className="flex items-center gap-1.5">
                             <Calendar className="h-3.5 w-3.5 text-accent" />
-                            <span>Jul {selectedDay}, 2026 at {selectedTime}</span>
+                            <span>{formatDisplayDate(selectedDate)} at {selectedTime}</span>
                           </p>
                           <p className="flex items-start gap-1.5">
                             <MapPin className="h-3.5 w-3.5 text-accent mt-0.5 flex-shrink-0" />
@@ -934,7 +980,7 @@ function BookingsPage() {
                       <Calendar className="h-5 w-5 text-accent mt-0.5 flex-shrink-0" />
                       <div>
                         <p className="font-bold text-sm text-foreground">Date & Time</p>
-                        <p className="text-sm text-muted-foreground">Thursday, July {selectedDay}, 2026 at {selectedTime}</p>
+                        <p className="text-sm text-muted-foreground">{formatDisplayDate(selectedDate)} at {selectedTime}</p>
                       </div>
                     </div>
 
@@ -1051,12 +1097,23 @@ function BookingsPage() {
                       <h3 className="font-extrabold text-lg text-foreground">Select date & time</h3>
                       
                       <div className="flex justify-between items-center bg-muted/50 px-4 py-2 rounded-xl">
-                        <span className="font-bold text-sm text-foreground">Jul 2026</span>
+                        <span className="font-bold text-sm text-foreground">{monthName}</span>
                         <div className="flex items-center gap-1.5">
-                          <button className="p-1 hover:bg-muted rounded text-muted-foreground transition-all">
+                          <button
+                            type="button"
+                            onClick={handlePrevMonth}
+                            disabled={!canGoPrevMonth}
+                            className={`p-1 rounded text-muted-foreground transition-all ${!canGoPrevMonth ? 'opacity-30 cursor-not-allowed' : 'hover:bg-muted hover:text-foreground'}`}
+                            aria-label="Previous Month"
+                          >
                             <ChevronLeft className="h-4.5 w-4.5" />
                           </button>
-                          <button className="p-1 hover:bg-muted rounded text-muted-foreground transition-all">
+                          <button
+                            type="button"
+                            onClick={handleNextMonth}
+                            className="p-1 hover:bg-muted hover:text-foreground rounded text-muted-foreground transition-all"
+                            aria-label="Next Month"
+                          >
                             <ChevronRight className="h-4.5 w-4.5" />
                           </button>
                         </div>
@@ -1075,15 +1132,16 @@ function BookingsPage() {
                           if (day === null) {
                             return <div key={`empty-${idx}`} />;
                           }
-                          const isSelected = selectedDay === day;
-                          // Disable dates in past for realism (e.g. assume today is July 16, 2026)
-                          const isPast = day < 16;
+                          const isSelected = isDaySelected(day);
+                          const isPast = isDayInPast(day);
                           return (
                             <button
-                              key={`day-${day}`}
+                              key={`day-${viewMonth}-${day}`}
                               type="button"
                               onClick={() => {
-                                if (!isPast) setSelectedDay(day);
+                                if (!isPast) {
+                                  setSelectedDate(new Date(viewYear, viewMonth, day));
+                                }
                               }}
                               disabled={isPast}
                               className={`h-9 w-9 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
@@ -1145,7 +1203,7 @@ function BookingsPage() {
                         setShowModal(false);
                         setStep('checkout');
                       }}
-                      disabled={!selectedDay || !selectedTime}
+                      disabled={!selectedDate || !selectedTime}
                       className="px-8 font-bold"
                     >
                       Book
