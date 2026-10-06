@@ -42,7 +42,7 @@ function DoctorSunitha() {
   ];
 
   const trustReasons = [
-    '25+ years of proven experience',
+    '21+ years of proven experience',
     'Focus on painless, patient-friendly treatments',
     'Use of modern digital dental technology',
     'Trusted by families across Davangere'
