@@ -3,8 +3,8 @@ const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '.env') });
 const { createClient } = require('@supabase/supabase-js');
 
-const supabaseUrl = process.env.SUPABASE_URL || 'https://gthczioqtznvfxhqvslm.supabase.co';
-const supabaseKey = process.env.SUPABASE_API_KEY || 'sb_publishable_SgwUX2SPWcxT4RfLQoHeSg_7q2Nnkxj';
+const supabaseUrl = process.env.SUPABASE_URL || 'https://dryhmzalotgxdqihnrln.supabase.co';
+const supabaseKey = process.env.SUPABASE_API_KEY || 'sb_publishable_7VIOvS0g_y0VtrNmHEIYVA_5fCdkWru';
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 // Public client — used for anon INSERT (booking / payment forms)

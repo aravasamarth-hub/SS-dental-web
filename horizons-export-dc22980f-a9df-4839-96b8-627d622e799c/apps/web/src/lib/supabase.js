@@ -1,8 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 import { executeWithAuthRetry, createAuthFetch, isAuth401Error, refreshAuthSession } from './supabaseAuth';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://gthczioqtznvfxhqvslm.supabase.co';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'sb_publishable_SgwUX2SPWcxT4RfLQoHeSg_7q2Nnkxj';
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://dryhmzalotgxdqihnrln.supabase.co';
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'sb_publishable_7VIOvS0g_y0VtrNmHEIYVA_5fCdkWru';
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
