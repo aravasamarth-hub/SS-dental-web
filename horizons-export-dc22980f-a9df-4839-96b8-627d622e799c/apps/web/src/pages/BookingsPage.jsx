@@ -144,32 +144,58 @@ function BookingsPage() {
       // 2. Try saving to Supabase database (Non-blocking fail-safe)
       if (supabase) {
         try {
-          const { data, error } = await withAuthRetry(() =>
-            supabase.from('paid_bookings').insert([
-              {
-                created_at: getFormattedTimestamp(),
-                full_name: fullName,
-                email: email || '',
-                phone: phone,
-                appointment_date: dateStr,
-                appointment_time: (selectedTime || '05:00 PM').slice(0, 20),
-                payment_method: (paymentMethodType || paymentMethod || 'Visit to pay').slice(0, 20),
-                payment_status: paymentStatus || (paymentMethod === 'Razorpay' ? 'paid' : 'pending'),
-                payment_id: paymentId || null,
-                order_id: orderId || null,
-                amount_paid: 250.00,
-                idempotency_key: idempotencyKey || null
-              }
+          // Visit to pay / pending payments save in 'appointments'
+          // Online paid bookings save in 'paid_bookings'
+          const isPaid = (paymentStatus === 'paid') || (paymentMethod === 'Razorpay') || Boolean(paymentId);
+          const targetTable = isPaid ? 'paid_bookings' : 'appointments';
+
+          const baseRecord = {
+            created_at: getFormattedTimestamp(),
+            full_name: fullName,
+            email: email || '',
+            phone: phone,
+            appointment_date: dateStr,
+            appointment_time: (selectedTime || '05:00 PM').slice(0, 20),
+            idempotency_key: idempotencyKey || null
+          };
+
+          if (isPaid) {
+            baseRecord.payment_method = (paymentMethodType || paymentMethod || 'Razorpay').slice(0, 20);
+            baseRecord.payment_status = 'paid';
+            baseRecord.payment_id = paymentId || null;
+            baseRecord.order_id = orderId || null;
+            baseRecord.amount_paid = 250.00;
+          }
+
+          let res = await withAuthRetry(() =>
+            supabase.from(targetTable).insert([
+              isPaid
+                ? baseRecord
+                : {
+                    ...baseRecord,
+                    payment_method: (paymentMethodType || paymentMethod || 'Visit to pay').slice(0, 20),
+                    payment_status: paymentStatus || 'pending'
+                  }
             ])
           );
+
+          // If inserting into appointments fails because payment_method/payment_status column does not exist yet,
+          // automatically retry with baseRecord (standard columns)
+          if (!isPaid && res && res.error && res.error.message && res.error.message.includes('column')) {
+            res = await withAuthRetry(() =>
+              supabase.from('appointments').insert([baseRecord])
+            );
+          }
+
+          const { data, error } = res;
           if (error) {
             if (error.code === '23505' || (error.message && error.message.includes('idempotency_key'))) {
-              console.log('ℹ️ [Supabase Direct] Record with this idempotency key already exists.');
+              console.log("[Supabase Direct] Record with this idempotency key already exists in " + targetTable);
             } else {
-              console.warn('⚠️ Supabase direct insert warning (Handled gracefully via email fallback):', error.message);
+              console.warn("[Supabase Direct] insert warning (" + targetTable + "):", error.message);
             }
           } else {
-            console.log('✅ Successfully saved booking to Supabase paid_bookings table:', data);
+            console.log("[Supabase Direct] Successfully saved booking to Supabase " + targetTable + " table:", data);
           }
         } catch (dbErr) {
           console.warn('⚠️ Supabase insert exception:', dbErr);

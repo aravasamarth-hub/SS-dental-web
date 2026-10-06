@@ -15,3 +15,7 @@ out/
 # OS Files
 .DS_Store
 Thumbs.db
+
+# Runtime Queues
+apps/api/*queue*.json
+apps/api/processed_watcher_ids.json

@@ -244,54 +244,70 @@ app.post('/api/create-booking', async (req, res, next) => {
 
     const { name, email, phone, date, time, idempotency_key } = parseResult.data;
 
-    // Idempotency check: if already confirmed under this idempotency_key, return early
+    // Idempotency check: if already confirmed under this idempotency_key in appointments, return early
     if (idempotency_key) {
-      const alreadySaved = await checkRecordAlreadyExists('paid_bookings', { idempotency_key });
+      const alreadySaved = await checkRecordAlreadyExists("appointments", { idempotency_key });
       if (alreadySaved) {
-        console.log(`ℹ️ [Idempotency] Booking for key '${idempotency_key}' already processed.`);
-        return res.json({ success: true, message: 'Appointment already booked (idempotent)', duplicate: true });
+        console.log(`[Idempotency] Booking for key '${idempotency_key}' already processed in appointments.`);
+        return res.json({ success: true, message: "Appointment already booked", duplicate: true });
       }
     }
 
     const formattedTs = getFormattedTimestamp();
     const apptDate = formatDate(date);
-    const apptTime = (time || 'General Consult').slice(0, 20);
+    const apptTime = (time || "General Consult").slice(0, 20);
 
-    const record = {
+    // Save Visit to Pay / Pending bookings into appointments table
+    const baseRecord = {
       created_at: formattedTs,
       full_name: name,
-      email: email || '',
+      email: email || "",
       phone: phone,
       appointment_date: apptDate,
       appointment_time: apptTime,
-      payment_method: 'Visit to pay',
-      payment_status: 'pending',
-      amount_paid: 250.00,
       idempotency_key: idempotency_key || null
     };
 
+    const recordWithPayment = {
+      ...baseRecord,
+      payment_method: "Visit to pay",
+      payment_status: "pending"
+    };
+
     try {
-      const { data: insertedData, error } = await withDbRetry(() =>
+      let insertResult = await withDbRetry(() =>
         supabase
-          .from('paid_bookings')
-          .insert([record])
-          .select('id')
+          .from("appointments")
+          .insert([recordWithPayment])
+          .select("id")
       );
+
+      // If schema cache indicates payment_method/payment_status column does not exist on appointments, retry with baseRecord
+      if (insertResult && insertResult.error && insertResult.error.message && insertResult.error.message.includes("column")) {
+        insertResult = await withDbRetry(() =>
+          supabase
+            .from("appointments")
+            .insert([baseRecord])
+            .select("id")
+        );
+      }
+
+      const { data: insertedData, error } = insertResult;
 
       if (error) {
         // Check for unique constraint violation on idempotency_key
-        if (error.code === '23505' || (error.message && error.message.includes('idempotency_key'))) {
-          console.log(`ℹ️ [Idempotency Conflict] Booking already saved in DB for key '${idempotency_key}'.`);
+        if (error.code === "23505" || (error.message && error.message.includes("idempotency_key"))) {
+          console.log(`[Idempotency Conflict] Booking already saved in appointments for key '${idempotency_key}'.`);
         } else {
-          console.warn('⚠️ Supabase insert notice. Saving to self-healing DB queue:', error.message);
-          saveToDbQueue('paid_bookings', record);
+          console.warn("Supabase appointments insert notice. Saving to self-healing DB queue:", error.message);
+          saveToDbQueue("appointments", baseRecord);
         }
       } else if (insertedData && insertedData[0] && insertedData[0].id) {
-        markAsProcessed('paid_bookings', insertedData[0].id);
+        markAsProcessed("appointments", insertedData[0].id);
       }
     } catch (dbEx) {
-      console.warn('⚠️ Supabase exception during booking create. Queueing for retry:', dbEx.message);
-      saveToDbQueue('paid_bookings', record);
+      console.warn("Supabase exception during booking create. Queueing for retry:", dbEx.message);
+      saveToDbQueue("appointments", baseRecord);
     }
 
     // Trigger Email, SMS, & WhatsApp Notifications
