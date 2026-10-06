@@ -58,7 +58,7 @@ function DoctorNaveen() {
         <BackToTopButton />
 
         {/* Hero Section */}
-        <section className="py-20 bg-gradient-to-br from-primary/5 via-background to-accent/5">
+        <section className="py-16 md:py-24 bg-gradient-to-br from-primary/5 via-background to-accent/5 relative overflow-hidden">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
               <motion.div
@@ -66,15 +66,36 @@ function DoctorNaveen() {
                 animate={{ opacity: 1, x: 0 }}
                 className="order-2 lg:order-1 lg:col-span-7"
               >
-                <h1 className="mb-2 flex flex-col gap-1">
-                  <span className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground">About</span>
-                  <span className="text-accent text-4xl md:text-5xl lg:text-6xl font-bold">Dr. Naveen Shamnur</span>
-                  <span className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground">MDS</span>
+                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-accent/10 border border-accent/20 text-accent font-semibold text-xs sm:text-sm mb-4">
+                  <Award className="w-4 h-4 text-accent" />
+                  <span>Senior Orthodontist & Dentofacial Specialist</span>
+                </div>
+
+                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-foreground tracking-tight mb-2">
+                  Dr. Naveen Shamnur <span className="text-accent text-2xl sm:text-3xl md:text-4xl font-bold">MDS</span>
                 </h1>
-                <p className="text-base text-muted-foreground font-medium mb-4">
+
+                <p className="text-base sm:text-lg text-primary font-semibold mb-1">
                   Professor, Dept. of Orthodontics, College of Dental Sciences, Davangere
                 </p>
-                <div className="space-y-4 text-muted-foreground leading-relaxed mb-8">
+
+                {/* Quick Highlight Badges */}
+                <div className="flex flex-wrap gap-2.5 my-5">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-card/80 border border-border text-xs sm:text-sm font-medium text-foreground shadow-sm">
+                    <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                    25+ Years Experience
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-card/80 border border-border text-xs sm:text-sm font-medium text-foreground shadow-sm">
+                    <GraduationCap className="w-3.5 h-3.5 text-accent" />
+                    MDS in Orthodontics
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-card/80 border border-border text-xs sm:text-sm font-medium text-foreground shadow-sm">
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+                    IOS & IDA Member
+                  </span>
+                </div>
+
+                <div className="space-y-4 text-muted-foreground leading-relaxed mb-8 text-sm sm:text-base">
                   <p>
                     <strong className="text-foreground">Dr. Naveen Shamnur</strong> is a senior{' '}
                     <strong className="text-foreground">Orthodontist and Dental Specialist</strong> with over{' '}
@@ -91,25 +112,66 @@ function DoctorNaveen() {
                     <strong className="text-foreground">painless approach, calm demeanor, and high-quality care</strong>, making him a trusted choice for families.
                   </p>
                 </div>
-                <Link to="/bookings">
-                  <Button size="lg" className="transition-all duration-200 active:scale-98">
-                    <Calendar className="mr-2 h-5 w-5" />
-                    Book Appointment
-                  </Button>
-                </Link>
+
+                <div className="flex flex-wrap gap-4 items-center">
+                  <Link to="/bookings">
+                    <Button size="lg" className="shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all duration-200 active:scale-98">
+                      <Calendar className="mr-2 h-5 w-5" />
+                      Book Appointment
+                    </Button>
+                  </Link>
+                  <a
+                    href="https://wa.me/919448455699?text=Hello%20Dr.%20Naveen,%20I%20would%20like%20to%20consult%20regarding%20an%20orthodontic%20treatment."
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Button variant="outline" size="lg" className="border-border hover:bg-accent/10 hover:text-accent transition-all">
+                      Consult via WhatsApp
+                    </Button>
+                  </a>
+                </div>
               </motion.div>
 
               <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="order-1 lg:order-2 lg:col-span-5 flex justify-center lg:justify-start"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5 }}
+                className="order-1 lg:order-2 lg:col-span-5 flex justify-center"
               >
-                <div className="rounded-2xl overflow-hidden shadow-xl max-w-sm md:max-w-md lg:max-w-[380px] w-full bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 p-4 flex justify-center">
-                  <img
-                    src="/dr-naveen-shamnur.png"
-                    alt="Dr. Naveen Shamnur MDS - Orthodontist and Dentofacial Orthopedics"
-                    className="w-full h-auto object-contain"
-                  />
+                <div className="relative group max-w-sm md:max-w-md lg:max-w-[400px] w-full">
+                  {/* Subtle Ambient Backlight Glow */}
+                  <div className="absolute -inset-1.5 bg-gradient-to-tr from-accent/30 via-primary/20 to-sky-500/30 rounded-3xl blur-xl opacity-75 group-hover:opacity-100 transition-opacity duration-500" />
+
+                  {/* Card Container */}
+                  <div className="relative rounded-3xl overflow-hidden bg-gradient-to-b from-slate-900 via-slate-950 to-black border border-white/15 shadow-2xl flex flex-col items-center">
+                    {/* Top Lighting Halo */}
+                    <div className="absolute top-0 inset-x-0 h-40 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-sky-400/20 via-transparent to-transparent pointer-events-none" />
+
+                    {/* Image with Smooth Grounding */}
+                    <div className="relative w-full pt-4 px-2 flex justify-center">
+                      <img
+                        src="/dr-naveen-shamnur.png"
+                        alt="Dr. Naveen Shamnur MDS - Orthodontist and Dentofacial Orthopedics"
+                        className="w-full h-auto max-h-[500px] object-contain drop-shadow-[0_12px_24px_rgba(0,0,0,0.6)] transform group-hover:scale-[1.02] transition-transform duration-500"
+                        loading="eager"
+                      />
+                      {/* Bottom Gradient Fade */}
+                      <div className="absolute bottom-0 inset-x-0 h-16 bg-gradient-to-t from-slate-950 via-slate-950/60 to-transparent pointer-events-none" />
+                    </div>
+
+                    {/* Bottom Info Ribbon */}
+                    <div className="w-full bg-slate-950/90 backdrop-blur-md border-t border-white/10 px-5 py-4 flex items-center justify-between">
+                      <div>
+                        <p className="text-white font-bold text-base">Dr. Naveen Shamnur</p>
+                        <p className="text-accent text-xs font-semibold tracking-wide">MDS • Senior Orthodontist</p>
+                      </div>
+                      <div className="text-right">
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 font-bold text-xs">
+                          ⭐ 25+ Yrs
+                        </span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </motion.div>
             </div>

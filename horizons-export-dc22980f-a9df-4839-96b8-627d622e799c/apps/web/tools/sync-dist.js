@@ -14,6 +14,9 @@ const srcDir = path.join(__dirname, '..', 'dist');
 const destDir = path.join(__dirname, '..', '..', '..', 'dist', 'apps', 'web');
 
 if (fs.existsSync(srcDir)) {
+  if (fs.existsSync(destDir)) {
+    fs.rmSync(destDir, { recursive: true, force: true });
+  }
   fs.mkdirSync(destDir, { recursive: true });
   fs.cpSync(srcDir, destDir, { recursive: true });
   console.log(`Successfully synced build to ${destDir}`);
