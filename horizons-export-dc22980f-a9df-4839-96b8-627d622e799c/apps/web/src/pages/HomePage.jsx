@@ -34,6 +34,7 @@ function HomePage() {
   const tsIconRef = useRef(null);
   const logoRef = useRef(null);
 
+  const [isDesktop, setIsDesktop] = useState(false);
   const [coords, setCoords] = useState({
     qa: { x: 0, y: 0 },
     pc: { x: 0, y: 0 },
@@ -43,7 +44,7 @@ function HomePage() {
   });
 
   const updateCoordinates = () => {
-    if (!containerRef.current) return;
+    if (!containerRef.current || window.innerWidth < 1024) return;
     const parentRect = containerRef.current.getBoundingClientRect();
     
     const getCenter = (elRef) => {
@@ -65,13 +66,25 @@ function HomePage() {
   };
 
   useEffect(() => {
-    updateCoordinates();
-    window.addEventListener('resize', updateCoordinates);
-    // Double check on mounting shifts
-    const timer1 = setTimeout(updateCoordinates, 300);
-    const timer2 = setTimeout(updateCoordinates, 1000);
+    const handleResize = () => {
+      const desktop = window.innerWidth >= 1024;
+      setIsDesktop(desktop);
+      if (desktop) {
+        updateCoordinates();
+      }
+    };
+
+    handleResize();
+    window.addEventListener('resize', handleResize, { passive: true });
+    // Double check on mounting shifts if desktop
+    const timer1 = setTimeout(() => {
+      if (window.innerWidth >= 1024) updateCoordinates();
+    }, 300);
+    const timer2 = setTimeout(() => {
+      if (window.innerWidth >= 1024) updateCoordinates();
+    }, 1000);
     return () => {
-      window.removeEventListener('resize', updateCoordinates);
+      window.removeEventListener('resize', handleResize);
       clearTimeout(timer1);
       clearTimeout(timer2);
     };
@@ -399,7 +412,7 @@ function HomePage() {
                 >
                   {/* Dr. Naveen */}
                   <Link to="/doctors/naveen-shamnur" className="flex flex-col items-center text-center group cursor-pointer">
-                    <div className="relative overflow-hidden p-2 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 shadow-xl group-hover:bg-white/20 group-hover:border-white/40 transition-all duration-300">
+                    <div className="relative overflow-hidden p-2 rounded-2xl bg-white/10 md:backdrop-blur-md border border-white/20 shadow-xl group-hover:bg-white/20 group-hover:border-white/40 transition-all duration-300">
                       <img
                         src="/dr-naveen-shamnur.png"
                         alt="Dr. Naveen Shamnur - Orthodontist"
@@ -407,10 +420,10 @@ function HomePage() {
                         decoding="async"
                         width={176}
                         height={264}
-                        className="h-36 md:h-44 object-contain rounded-xl transform group-hover:scale-105 transition-transform duration-300 drop-shadow-[0_8px_16px_rgba(0,0,0,0.5)]"
+                        className="h-36 md:h-44 object-contain rounded-xl transform group-hover:scale-105 transition-transform duration-300 md:drop-shadow-[0_8px_16px_rgba(0,0,0,0.5)]"
                       />
                     </div>
-                    <div className="mt-2.5 flex flex-col justify-start drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">
+                    <div className="mt-2.5 flex flex-col justify-start md:drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">
                       <h3 className="text-white font-bold text-sm sm:text-base md:text-xl group-hover:text-amber-300 transition-colors duration-200">Dr. Naveen Shamnur</h3>
                       <p className="text-amber-300 text-[10px] sm:text-xs md:text-sm font-semibold mt-0.5 tracking-wide uppercase leading-tight">
                         Orthodontist and Dentofacial Orthopedics
@@ -420,7 +433,7 @@ function HomePage() {
 
                   {/* Dr. Sunitha */}
                   <Link to="/doctors/sunitha-shamnur" className="flex flex-col items-center text-center group cursor-pointer">
-                    <div className="relative overflow-hidden p-2 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 shadow-xl group-hover:bg-white/20 group-hover:border-white/40 transition-all duration-300">
+                    <div className="relative overflow-hidden p-2 rounded-2xl bg-white/10 md:backdrop-blur-md border border-white/20 shadow-xl group-hover:bg-white/20 group-hover:border-white/40 transition-all duration-300">
                       <img
                         src="/dr-sunitha-shamnur.png"
                         alt="Dr. Sunitha N Shamnur - Prosthodontist"
@@ -428,10 +441,10 @@ function HomePage() {
                         decoding="async"
                         width={176}
                         height={264}
-                        className="h-36 md:h-44 object-contain rounded-xl transform group-hover:scale-105 transition-transform duration-300 drop-shadow-[0_8px_16px_rgba(0,0,0,0.5)]"
+                        className="h-36 md:h-44 object-contain rounded-xl transform group-hover:scale-105 transition-transform duration-300 md:drop-shadow-[0_8px_16px_rgba(0,0,0,0.5)]"
                       />
                     </div>
-                    <div className="mt-2.5 flex flex-col justify-start drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">
+                    <div className="mt-2.5 flex flex-col justify-start md:drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)]">
                       <h3 className="text-white font-bold text-sm sm:text-base md:text-xl group-hover:text-amber-300 transition-colors duration-200">Dr. Sunitha Shamnur</h3>
                       <p className="text-amber-300 text-[10px] sm:text-xs md:text-sm font-semibold mt-0.5 tracking-wide uppercase leading-tight">
                         Prosthodontist and Implantologist
@@ -616,8 +629,8 @@ function HomePage() {
             </div>
           </div>
 
-          {/* Animated color particles connecting features to the central logo */}
-          {coords.logo.x !== 0 && [
+          {/* Animated color particles connecting features to the central logo (Desktop only for smooth mobile performance) */}
+          {isDesktop && coords.logo.x !== 0 && [
             // Quality Assurance -> Green particles
             { from: coords.qa, to: coords.logo, color: '#10b981', delay: 0 },
             { from: coords.qa, to: coords.logo, color: '#10b981', delay: 1.5 },

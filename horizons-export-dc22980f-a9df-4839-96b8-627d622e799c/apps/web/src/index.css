@@ -191,4 +191,27 @@
 .hero-section .motion-div {
   will-change: auto;
 }
+
+/* ========== Mobile Touch & Smooth Scrolling Optimizations ========== */
+html {
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 768px) {
+  /* Prevent 300ms tap delay on mobile buttons and links */
+  a, button, input, select, textarea {
+    touch-action: manipulation;
+  }
+
+  /* Hardware accelerate scrolling cards to prevent frame drops */
+  .group {
+    transform: translateZ(0);
+  }
+
+  /* Simplify backdrop filters on mobile for stutter-free 60fps/120fps scrolling */
+  .backdrop-blur-2xl {
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+  }
+}
 

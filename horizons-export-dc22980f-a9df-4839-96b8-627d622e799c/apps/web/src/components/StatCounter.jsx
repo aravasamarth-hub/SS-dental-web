@@ -7,18 +7,31 @@ function StatCounter({ end, suffix = '', duration = 2 }) {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true });
 
+  const isDecimal = !Number.isInteger(end);
+
   useEffect(() => {
     if (!isInView) return;
 
     let startTime;
+    let lastUpdate = 0;
     let animationFrame;
 
     const animate = (timestamp) => {
       if (!startTime) startTime = timestamp;
-      const progress = (timestamp - startTime) / (duration * 1000);
+      const elapsed = timestamp - startTime;
+      const progress = Math.min(elapsed / (duration * 1000), 1);
+
+      // Throttle state update to at most once every 33ms (~30fps) for smooth perf
+      if (timestamp - lastUpdate > 33 || progress >= 1) {
+        lastUpdate = timestamp;
+        if (isDecimal) {
+          setCount(Number((end * progress).toFixed(1)));
+        } else {
+          setCount(Math.floor(end * progress));
+        }
+      }
 
       if (progress < 1) {
-        setCount(Math.floor(end * progress));
         animationFrame = requestAnimationFrame(animate);
       } else {
         setCount(end);
@@ -32,7 +45,7 @@ function StatCounter({ end, suffix = '', duration = 2 }) {
         cancelAnimationFrame(animationFrame);
       }
     };
-  }, [isInView, end, duration]);
+  }, [isInView, end, duration, isDecimal]);
 
   return (
     <motion.span

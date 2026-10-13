@@ -34,6 +34,9 @@ function GalleryPage() {
     }
   ];
 
+  const [touchStart, setTouchStart] = useState(null);
+  const [touchEnd, setTouchEnd] = useState(null);
+
   const handlePrev = () => {
     setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
   };
@@ -42,12 +45,40 @@ function GalleryPage() {
     setCurrentIndex((prev) => (prev + 1) % images.length);
   };
 
+  const onTouchStart = (e) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > 50;
+    const isRightSwipe = distance < -50;
+    if (isLeftSwipe) {
+      handleNext();
+    } else if (isRightSwipe) {
+      handlePrev();
+    }
+  };
+
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % images.length);
-    }, 5000);
+    }, 6000);
     return () => clearInterval(timer);
   }, [currentIndex, images.length]);
+
+  // Preload next image for instant, butter-smooth transitions
+  useEffect(() => {
+    const nextIdx = (currentIndex + 1) % images.length;
+    const img = new Image();
+    img.src = images[nextIdx].url;
+  }, [currentIndex, images]);
 
   return (
     <>
@@ -92,6 +123,8 @@ function GalleryPage() {
                     <img
                       src={image.url}
                       alt={image.title}
+                      loading="lazy"
+                      decoding="async"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                   </div>
@@ -127,20 +160,26 @@ function GalleryPage() {
               </p>
             </motion.div>
 
-            {/* Slideshow container */}
-            <div className="relative aspect-[16/9] w-full max-w-4xl mx-auto overflow-hidden rounded-3xl border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] bg-slate-950">
+            {/* Slideshow container with touch swipe support */}
+            <div
+              onTouchStart={onTouchStart}
+              onTouchMove={onTouchMove}
+              onTouchEnd={onTouchEnd}
+              className="relative aspect-[16/9] w-full max-w-4xl mx-auto overflow-hidden rounded-3xl border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] bg-slate-950 touch-pan-y select-none"
+            >
               <AnimatePresence mode="wait">
                 <motion.div
                   key={currentIndex}
                   initial={{ opacity: 0, scale: 1.02 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.98 }}
-                  transition={{ duration: 0.5 }}
+                  transition={{ duration: 0.4 }}
                   className="absolute inset-0"
                 >
                   <img
                     src={images[currentIndex].url}
                     alt={images[currentIndex].title}
+                    decoding="async"
                     className="w-full h-full object-cover"
                   />
                   {/* Overlay with details */}
