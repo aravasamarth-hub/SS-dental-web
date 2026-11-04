@@ -1,4 +1,5 @@
 const path = require('path');
+const fs = require('fs');
 require('dotenv').config({ path: path.join(__dirname, '.env') });
 
 const express = require('express');
@@ -625,6 +626,23 @@ app.post('/api/cron/reminders', async (req, res) => {
   const results = await runReminderJob();
   res.json({ success: true, results });
 });
+
+// ---------------------------------------------------------------------------
+// Static Assets & SPA Routing for Fullstack Deployment
+// ---------------------------------------------------------------------------
+const staticDistPath = path.resolve(__dirname, '../../dist/apps/web');
+const fallbackDistPath = path.resolve(__dirname, '../web/dist');
+const distPath = fs.existsSync(staticDistPath)
+  ? staticDistPath
+  : (fs.existsSync(fallbackDistPath) ? fallbackDistPath : null);
+
+if (distPath) {
+  app.use(express.static(distPath));
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api/')) return next();
+    res.sendFile(path.join(distPath, 'index.html'));
+  });
+}
 
 // ---------------------------------------------------------------------------
 // Centralized Error Boundary Middleware

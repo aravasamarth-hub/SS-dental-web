@@ -2,13 +2,20 @@
 	RewriteEngine On
 	RewriteBase /
 
+	# Proxy /api requests to local Node.js server
+	<IfModule mod_proxy.c>
+		RewriteCond %{REQUEST_URI} ^/api/ [NC]
+		RewriteRule ^api/(.*)$ http://127.0.0.1:5000/api/$1 [P,L]
+	</IfModule>
+
 	# If request is not already in dist/apps/web, rewrite to dist/apps/web
 	RewriteCond %{REQUEST_URI} !^/dist/apps/web/
 	RewriteCond %{DOCUMENT_ROOT}/dist/apps/web%{REQUEST_URI} -f [OR]
 	RewriteCond %{DOCUMENT_ROOT}/dist/apps/web%{REQUEST_URI} -d
 	RewriteRule ^(.*)$ /dist/apps/web/$1 [L]
 
-	# SPA fallback to dist/apps/web/index.html
+	# SPA fallback to dist/apps/web/index.html (excluding /api/)
+	RewriteCond %{REQUEST_URI} !^/api/
 	RewriteCond %{REQUEST_FILENAME} !-f
 	RewriteCond %{REQUEST_FILENAME} !-d
 	RewriteRule ^ index.html [L]
