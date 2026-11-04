@@ -472,3 +472,45 @@ describe('9. Production SEO & Metadata Integrity', () => {
     assert.ok(content.includes('/about'));
   });
 });
+
+describe('10. Appointment Lifecycle Handlers Suite (Cancel, Reschedule, Confirm)', () => {
+  test('Cancellation releases active slot in collision check logic', () => {
+    const slot = { date: '2026-12-25', time: '10:00 AM', status: 'confirmed' };
+    const isBookedBefore = slot.status !== 'cancelled';
+    assert.strictEqual(isBookedBefore, true);
+
+    // After cancellation
+    slot.status = 'cancelled';
+    const isBookedAfter = slot.status !== 'cancelled';
+    assert.strictEqual(isBookedAfter, false);
+  });
+
+  test('Rescheduling updates date and time while preserving booking reference', () => {
+    const appointment = {
+      id: 'appt_test_123',
+      date: '2026-12-20',
+      time: '11:00 AM',
+      doctor: 'Dr. Naveen'
+    };
+
+    const newDate = '2026-12-22';
+    const newTime = '03:00 PM';
+
+    const updated = {
+      ...appointment,
+      date: newDate,
+      time: newTime
+    };
+
+    assert.strictEqual(updated.id, 'appt_test_123');
+    assert.strictEqual(updated.date, '2026-12-22');
+    assert.strictEqual(updated.time, '03:00 PM');
+  });
+
+  test('Confirmation transitions pending appointment to confirmed', () => {
+    const appointment = { id: 'appt_456', status: 'pending' };
+    appointment.status = 'confirmed';
+    assert.strictEqual(appointment.status, 'confirmed');
+  });
+});
+

@@ -616,6 +616,249 @@ app.post(['/api/book-appointment', '/api/create-booking'], bookingLimiter, async
 });
 
 // ---------------------------------------------------------------------------
+// 5B. Appointment Lifecycle: Cancellation & Slot Release
+// ---------------------------------------------------------------------------
+app.post(['/api/cancel-appointment', '/api/cancel-booking'], bookingLimiter, async (req, res, next) => {
+  try {
+    const { appointment_id, reason } = req.body;
+    if (!appointment_id) {
+      return res.status(400).json({ success: false, message: 'appointment_id is required' });
+    }
+
+    const { data: appt, error: fetchErr } = await withDbRetry(() =>
+      supabaseAdmin.from('appointments').select('*').eq('id', appointment_id).maybeSingle()
+    );
+
+    if (fetchErr || !appt) {
+      return res.status(404).json({ success: false, message: 'Appointment record not found.' });
+    }
+
+    if (appt.appointment_status === 'cancelled') {
+      return res.json({ success: true, message: 'Appointment is already cancelled.', alreadyCancelled: true });
+    }
+
+    const cancelReason = reason || 'Patient/Clinic requested cancellation';
+    const updatedNotes = appt.notes ? `${appt.notes} | Cancelled: ${cancelReason}` : `Cancelled: ${cancelReason}`;
+
+    const { error: updateErr } = await withDbRetry(() =>
+      supabaseAdmin
+        .from('appointments')
+        .update({
+          appointment_status: 'cancelled',
+          notes: updatedNotes,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', appointment_id)
+    );
+
+    if (updateErr) {
+      return res.status(500).json({ success: false, message: `Failed to cancel appointment: ${updateErr.message}` });
+    }
+
+    const clinicEmail = process.env.CLINIC_NOTIFICATION_EMAIL || process.env.NOTIFICATION_EMAIL || 'aravasamarth@gmail.com';
+
+    // 1. Enqueue patient cancellation email
+    if (appt.patient_email && appt.patient_email.includes('@')) {
+      await enqueueNotification({
+        appointmentId: appt.id,
+        recipientEmail: appt.patient_email,
+        recipientName: appt.patient_name,
+        recipientType: 'patient',
+        notificationType: 'cancelled',
+        metadata: {
+          patientName: appt.patient_name,
+          appointmentId: appt.id,
+          date: appt.appointment_date,
+          time: appt.appointment_time,
+          reason: cancelReason
+        }
+      });
+    }
+
+    // 2. Enqueue clinic cancellation notification
+    await enqueueNotification({
+      appointmentId: appt.id,
+      recipientEmail: clinicEmail,
+      recipientName: 'SS Dental Care Clinic Desk',
+      recipientType: 'clinic',
+      notificationType: 'cancelled',
+      metadata: {
+        patientName: appt.patient_name,
+        patientPhone: appt.patient_phone,
+        appointmentId: appt.id,
+        date: appt.appointment_date,
+        time: appt.appointment_time,
+        reason: cancelReason
+      }
+    });
+
+    res.json({
+      success: true,
+      message: 'Appointment cancelled successfully, slot released, and notifications dispatched.',
+      appointment_id: appt.id,
+      slot_released: { date: appt.appointment_date, time: appt.appointment_time }
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// 5C. Appointment Lifecycle: Rescheduling
+// ---------------------------------------------------------------------------
+app.post(['/api/reschedule-appointment', '/api/reschedule-booking'], bookingLimiter, async (req, res, next) => {
+  try {
+    const { appointment_id, new_date, new_time, doctor } = req.body;
+    if (!appointment_id || !new_date || !new_time) {
+      return res.status(400).json({ success: false, message: 'appointment_id, new_date, and new_time are required' });
+    }
+
+    const apptDate = formatDate(new_date);
+
+    const { data: appt, error: fetchErr } = await withDbRetry(() =>
+      supabaseAdmin.from('appointments').select('*').eq('id', appointment_id).maybeSingle()
+    );
+
+    if (fetchErr || !appt) {
+      return res.status(404).json({ success: false, message: 'Appointment record not found.' });
+    }
+
+    const targetDoctor = doctor || appt.doctor_name;
+
+    const slotTaken = await isSlotBooked(targetDoctor, apptDate, new_time);
+    if (slotTaken) {
+      return res.status(409).json({
+        success: false,
+        message: `The selected appointment slot (${new_time} on ${apptDate}) is already reserved. Please select another slot.`
+      });
+    }
+
+    const { error: updateErr } = await withDbRetry(() =>
+      supabaseAdmin
+        .from('appointments')
+        .update({
+          appointment_date: apptDate,
+          appointment_time: new_time,
+          doctor_name: targetDoctor,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', appointment_id)
+    );
+
+    if (updateErr) {
+      return res.status(500).json({ success: false, message: `Failed to reschedule appointment: ${updateErr.message}` });
+    }
+
+    const clinicEmail = process.env.CLINIC_NOTIFICATION_EMAIL || process.env.NOTIFICATION_EMAIL || 'aravasamarth@gmail.com';
+
+    if (appt.patient_email && appt.patient_email.includes('@')) {
+      await enqueueNotification({
+        appointmentId: appt.id,
+        recipientEmail: appt.patient_email,
+        recipientName: appt.patient_name,
+        recipientType: 'patient',
+        notificationType: 'rescheduled',
+        metadata: {
+          patientName: appt.patient_name,
+          appointmentId: appt.id,
+          treatment: appt.treatment,
+          date: apptDate,
+          time: new_time,
+          doctor: targetDoctor
+        }
+      });
+    }
+
+    await enqueueNotification({
+      appointmentId: appt.id,
+      recipientEmail: clinicEmail,
+      recipientName: 'SS Dental Care Clinic Desk',
+      recipientType: 'clinic',
+      notificationType: 'rescheduled',
+      metadata: {
+        patientName: appt.patient_name,
+        patientPhone: appt.patient_phone,
+        appointmentId: appt.id,
+        treatment: appt.treatment,
+        date: apptDate,
+        time: new_time,
+        doctor: targetDoctor
+      }
+    });
+
+    res.json({
+      success: true,
+      message: 'Appointment rescheduled successfully and notifications dispatched.',
+      appointment_id: appt.id,
+      new_date: apptDate,
+      new_time
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// 5D. Appointment Lifecycle: Manual / Staff Confirmation
+// ---------------------------------------------------------------------------
+app.post(['/api/confirm-appointment', '/api/confirm-booking'], bookingLimiter, async (req, res, next) => {
+  try {
+    const { appointment_id } = req.body;
+    if (!appointment_id) {
+      return res.status(400).json({ success: false, message: 'appointment_id is required' });
+    }
+
+    const { data: appt, error: fetchErr } = await withDbRetry(() =>
+      supabaseAdmin.from('appointments').select('*').eq('id', appointment_id).maybeSingle()
+    );
+
+    if (fetchErr || !appt) {
+      return res.status(404).json({ success: false, message: 'Appointment record not found.' });
+    }
+
+    const { error: updateErr } = await withDbRetry(() =>
+      supabaseAdmin
+        .from('appointments')
+        .update({
+          appointment_status: 'confirmed',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', appointment_id)
+    );
+
+    if (updateErr) {
+      return res.status(500).json({ success: false, message: `Failed to confirm appointment: ${updateErr.message}` });
+    }
+
+    if (appt.patient_email && appt.patient_email.includes('@')) {
+      await enqueueNotification({
+        appointmentId: appt.id,
+        recipientEmail: appt.patient_email,
+        recipientName: appt.patient_name,
+        recipientType: 'patient',
+        notificationType: 'confirmation',
+        metadata: {
+          patientName: appt.patient_name,
+          appointmentId: appt.id,
+          treatment: appt.treatment,
+          date: appt.appointment_date,
+          time: appt.appointment_time,
+          doctor: appt.doctor_name
+        }
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Appointment confirmed successfully and confirmation email dispatched.',
+      appointment_id: appt.id
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ---------------------------------------------------------------------------
 // 6. General Form Inquiry Notification Endpoint
 // ---------------------------------------------------------------------------
 app.post('/api/notify', bookingLimiter, async (req, res, next) => {
