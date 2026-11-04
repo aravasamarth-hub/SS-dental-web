@@ -79,3 +79,4 @@ async function verifyDisasterRecovery() {
 verifyDisasterRecovery().then(success => {
   if (!success) process.exit(1);
 });
+
