@@ -2,12 +2,6 @@
 	RewriteEngine On
 	RewriteBase /
 
-	# Proxy /api requests to local Node.js server
-	<IfModule mod_proxy.c>
-		RewriteCond %{REQUEST_URI} ^/api/ [NC]
-		RewriteRule ^api/(.*)$ http://127.0.0.1:5000/api/$1 [P,L]
-	</IfModule>
-
 	RewriteCond %{REQUEST_URI} !^/api/
 	RewriteCond %{REQUEST_FILENAME} !-f
 	RewriteCond %{REQUEST_FILENAME} !-d
