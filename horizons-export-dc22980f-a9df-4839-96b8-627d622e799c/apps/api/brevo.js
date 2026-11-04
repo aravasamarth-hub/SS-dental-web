@@ -45,9 +45,12 @@ async function sendTransactionalEmail({ to, recipientName, subject, htmlContent,
     ],
     subject,
     htmlContent,
-    textContent: textContent || subject,
-    tags
+    textContent: textContent || subject
   };
+
+  if (Array.isArray(tags) && tags.length > 0) {
+    payload.tags = tags;
+  }
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 12000); // 12-second timeout

@@ -168,16 +168,24 @@ describe('Workstream B — Brevo Transactional Email Engine & Outbox (Synthetic 
 
   // 10. Provider response/message ID capture logic
   it('10. Client handles missing API key gracefully without crashing and records simulated response', async () => {
-    const res = await sendTransactionalEmail({
-      to: 'synthetic_recipient@ssdentalcare.in',
-      recipientName: 'Synthetic Tester',
-      subject: 'Test Subject',
-      htmlContent: '<p>Test</p>'
-    });
-    // In dev/test when BREVO_API_KEY is not configured, returns clean warning
-    assert.equal(res.success, false);
-    assert.equal(res.error, 'BREVO_API_KEY_MISSING');
-    assert.ok(res.messageId.startsWith('simulated_'));
+    const originalKey = process.env.BREVO_API_KEY;
+    delete process.env.BREVO_API_KEY;
+    try {
+      const res = await sendTransactionalEmail({
+        to: 'synthetic_recipient@ssdentalcare.in',
+        recipientName: 'Synthetic Tester',
+        subject: 'Test Subject',
+        htmlContent: '<p>Test</p>'
+      });
+      // In dev/test when BREVO_API_KEY is not configured, returns clean warning
+      assert.equal(res.success, false);
+      assert.equal(res.error, 'BREVO_API_KEY_MISSING');
+      assert.ok(res.messageId.startsWith('simulated_'));
+    } finally {
+      if (originalKey) {
+        process.env.BREVO_API_KEY = originalKey;
+      }
+    }
   });
 
 });

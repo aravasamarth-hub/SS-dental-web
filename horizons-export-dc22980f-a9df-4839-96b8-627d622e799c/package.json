@@ -9,7 +9,8 @@
 		"lint": "npm --prefix apps/web run lint"
 	},
 	"dependencies": {
-		"concurrently": "^9.1.2"
+		"concurrently": "^9.1.2",
+		"vite": "^7.3.1"
 	},
 	"devDependencies": {
 		"concurrently": "^9.1.2"
