@@ -29,7 +29,7 @@ const dentaFlowAdapter = require('./dentaflow-adapter');
 const app = express();
 
 // ---------------------------------------------------------------------------
-// Security Middleware: Helmet & CORS
+// Security Middleware: Helmet, Static Assets & CORS
 // ---------------------------------------------------------------------------
 app.use(
   helmet({
@@ -37,6 +37,20 @@ app.use(
     crossOriginResourcePolicy: false
   })
 );
+
+// Serve static frontend assets before CORS
+const candidateDistPaths = [
+  path.resolve(__dirname, '../../dist/apps/web'),
+  path.resolve(__dirname, '../web/dist'),
+  path.resolve(__dirname, '../../public_html'),
+  path.resolve(process.cwd(), 'dist/apps/web'),
+  path.resolve(process.cwd(), 'apps/web/dist')
+];
+const distPath = candidateDistPaths.find(p => fs.existsSync(p) && fs.existsSync(path.join(p, 'index.html')));
+
+if (distPath) {
+  app.use(express.static(distPath));
+}
 
 const allowedOrigins = [
   'https://www.ssdentalcare.in',
@@ -51,11 +65,13 @@ app.use(
   cors({
     origin: (origin, callback) => {
       if (!origin) return callback(null, true);
-      const isAllowed = allowedOrigins.some(o => origin.startsWith(o.replace(/\/$/, '')));
+      const isAllowed = allowedOrigins.some(o => origin.startsWith(o.replace(/\/$/, ''))) ||
+        origin.endsWith('.hostingersite.com') ||
+        origin.endsWith('.ssdentalcare.in');
       if (isAllowed || process.env.NODE_ENV !== 'production') {
         callback(null, true);
       } else {
-        callback(new Error(`CORS blocked for origin: ${origin}`));
+        callback(null, false);
       }
     },
     credentials: true,
@@ -628,16 +644,9 @@ app.post('/api/cron/reminders', async (req, res) => {
 });
 
 // ---------------------------------------------------------------------------
-// Static Assets & SPA Routing for Fullstack Deployment
+// SPA Routing for Fullstack Deployment
 // ---------------------------------------------------------------------------
-const staticDistPath = path.resolve(__dirname, '../../dist/apps/web');
-const fallbackDistPath = path.resolve(__dirname, '../web/dist');
-const distPath = fs.existsSync(staticDistPath)
-  ? staticDistPath
-  : (fs.existsSync(fallbackDistPath) ? fallbackDistPath : null);
-
 if (distPath) {
-  app.use(express.static(distPath));
   app.get('*', (req, res, next) => {
     if (req.path.startsWith('/api/')) return next();
     res.sendFile(path.join(distPath, 'index.html'));
@@ -671,7 +680,7 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 5000;
 
 if (process.env.NODE_ENV !== 'test') {
-  const server = app.listen(PORT, '0.0.0.0', () => {
+  const server = app.listen(PORT, () => {
     console.log(`🚀 SS Dental Care API running on port ${PORT}`);
     startOutboxWorker(15000);
     startReminderScheduler(15 * 60 * 1000);
