@@ -27,6 +27,7 @@ const { startReminderScheduler, stopReminderScheduler, runReminderJob } = requir
 const dentaFlowAdapter = require('./dentaflow-adapter');
 
 const app = express();
+app.set('trust proxy', 1);
 
 // Self-healing: ensure public_html/.htaccess does not contain broken loopback proxy rules
 try {
