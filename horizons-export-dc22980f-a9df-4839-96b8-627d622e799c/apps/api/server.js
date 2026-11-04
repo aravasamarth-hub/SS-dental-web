@@ -23,8 +23,8 @@ const {
 } = require('./db');
 
 // Brevo & Durable Outbox Engine
-const { enqueueNotification, startOutboxWorker, stopOutboxWorker } = require('./outbox-worker');
-const { startReminderScheduler, stopReminderScheduler, runReminderJob } = require('./reminder-scheduler');
+const { enqueueNotification, startOutboxWorker, stopOutboxWorker, getOutboxMetrics } = require('./outbox-worker');
+const { startReminderScheduler, stopReminderScheduler, runReminderJob, getLastReminderScanStatus } = require('./reminder-scheduler');
 const dentaFlowAdapter = require('./dentaflow-adapter');
 
 const app = express();
@@ -181,17 +181,33 @@ const formatDate = (dateVal) => {
 // ---------------------------------------------------------------------------
 app.get('/api/health', async (req, res) => {
   const dbHealth = await checkDbHealth();
+  const outboxMetrics = await getOutboxMetrics();
+  const reminderStatus = getLastReminderScanStatus();
   const isBrevoConfigured = Boolean(process.env.BREVO_API_KEY && process.env.BREVO_SENDER_EMAIL);
   const isRazorpayConfigured = Boolean(process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET);
 
+  const isHealthy = dbHealth.healthy && (outboxMetrics.failed === 0);
+
   res.json({
-    status: dbHealth.healthy ? 'ok' : 'degraded',
+    status: isHealthy ? 'ok' : 'degraded',
     service: 'SS Dental Care Production API',
     timestamp: new Date().toISOString(),
     database: {
       healthy: dbHealth.healthy,
       lastError: dbHealth.lastError,
       pendingQueueCount: getDbHealthStatus().pendingQueueCount
+    },
+    outbox: {
+      backlog: outboxMetrics.backlog,
+      pending: outboxMetrics.pending,
+      processing: outboxMetrics.processing,
+      failed: outboxMetrics.failed,
+      lastProcessing: outboxMetrics.lastProcessing
+    },
+    reminders: {
+      lastScanTimestamp: reminderStatus.timestamp,
+      lastScanSuccess: reminderStatus.success,
+      lastScanResults: reminderStatus.stats
     },
     integrations: {
       brevoEmail: isBrevoConfigured ? 'configured' : 'missing_credentials',

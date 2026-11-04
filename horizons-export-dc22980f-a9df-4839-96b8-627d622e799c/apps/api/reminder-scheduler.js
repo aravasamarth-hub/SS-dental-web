@@ -195,9 +195,21 @@ async function runReminderJob() {
     }
 
     console.log(`✅ [Reminder Scheduler Completed]: Evaluated: ${stats.evaluated}, Enqueued 24h: ${stats.enqueued24h}, Enqueued 2h: ${stats.enqueued2h}, Expired Slots: ${stats.expiredSlots}`);
+    lastReminderScan = {
+      timestamp: new Date().toISOString(),
+      success: true,
+      stats,
+      error: null
+    };
     return stats;
   } catch (err) {
     console.error('🚨 [Reminder Scheduler Exception]:', err.message);
+    lastReminderScan = {
+      timestamp: new Date().toISOString(),
+      success: false,
+      stats,
+      error: err.message
+    };
     return stats;
   }
 }
@@ -206,6 +218,16 @@ async function runReminderJob() {
  * In-process interval loop for production server runtime
  */
 let reminderIntervalId = null;
+let lastReminderScan = {
+  timestamp: null,
+  success: null,
+  stats: null,
+  error: null
+};
+
+function getLastReminderScanStatus() {
+  return lastReminderScan;
+}
 
 function startReminderScheduler(intervalMs = 15 * 60 * 1000) { // Every 15 minutes
   if (reminderIntervalId) return;
@@ -229,5 +251,6 @@ module.exports = {
   expireStalePendingAppointments,
   startReminderScheduler,
   stopReminderScheduler,
-  parseIndianAppointmentTime
+  parseIndianAppointmentTime,
+  getLastReminderScanStatus
 };

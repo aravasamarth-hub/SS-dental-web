@@ -152,9 +152,22 @@ async function processOutbox() {
 
     console.log(`📤 [Outbox Worker]: Processing ${claimedItems.length} claimed notification(s)...`);
 
+    let batchSuccess = 0;
+    let batchFailed = 0;
     for (const item of claimedItems) {
-      await processSingleItem(item);
+      try {
+        await processSingleItem(item);
+        batchSuccess++;
+      } catch (e) {
+        batchFailed++;
+      }
     }
+    lastOutboxProcessing = {
+      timestamp: new Date().toISOString(),
+      processedCount: claimedItems.length,
+      successCount: batchSuccess,
+      failedCount: batchFailed
+    };
   } catch (err) {
     console.error('🚨 [Outbox Worker Loop Exception]:', err.message);
   } finally {
@@ -296,6 +309,45 @@ async function markItemFailed(outboxId, attempts, errorMsg) {
 }
 
 let workerIntervalId = null;
+let lastOutboxProcessing = {
+  timestamp: null,
+  processedCount: 0,
+  successCount: 0,
+  failedCount: 0
+};
+
+/**
+ * Real-time monitoring metrics for notification outbox
+ */
+async function getOutboxMetrics() {
+  try {
+    const { count: pendingCount } = await withDbRetry(() =>
+      supabaseAdmin.from('notification_outbox').select('*', { count: 'exact', head: true }).eq('status', 'pending')
+    );
+    const { count: processingCount } = await withDbRetry(() =>
+      supabaseAdmin.from('notification_outbox').select('*', { count: 'exact', head: true }).eq('status', 'processing')
+    );
+    const { count: failedCount } = await withDbRetry(() =>
+      supabaseAdmin.from('notification_outbox').select('*', { count: 'exact', head: true }).eq('status', 'failed')
+    );
+    return {
+      backlog: (pendingCount || 0) + (processingCount || 0),
+      pending: pendingCount || 0,
+      processing: processingCount || 0,
+      failed: failedCount || 0,
+      lastProcessing: lastOutboxProcessing
+    };
+  } catch (err) {
+    return {
+      backlog: 0,
+      pending: 0,
+      processing: 0,
+      failed: 0,
+      error: err.message,
+      lastProcessing: lastOutboxProcessing
+    };
+  }
+}
 
 function startOutboxWorker(intervalMs = 15000) {
   if (workerIntervalId) return;
@@ -319,5 +371,6 @@ module.exports = {
   processOutbox,
   startOutboxWorker,
   stopOutboxWorker,
-  claimPendingItems
+  claimPendingItems,
+  getOutboxMetrics
 };
