@@ -28,6 +28,28 @@ const dentaFlowAdapter = require('./dentaflow-adapter');
 
 const app = express();
 
+// Self-healing: ensure public_html/.htaccess does not contain broken loopback proxy rules
+try {
+  const candidateHtaccessPaths = [
+    '/home/u666654356/domains/ssdentalcare.in/public_html/.htaccess',
+    path.resolve(__dirname, '../../../../public_html/.htaccess'),
+    path.resolve(__dirname, '../../../public_html/.htaccess'),
+    path.resolve(__dirname, '../../public_html/.htaccess')
+  ];
+  for (const p of candidateHtaccessPaths) {
+    if (fs.existsSync(p)) {
+      let content = fs.readFileSync(p, 'utf8');
+      if (content.includes('mod_proxy.c') || content.includes('127.0.0.1:5000')) {
+        content = content.replace(/<IfModule mod_proxy\.c>[\s\S]*?<\/IfModule>/g, '');
+        fs.writeFileSync(p, content, 'utf8');
+        console.log(`✅ [Self-Healing]: Removed legacy mod_proxy rules from ${p}`);
+      }
+    }
+  }
+} catch (e) {
+  console.warn('⚠️ [Self-Healing Warning]:', e.message);
+}
+
 // ---------------------------------------------------------------------------
 // Security Middleware: Helmet, Static Assets & CORS
 // ---------------------------------------------------------------------------
