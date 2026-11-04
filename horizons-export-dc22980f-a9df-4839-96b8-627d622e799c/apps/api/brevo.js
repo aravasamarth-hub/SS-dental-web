@@ -20,7 +20,7 @@ const CLINIC_INFO = {
  */
 async function sendTransactionalEmail({ to, recipientName, subject, htmlContent, textContent, tags = [] }) {
   const apiKey = process.env.BREVO_API_KEY;
-  const senderEmail = process.env.BREVO_SENDER_EMAIL || 'info@ssdentalcare.in';
+  const senderEmail = process.env.BREVO_SENDER_EMAIL || 'care@ssdentalcare.in';
   const senderName = process.env.BREVO_SENDER_NAME || 'SS Dental Care';
 
   if (!apiKey) {
