@@ -127,17 +127,21 @@ async function runReminderJob() {
 
     if (error) {
       console.warn('⚠️ [Reminder Scheduler] Error querying appointments:', error.message);
+      lastReminderScan = {
+        timestamp: new Date().toISOString(),
+        success: false,
+        stats,
+        error: error.message
+      };
       return stats;
     }
 
     if (!appointments || appointments.length === 0) {
       console.log('ℹ️ [Reminder Scheduler]: No upcoming appointments in target window.');
-      return stats;
-    }
+    } else {
+      stats.evaluated = appointments.length;
 
-    stats.evaluated = appointments.length;
-
-    for (const appt of appointments) {
+      for (const appt of appointments) {
       if (!appt.patient_email || !appt.patient_email.includes('@')) {
         continue;
       }
@@ -193,6 +197,7 @@ async function runReminderJob() {
         }
       }
     }
+  }
 
     console.log(`✅ [Reminder Scheduler Completed]: Evaluated: ${stats.evaluated}, Enqueued 24h: ${stats.enqueued24h}, Enqueued 2h: ${stats.enqueued2h}, Expired Slots: ${stats.expiredSlots}`);
     lastReminderScan = {
