@@ -4,9 +4,12 @@
 	"private": true,
 	"scripts": {
 		"dev": "concurrently --kill-others --raw \"npm run dev --prefix apps/web\" \"npm start --prefix apps/api\"",
-		"build": "concurrently --raw \"npm run build --prefix apps/web\"",
+		"build": "npm --prefix apps/web run build",
 		"start": "concurrently --kill-others --raw \"npm start --prefix apps/web\" \"npm start --prefix apps/api\"",
-		"lint": "concurrently --raw \"npm run lint --prefix apps/web\""
+		"lint": "npm --prefix apps/web run lint"
+	},
+	"dependencies": {
+		"concurrently": "^9.1.2"
 	},
 	"devDependencies": {
 		"concurrently": "^9.1.2"
