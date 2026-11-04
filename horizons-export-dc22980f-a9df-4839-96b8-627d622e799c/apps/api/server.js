@@ -5,105 +5,129 @@ const express = require('express');
 const Razorpay = require('razorpay');
 const cors = require('cors');
 const crypto = require('crypto');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 const { z } = require('zod');
 
-// Import DB module — supabase client + self-healing queue helpers + idempotency
-const supabase = require('./db');
-const { getDbHealthStatus, saveToDbQueue, processDbQueue, checkRecordAlreadyExists, withDbRetry } = require('./db');
+// Database module (Supabase client + resilience helpers)
+const {
+  supabaseAdmin,
+  getDbHealthStatus,
+  saveToDbQueue,
+  processDbQueue,
+  checkRecordAlreadyExists,
+  isSlotBooked,
+  withDbRetry
+} = require('./db');
 
-// Import notifications
-const { notifyNewBooking, getEmailQueueStatus } = require('./notifications');
-
-// Import watcher — MUST be at top so markAsProcessed is defined before route handlers run
-const { startWatcher, markAsProcessed } = require('./watcher');
+// Brevo & Durable Outbox Engine
+const { enqueueNotification, startOutboxWorker, stopOutboxWorker } = require('./outbox-worker');
+const { startReminderScheduler, stopReminderScheduler, runReminderJob } = require('./reminder-scheduler');
+const dentaFlowAdapter = require('./dentaflow-adapter');
 
 const app = express();
 
-// Middlewares
-app.use(cors());
-app.use(express.json());
+// ---------------------------------------------------------------------------
+// Security Middleware: Helmet & CORS
+// ---------------------------------------------------------------------------
+app.use(
+  helmet({
+    contentSecurityPolicy: false,
+    crossOriginResourcePolicy: false
+  })
+);
 
-// Zod Validation Schemas
+const allowedOrigins = [
+  'https://www.ssdentalcare.in',
+  'https://ssdentalcare.in',
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+  process.env.FRONTEND_URL,
+  process.env.PUBLIC_WEBSITE_URL
+].filter(Boolean);
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      const isAllowed = allowedOrigins.some(o => origin.startsWith(o.replace(/\/$/, '')));
+      if (isAllowed || process.env.NODE_ENV !== 'production') {
+        callback(null, true);
+      } else {
+        callback(new Error(`CORS blocked for origin: ${origin}`));
+      }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-idempotency-key', 'x-cron-secret', 'x-razorpay-signature']
+  })
+);
+
+// Capture raw body for cryptographic webhook signature verification
+app.use(
+  express.json({
+    limit: '2mb',
+    verify: (req, res, buf) => {
+      req.rawBody = buf;
+    }
+  })
+);
+
+// ---------------------------------------------------------------------------
+// Rate Limiting
+// ---------------------------------------------------------------------------
+const generalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 200,
+  message: { success: false, message: 'Too many requests, please try again later.' }
+});
+
+const bookingLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000,
+  max: 30,
+  message: { success: false, message: 'Too many booking attempts from this device. Please wait a few minutes.' }
+});
+
+app.use('/api/', generalLimiter);
+
+// ---------------------------------------------------------------------------
+// Validation Schemas (Zod)
+// ---------------------------------------------------------------------------
 const bookingSchema = z.object({
-  name: z.string().trim().min(1, 'Name is required').max(255),
-  phone: z.string().trim().min(7, 'Phone number is too short').max(50),
-  email: z.string().trim().email('Invalid email address').or(z.literal('')).optional().default(''),
-  date: z.any().optional().default(''),
-  time: z.string().optional().default(''),
+  name: z.string().trim().min(2, 'Full name is required (min 2 characters)').max(255),
+  phone: z.string().trim().min(7, 'Phone number must be at least 7 digits').max(50),
+  email: z.string().trim().email('Invalid email format').or(z.literal('')).optional().default(''),
+  date: z.string().trim().min(4, 'Appointment date is required'),
+  time: z.string().trim().min(1, 'Appointment time is required'),
+  doctor: z.string().trim().max(100).optional().default('Dr. Naveen / Dr. Sunitha'),
+  treatment: z.string().trim().max(255).optional().default('General Dental Consultation'),
+  notes: z.string().trim().max(1000).optional().default(''),
+  amount: z.number().nonnegative().optional().default(250.00),
+  payment_method: z.string().trim().optional().default('Visit to pay'),
   idempotency_key: z.string().trim().min(1).max(255).optional()
 });
 
 const paymentVerifySchema = z.object({
-  razorpay_order_id: z.string().trim().optional(),
-  razorpay_payment_id: z.string().trim().optional(),
-  razorpay_signature: z.string().trim().optional(),
+  razorpay_order_id: z.string().trim().min(1, 'Order ID is required'),
+  razorpay_payment_id: z.string().trim().min(1, 'Payment ID is required'),
+  razorpay_signature: z.string().trim().min(1, 'Signature is required'),
   idempotency_key: z.string().trim().min(1).max(255).optional(),
   bookingDetails: z.object({
-    name: z.string().trim().min(1, 'Name is required').max(255),
-    phone: z.string().trim().min(7, 'Phone number is too short').max(50),
-    email: z.string().trim().email('Invalid email address').or(z.literal('')).optional().default(''),
-    date: z.any().optional(),
-    time: z.string().optional().default('')
-  }).optional()
+    name: z.string().trim().min(2, 'Name is required').max(255),
+    phone: z.string().trim().min(7, 'Phone is required').max(50),
+    email: z.string().trim().email('Invalid email').or(z.literal('')).optional().default(''),
+    date: z.string().trim().min(4, 'Date is required'),
+    time: z.string().trim().min(1, 'Time is required'),
+    doctor: z.string().trim().optional().default('Dr. Naveen / Dr. Sunitha'),
+    treatment: z.string().trim().optional().default('General Dental Consultation'),
+    notes: z.string().trim().optional().default(''),
+    amount: z.number().nonnegative().optional().default(250.00)
+  })
 });
 
-// Health Check Endpoint with Detailed Diagnostics
-app.get('/api/health', (req, res) => {
-  res.json({
-    status: 'ok',
-    service: 'SS Dental Care API',
-    timestamp: new Date().toISOString(),
-    database: getDbHealthStatus(),
-    emailQueue: getEmailQueueStatus()
-  });
-});
-
-// Initialize Razorpay Instance
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID || 'rzp_live_SeQO0J84sbnMZb',
-  key_secret: process.env.RAZORPAY_KEY_SECRET
-});
-
-// Endpoint 1: Create an Order
-app.post('/api/create-order', async (req, res, next) => {
-  try {
-    const { amount } = req.body;
-    const numAmount = Number(amount) || 250;
-
-    if (!process.env.RAZORPAY_KEY_SECRET) {
-      console.warn('⚠️ RAZORPAY_KEY_SECRET is not configured in .env. Providing fallback order ID for client checkout.');
-      return res.json({
-        success: true,
-        order_id: `order_client_${Date.now()}`,
-        amount: numAmount * 100,
-        is_fallback: true
-      });
-    }
-
-    const options = {
-      amount: numAmount * 100,
-      currency: 'INR',
-      receipt: `receipt_booking_${Date.now()}`
-    };
-
-    const order = await razorpay.orders.create(options);
-
-    res.json({
-      success: true,
-      order_id: order.id,
-      amount: order.amount
-    });
-  } catch (error) {
-    next(error);
-  }
-});
-
-// Helper to format date cleanly as YYYY-MM-DD
 const formatDate = (dateVal) => {
   if (!dateVal) return new Date().toISOString().split('T')[0];
-  if (typeof dateVal === 'string' && dateVal.includes('-')) {
-    return dateVal;
-  }
+  if (typeof dateVal === 'string' && dateVal.includes('-')) return dateVal.split('T')[0];
   const now = new Date();
   const year = now.getFullYear();
   const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -111,130 +135,291 @@ const formatDate = (dateVal) => {
   return `${year}-${month}-${day}`;
 };
 
-const getFormattedTimestamp = () => {
-  const now = new Date();
-  const day = String(now.getDate()).padStart(2, '0');
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const year = now.getFullYear();
-  let hours = now.getHours();
-  const minutes = String(now.getMinutes()).padStart(2, '0');
-  const seconds = String(now.getSeconds()).padStart(2, '0');
-  const ampm = hours >= 12 ? 'PM' : 'AM';
-  hours = hours % 12 || 12;
-  const strHours = String(hours).padStart(2, '0');
-  return `${day}/${month}/${year}, ${strHours}:${minutes}:${seconds} ${ampm}`;
+// ---------------------------------------------------------------------------
+// 1. Health & Diagnostics Endpoint
+// ---------------------------------------------------------------------------
+app.get('/api/health', (req, res) => {
+  const dbHealth = getDbHealthStatus();
+  const isBrevoConfigured = Boolean(process.env.BREVO_API_KEY && process.env.BREVO_SENDER_EMAIL);
+  const isRazorpayConfigured = Boolean(process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET);
+
+  res.json({
+    status: 'ok',
+    service: 'SS Dental Care Production API',
+    timestamp: new Date().toISOString(),
+    database: dbHealth,
+    integrations: {
+      brevoEmail: isBrevoConfigured ? 'configured' : 'missing_credentials',
+      razorpay: isRazorpayConfigured ? 'configured' : 'missing_credentials',
+      dentaFlow: dentaFlowAdapter.enabled ? 'enabled' : 'standalone'
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 2. Razorpay: Create Order (Server-Side Calculation)
+// ---------------------------------------------------------------------------
+const getRazorpayInstance = () => {
+  const keyId = process.env.RAZORPAY_KEY_ID;
+  const keySecret = process.env.RAZORPAY_KEY_SECRET;
+  if (!keyId || !keySecret) return null;
+  return new Razorpay({ key_id: keyId, key_secret: keySecret });
 };
 
-// Endpoint 2: Verify Payment & Confirm Booking (with Idempotency + Zod Validation)
-app.post('/api/verify-payment', async (req, res, next) => {
+app.post('/api/create-order', bookingLimiter, async (req, res, next) => {
   try {
-    const parseResult = paymentVerifySchema.safeParse(req.body);
-    if (!parseResult.success) {
-      const errDetail = parseResult.error.errors[0]?.message || 'Invalid payload';
-      return res.status(400).json({ success: false, message: `Validation Error: ${errDetail}` });
+    const rawAmount = Number(req.body.amount);
+    const validatedAmount = (!isNaN(rawAmount) && rawAmount >= 100 && rawAmount <= 100000) ? rawAmount : 250;
+    const amountInPaise = Math.round(validatedAmount * 100);
+
+    const razorpay = getRazorpayInstance();
+    if (!razorpay) {
+      if (process.env.NODE_ENV === 'production') {
+        return res.status(500).json({ success: false, message: 'Payment gateway credentials are not configured on server.' });
+      }
+      return res.json({
+        success: true,
+        order_id: `order_dev_${Date.now()}`,
+        amount: amountInPaise,
+        currency: 'INR',
+        is_test_fallback: true
+      });
     }
 
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, bookingDetails, idempotency_key } = parseResult.data;
-
-    // Idempotency check: if already confirmed under this idempotency_key, return early
-    if (idempotency_key) {
-      const alreadySaved = await checkRecordAlreadyExists('paid_bookings', { idempotency_key });
-      if (alreadySaved) {
-        console.log(`ℹ️ [Idempotency] Payment record for key '${idempotency_key}' already processed.`);
-        return res.json({ success: true, message: 'Payment verified and appointment booked (idempotent)', duplicate: true });
-      }
-    }
-
-    const saveBooking = async () => {
-      if (!bookingDetails) return;
-      const formattedTs = getFormattedTimestamp();
-      const apptDate = formatDate(bookingDetails.date);
-      const apptTime = (bookingDetails.time || 'General Consult').slice(0, 20);
-
-      const record = {
-        created_at: formattedTs,
-        full_name: bookingDetails.name,
-        email: bookingDetails.email || '',
-        phone: bookingDetails.phone,
-        appointment_date: apptDate,
-        appointment_time: apptTime,
-        payment_method: 'Razorpay',
-        payment_status: 'paid',
-        payment_id: razorpay_payment_id || null,
-        order_id: razorpay_order_id || null,
-        amount_paid: 250.00,
-        idempotency_key: idempotency_key || null
-      };
-
-      try {
-        const { data: insertedData, error: paidError } = await withDbRetry(() =>
-          supabase
-            .from('paid_bookings')
-            .insert([record])
-            .select('id')
-        );
-
-        if (paidError) {
-          // Check for unique constraint violation on idempotency_key
-          if (paidError.code === '23505' || (paidError.message && paidError.message.includes('idempotency_key'))) {
-            console.log(`ℹ️ [Idempotency Conflict] Paid booking already saved in DB for key '${idempotency_key}'.`);
-          } else {
-            console.warn('⚠️ [Supabase DB Issue] Insert to paid_bookings failed. Saving to self-healing retry queue:', paidError.message);
-            saveToDbQueue('paid_bookings', record);
-          }
-        } else {
-          console.log('✅ Successfully saved paid booking to Supabase paid_bookings table.');
-          if (insertedData && insertedData[0] && insertedData[0].id) {
-            markAsProcessed('paid_bookings', insertedData[0].id);
-          }
-        }
-      } catch (dbEx) {
-        console.warn('⚠️ Supabase exception during insert. Saving to self-healing DB queue:', dbEx.message);
-        saveToDbQueue('paid_bookings', record);
-      }
-
-      // Trigger Email, SMS, & WhatsApp Notifications
-      notifyNewBooking({
-        name: bookingDetails.name,
-        email: bookingDetails.email,
-        phone: bookingDetails.phone,
-        date: apptDate,
-        time: apptTime,
-        payment_method: 'Razorpay',
-        payment_status: 'paid',
-        amount_paid: 250.00,
-        created_at: formattedTs
-      }).catch(err => console.error('Notification dispatch error:', err.message));
+    const options = {
+      amount: amountInPaise,
+      currency: 'INR',
+      receipt: `rcpt_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`
     };
 
-    if (!process.env.RAZORPAY_KEY_SECRET) {
-      console.warn('Warning: RAZORPAY_KEY_SECRET is not set in environment. Skipping verification check.');
-      await saveBooking();
-      return res.json({ success: true, message: 'Skipped signature validation due to missing credentials' });
-    }
+    const order = await razorpay.orders.create(options);
+    console.log(`💳 [Razorpay Order Created]: Order ID ${order.id} for ₹${validatedAmount}`);
 
-    const text = razorpay_order_id + '|' + razorpay_payment_id;
-    const expectedSignature = crypto
-      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
-      .update(text.toString())
-      .digest('hex');
-
-    const isSignatureValid = expectedSignature === razorpay_signature;
-
-    if (isSignatureValid) {
-      console.log('Payment verified successfully for order:', razorpay_order_id);
-      await saveBooking();
-      res.json({ success: true, message: 'Payment verified and appointment booked!' });
-    } else {
-      res.status(400).json({ success: false, message: 'Invalid payment signature' });
-    }
+    res.json({
+      success: true,
+      order_id: order.id,
+      amount: order.amount,
+      currency: order.currency
+    });
   } catch (error) {
     next(error);
   }
 });
 
-// Endpoint 3: Create Booking (for Visit to Pay option with Idempotency + Zod Validation)
-app.post('/api/create-booking', async (req, res, next) => {
+// ---------------------------------------------------------------------------
+// 3. Razorpay: Verify Payment & Confirm Appointment
+// ---------------------------------------------------------------------------
+app.post('/api/verify-payment', bookingLimiter, async (req, res, next) => {
+  try {
+    const parseResult = paymentVerifySchema.safeParse(req.body);
+    if (!parseResult.success) {
+      const errDetail = parseResult.error.errors[0]?.message || 'Invalid payment payload';
+      return res.status(400).json({ success: false, message: `Validation Error: ${errDetail}` });
+    }
+
+    const {
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature,
+      bookingDetails,
+      idempotency_key
+    } = parseResult.data;
+
+    const secret = process.env.RAZORPAY_KEY_SECRET;
+
+    // Strict Security: Never skip signature verification
+    if (!secret) {
+      console.error('🚨 [Razorpay Security Error]: RAZORPAY_KEY_SECRET is not configured on the server.');
+      return res.status(500).json({
+        success: false,
+        message: 'RAZORPAY_KEY_SECRET is not configured on the server. Payment cannot be verified.'
+      });
+    }
+
+    const generatedSignature = crypto
+      .createHmac('sha256', secret)
+      .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+      .digest('hex');
+
+    if (generatedSignature !== razorpay_signature) {
+      console.error('🚨 [Razorpay Security Error]: Invalid payment signature submitted!');
+      return res.status(400).json({ success: false, message: 'Invalid payment signature. Verification failed.' });
+    }
+
+    // Idempotency check: prevent duplicate confirmation
+    if (idempotency_key) {
+      const alreadyExists = await checkRecordAlreadyExists('appointments', { idempotency_key });
+      if (alreadyExists) {
+        console.log(`ℹ️ [Idempotency]: Payment for key '${idempotency_key}' already processed.`);
+        return res.json({ success: true, message: 'Payment verified and appointment confirmed.', duplicate: true });
+      }
+    }
+
+    const apptDate = formatDate(bookingDetails.date);
+    const apptTime = bookingDetails.time;
+    const validatedAmount = Number(bookingDetails.amount) || 250.00;
+
+    const appointmentRecord = {
+      patient_name: bookingDetails.name,
+      patient_email: bookingDetails.email || null,
+      patient_phone: bookingDetails.phone,
+      treatment: bookingDetails.treatment || 'General Dental Consultation',
+      doctor_name: bookingDetails.doctor || 'Dr. Naveen / Dr. Sunitha',
+      appointment_date: apptDate,
+      appointment_time: apptTime,
+      appointment_status: 'confirmed',
+      payment_status: 'paid',
+      payment_method: 'Razorpay',
+      amount: validatedAmount,
+      notes: bookingDetails.notes || null,
+      razorpay_order_id,
+      razorpay_payment_id,
+      idempotency_key: idempotency_key || `razorpay_${razorpay_payment_id}`,
+      created_at: new Date().toISOString()
+    };
+
+    let savedId = null;
+
+    try {
+      const { data, error } = await withDbRetry(() =>
+        supabaseAdmin.from('appointments').insert([appointmentRecord]).select('id')
+      );
+
+      if (error) {
+        if (error.code === '23505') {
+          console.log(`ℹ️ [Postgres Conflict]: Record already saved for key: ${appointmentRecord.idempotency_key}`);
+        } else {
+          console.warn('⚠️ [DB Warning]: Error saving appointment to Supabase. Enqueueing to offline fallback queue:', error.message);
+          saveToDbQueue('appointments', appointmentRecord);
+        }
+      } else {
+        savedId = data?.[0]?.id;
+        console.log(`✅ [Appointment Confirmed]: Saved to Supabase with ID: ${savedId}`);
+      }
+    } catch (dbErr) {
+      console.warn('⚠️ DB Exception during payment confirmation. Buffering to queue:', dbErr.message);
+      saveToDbQueue('appointments', appointmentRecord);
+    }
+
+    const apptIdForNotification = savedId || `temp_${Date.now()}`;
+    const clinicEmail = process.env.CLINIC_NOTIFICATION_EMAIL || process.env.NOTIFICATION_EMAIL || 'aravasamarth@gmail.com';
+
+    // 1. Enqueue Patient Confirmation Email via Brevo
+    if (bookingDetails.email && bookingDetails.email.includes('@')) {
+      await enqueueNotification({
+        appointmentId: apptIdForNotification,
+        recipientEmail: bookingDetails.email,
+        recipientName: bookingDetails.name,
+        recipientType: 'patient',
+        notificationType: 'confirmation',
+        metadata: {
+          patientName: bookingDetails.name,
+          appointmentId: apptIdForNotification,
+          treatment: appointmentRecord.treatment,
+          date: apptDate,
+          time: apptTime,
+          doctor: appointmentRecord.doctor_name,
+          paymentStatus: 'paid',
+          paymentMethod: 'Razorpay',
+          amount: validatedAmount
+        }
+      });
+    }
+
+    // 2. Enqueue Clinic Staff Alert via Brevo
+    await enqueueNotification({
+      appointmentId: apptIdForNotification,
+      recipientEmail: clinicEmail,
+      recipientName: 'SS Dental Care Clinic Desk',
+      recipientType: 'clinic',
+      notificationType: 'doctor_alert',
+      metadata: {
+        patientName: bookingDetails.name,
+        patientPhone: bookingDetails.phone,
+        patientEmail: bookingDetails.email,
+        appointmentId: apptIdForNotification,
+        treatment: appointmentRecord.treatment,
+        date: apptDate,
+        time: apptTime,
+        doctor: appointmentRecord.doctor_name,
+        paymentStatus: 'paid',
+        paymentMethod: 'Razorpay',
+        amount: validatedAmount,
+        notes: bookingDetails.notes
+      }
+    });
+
+    // 3. DentaFlow background sync (non-blocking)
+    dentaFlowAdapter.syncAppointment({ ...appointmentRecord, id: apptIdForNotification }).catch(() => {});
+
+    res.json({
+      success: true,
+      message: 'Payment verified and appointment confirmed successfully!',
+      appointment_id: savedId
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// 4. Razorpay: Official Webhook Endpoint (Server-to-Server Fallback)
+// ---------------------------------------------------------------------------
+app.post('/api/razorpay-webhook', async (req, res) => {
+  const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
+  const webhookSignature = req.headers['x-razorpay-signature'];
+
+  if (!webhookSecret) {
+    console.warn('⚠️ [Razorpay Webhook]: RAZORPAY_WEBHOOK_SECRET not set. Ignoring webhook.');
+    return res.status(200).json({ status: 'ignored' });
+  }
+
+  // Cryptographic raw body signature check
+  try {
+    const expectedSignature = crypto
+      .createHmac('sha256', webhookSecret)
+      .update(req.rawBody)
+      .digest('hex');
+
+    if (expectedSignature !== webhookSignature) {
+      console.error('🚨 [Razorpay Webhook Error]: Invalid signature verification!');
+      return res.status(400).json({ error: 'Invalid webhook signature' });
+    }
+  } catch (err) {
+    console.error('🚨 [Razorpay Webhook Exception]:', err.message);
+    return res.status(400).json({ error: 'Signature check failed' });
+  }
+
+  const event = req.body;
+  console.log(`🔔 [Razorpay Webhook Received]: Event ${event.event} (ID: ${event.id})`);
+
+  // Webhook Deduplication guard: ignore already handled event IDs
+  const eventIdKey = `webhook_${event.id}`;
+  const alreadyProcessed = await checkRecordAlreadyExists('notification_outbox', { deduplication_key: eventIdKey });
+  if (alreadyProcessed) {
+    return res.json({ status: 'already_processed' });
+  }
+
+  if (event.event === 'payment.captured' || event.event === 'order.paid') {
+    const payment = event.payload?.payment?.entity;
+    if (payment) {
+      console.log(`✅ [Webhook Payment Confirmed]: Payment ID ${payment.id} for Order ${payment.order_id}`);
+      await withDbRetry(() =>
+        supabaseAdmin
+          .from('appointments')
+          .update({ payment_status: 'paid', appointment_status: 'confirmed', razorpay_payment_id: payment.id })
+          .eq('razorpay_order_id', payment.order_id)
+      ).catch(err => console.warn('Webhook DB reconcile warning:', err.message));
+    }
+  }
+
+  res.json({ status: 'ok' });
+});
+
+// ---------------------------------------------------------------------------
+// 5. Booking Creation: "Visit to Pay" / Form Inquiries
+// ---------------------------------------------------------------------------
+app.post(['/api/book-appointment', '/api/create-booking'], bookingLimiter, async (req, res, next) => {
   try {
     const parseResult = bookingSchema.safeParse(req.body);
     if (!parseResult.success) {
@@ -242,142 +427,203 @@ app.post('/api/create-booking', async (req, res, next) => {
       return res.status(400).json({ success: false, message: `Validation Error: ${errDetail}` });
     }
 
-    const { name, email, phone, date, time, idempotency_key } = parseResult.data;
+    const {
+      name,
+      phone,
+      email,
+      date,
+      time,
+      doctor,
+      treatment,
+      notes,
+      amount,
+      payment_method,
+      idempotency_key
+    } = parseResult.data;
 
-    // Idempotency check: if already confirmed under this idempotency_key in appointments, return early
+    const apptDate = formatDate(date);
+
+    // Concurrency Slot Conflict Guard (Application Layer)
+    const slotTaken = await isSlotBooked(doctor, apptDate, time);
+    if (slotTaken) {
+      return res.status(409).json({
+        success: false,
+        message: `The selected appointment slot (${time} on ${apptDate}) has just been reserved by another patient. Please select an adjacent time slot.`
+      });
+    }
+
+    // Idempotency check: prevent duplicate appointment submission
     if (idempotency_key) {
-      const alreadySaved = await checkRecordAlreadyExists("appointments", { idempotency_key });
+      const alreadySaved = await checkRecordAlreadyExists('appointments', { idempotency_key });
       if (alreadySaved) {
-        console.log(`[Idempotency] Booking for key '${idempotency_key}' already processed in appointments.`);
-        return res.json({ success: true, message: "Appointment already booked", duplicate: true });
+        console.log(`ℹ️ [Idempotency]: Appointment for key '${idempotency_key}' already recorded.`);
+        return res.json({ success: true, message: 'Appointment already booked (duplicate prevented).', duplicate: true });
       }
     }
 
-    const formattedTs = getFormattedTimestamp();
-    const apptDate = formatDate(date);
-    const apptTime = (time || "General Consult").slice(0, 20);
-
-    // Save Visit to Pay / Pending bookings into appointments table
-    const baseRecord = {
-      created_at: formattedTs,
-      full_name: name,
-      email: email || "",
-      phone: phone,
+    const appointmentRecord = {
+      patient_name: name,
+      patient_email: email || null,
+      patient_phone: phone,
+      treatment: treatment || 'General Dental Consultation',
+      doctor_name: doctor || 'Dr. Naveen / Dr. Sunitha',
       appointment_date: apptDate,
-      appointment_time: apptTime,
-      idempotency_key: idempotency_key || null
+      appointment_time: time,
+      appointment_status: 'pending',
+      payment_status: 'pending',
+      payment_method: payment_method || 'Visit to pay',
+      amount: amount || 250.00,
+      notes: notes || null,
+      idempotency_key: idempotency_key || `booking_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      created_at: new Date().toISOString()
     };
 
-    const recordWithPayment = {
-      ...baseRecord,
-      payment_method: "Visit to pay",
-      payment_status: "pending"
-    };
+    let savedId = null;
 
     try {
-      let insertResult = await withDbRetry(() =>
-        supabase
-          .from("appointments")
-          .insert([recordWithPayment])
-          .select("id")
+      const { data, error } = await withDbRetry(() =>
+        supabaseAdmin.from('appointments').insert([appointmentRecord]).select('id')
       );
 
-      // If schema cache indicates payment_method/payment_status column does not exist on appointments, retry with baseRecord
-      if (insertResult && insertResult.error && insertResult.error.message && insertResult.error.message.includes("column")) {
-        insertResult = await withDbRetry(() =>
-          supabase
-            .from("appointments")
-            .insert([baseRecord])
-            .select("id")
-        );
-      }
-
-      const { data: insertedData, error } = insertResult;
-
       if (error) {
-        // Check for unique constraint violation on idempotency_key
-        if (error.code === "23505" || (error.message && error.message.includes("idempotency_key"))) {
-          console.log(`[Idempotency Conflict] Booking already saved in appointments for key '${idempotency_key}'.`);
+        // Handle Postgres Unique Constraint Violation (23505)
+        if (error.code === '23505') {
+          if (error.message && error.message.includes('uq_active_appointment_slot')) {
+            return res.status(409).json({
+              success: false,
+              message: `The selected appointment slot (${time} on ${apptDate}) has just been reserved by another patient. Please select an adjacent time slot.`
+            });
+          }
+          console.log(`ℹ️ [Postgres Conflict]: Appointment already saved for key: ${appointmentRecord.idempotency_key}`);
+          return res.json({ success: true, message: 'Appointment already booked (duplicate prevented).', duplicate: true });
         } else {
-          console.warn("Supabase appointments insert notice. Saving to self-healing DB queue:", error.message);
-          saveToDbQueue("appointments", baseRecord);
+          console.warn('⚠️ [DB Warning]: Error saving appointment to Supabase. Enqueueing to offline fallback queue:', error.message);
+          saveToDbQueue('appointments', appointmentRecord);
         }
-      } else if (insertedData && insertedData[0] && insertedData[0].id) {
-        markAsProcessed("appointments", insertedData[0].id);
+      } else {
+        savedId = data?.[0]?.id;
+        console.log(`✅ [Appointment Booked]: Saved to Supabase with ID: ${savedId}`);
       }
-    } catch (dbEx) {
-      console.warn("Supabase exception during booking create. Queueing for retry:", dbEx.message);
-      saveToDbQueue("appointments", baseRecord);
+    } catch (dbErr) {
+      console.warn('⚠️ DB Exception during appointment booking. Buffering to queue:', dbErr.message);
+      saveToDbQueue('appointments', appointmentRecord);
     }
 
-    // Trigger Email, SMS, & WhatsApp Notifications
-    notifyNewBooking({
-      name,
-      email,
-      phone,
-      date: apptDate,
-      time: apptTime,
-      payment_method: 'Visit to pay',
-      payment_status: 'pending',
-      amount_paid: 250.00,
-      created_at: formattedTs
-    }).catch(err => console.error('Notification dispatch error:', err.message));
+    const apptIdForNotification = savedId || `temp_${Date.now()}`;
+    const clinicEmail = process.env.CLINIC_NOTIFICATION_EMAIL || process.env.NOTIFICATION_EMAIL || 'aravasamarth@gmail.com';
 
-    res.json({ success: true, message: 'Appointment booked successfully!' });
-  } catch (error) {
-    next(error);
-  }
-});
+    // 1. Enqueue Patient Confirmation Email via Brevo
+    if (email && email.includes('@')) {
+      await enqueueNotification({
+        appointmentId: apptIdForNotification,
+        recipientEmail: email,
+        recipientName: name,
+        recipientType: 'patient',
+        notificationType: 'booking_received',
+        metadata: {
+          patientName: name,
+          appointmentId: apptIdForNotification,
+          treatment: appointmentRecord.treatment,
+          date: apptDate,
+          time,
+          doctor: appointmentRecord.doctor_name,
+          paymentStatus: 'pending',
+          paymentMethod: appointmentRecord.payment_method,
+          amount: appointmentRecord.amount
+        }
+      });
+    }
 
-// Endpoint 4: Direct Notification Trigger for General Inquiries & Form Submissions
-app.post('/api/notify', async (req, res, next) => {
-  console.log('🔔 [ROUTE TRIGGERED] POST /api/notify received payload:', JSON.stringify(req.body));
-  try {
-    const { name, email, phone, date, time, payment_method, payment_status, amount_paid, created_at, form_type, message, notes } = req.body;
-
-    await notifyNewBooking({
-      name: name || 'Valued Patient',
-      email: email || '',
-      phone: phone || '',
-      date: date || new Date().toISOString().split('T')[0],
-      time: time || 'General Consult',
-      payment_method: payment_method || form_type || 'General Form Inquiry',
-      payment_status: payment_status || 'pending',
-      amount_paid: amount_paid || 0.00,
-      created_at: created_at || getFormattedTimestamp(),
-      message: message || notes || ''
+    // 2. Enqueue Clinic Staff Alert via Brevo
+    await enqueueNotification({
+      appointmentId: apptIdForNotification,
+      recipientEmail: clinicEmail,
+      recipientName: 'SS Dental Care Clinic Desk',
+      recipientType: 'clinic',
+      notificationType: 'doctor_alert',
+      metadata: {
+        patientName: name,
+        patientPhone: phone,
+        patientEmail: email,
+        appointmentId: apptIdForNotification,
+        treatment: appointmentRecord.treatment,
+        date: apptDate,
+        time,
+        doctor: appointmentRecord.doctor_name,
+        paymentStatus: 'pending',
+        paymentMethod: appointmentRecord.payment_method,
+        amount: appointmentRecord.amount,
+        notes
+      }
     });
 
-    res.json({ success: true, message: 'Notification dispatched successfully!' });
+    // 3. DentaFlow background sync
+    dentaFlowAdapter.syncAppointment({ ...appointmentRecord, id: apptIdForNotification }).catch(() => {});
+
+    res.json({
+      success: true,
+      message: 'Appointment request received successfully! A confirmation email has been dispatched.',
+      appointment_id: savedId
+    });
   } catch (error) {
     next(error);
   }
 });
 
-// Endpoint 5: Sync Offline Backup Queue
-app.post('/api/sync-backup', async (req, res, next) => {
+// ---------------------------------------------------------------------------
+// 6. General Form Inquiry Notification Endpoint
+// ---------------------------------------------------------------------------
+app.post('/api/notify', bookingLimiter, async (req, res, next) => {
   try {
-    const { items } = req.body;
-    if (Array.isArray(items)) {
-      console.log(`[Backup Sync] Received ${items.length} backed up patient records for notification sync...`);
-      for (const item of items) {
-        await notifyNewBooking({
-          name: item.name || 'Valued Patient',
-          email: item.email || '',
-          phone: item.phone || '',
-          date: item.date || new Date().toISOString().split('T')[0],
-          time: item.time || 'General Consult',
-          payment_method: item.payment_method || 'Offline Backup Sync',
-          payment_status: item.payment_status || 'pending',
-          amount_paid: item.amount_paid || 0.00,
-          created_at: item.timestamp || getFormattedTimestamp()
-        }).catch(err => console.warn('Backup item notify warning:', err.message));
+    const { name, email, phone, date, time, message, notes, treatment } = req.body;
+    const clinicEmail = process.env.CLINIC_NOTIFICATION_EMAIL || process.env.NOTIFICATION_EMAIL || 'aravasamarth@gmail.com';
+
+    await enqueueNotification({
+      appointmentId: `inquiry_${Date.now()}`,
+      recipientEmail: clinicEmail,
+      recipientName: 'SS Dental Care Staff',
+      recipientType: 'clinic',
+      notificationType: 'doctor_alert',
+      metadata: {
+        patientName: name || 'Website Visitor',
+        patientPhone: phone || 'N/A',
+        patientEmail: email || 'N/A',
+        appointmentId: `INQ-${Date.now().toString().slice(-6)}`,
+        treatment: treatment || 'General Consultation Inquiry',
+        date: date || new Date().toISOString().split('T')[0],
+        time: time || 'General Consult',
+        doctor: 'Dr. Naveen / Dr. Sunitha',
+        paymentStatus: 'pending',
+        paymentMethod: 'Website Form Inquiry',
+        amount: 250.00,
+        notes: message || notes || 'Form inquiry from website.'
       }
-    }
-    res.json({ success: true, count: items ? items.length : 0 });
+    });
+
+    res.json({ success: true, message: 'Inquiry notification enqueued successfully.' });
   } catch (error) {
     next(error);
   }
+});
+
+// ---------------------------------------------------------------------------
+// 7. Scheduled Reminders Cron Trigger (Hostinger / External Cron)
+// ---------------------------------------------------------------------------
+app.post('/api/cron/reminders', async (req, res) => {
+  const secret = process.env.CRON_SECRET;
+  const authHeader = req.headers['authorization'];
+  const querySecret = req.query.secret || req.headers['x-cron-secret'];
+
+  if (secret) {
+    const bearerMatch = authHeader === `Bearer ${secret}`;
+    const headerMatch = querySecret === secret;
+    if (!bearerMatch && !headerMatch) {
+      return res.status(401).json({ error: 'Unauthorized: Invalid CRON_SECRET' });
+    }
+  }
+
+  const results = await runReminderJob();
+  res.json({ success: true, results });
 });
 
 // ---------------------------------------------------------------------------
@@ -388,8 +634,7 @@ app.use((err, req, res, next) => {
     timestamp: new Date().toISOString(),
     endpoint: `${req.method} ${req.originalUrl}`,
     errorName: err.name || 'Error',
-    errorMessage: err.message || 'Internal Server Error',
-    idempotencyKey: req.body?.idempotency_key || req.headers['x-idempotency-key'] || null
+    errorMessage: err.message || 'Internal Server Error'
   };
 
   console.error('🚨 [API Error Boundary]:', JSON.stringify(errorDetails));
@@ -397,21 +642,36 @@ app.use((err, req, res, next) => {
   const status = err.status || (err.name === 'ZodError' ? 400 : 500);
   res.status(status).json({
     success: false,
-    message: err.message || 'Internal server error occurred',
+    message: err.message || 'An unexpected server error occurred.',
     error: process.env.NODE_ENV === 'production' ? undefined : err.name
   });
 });
 
+// ---------------------------------------------------------------------------
+// Server Startup & Graceful Lifecycle
+// ---------------------------------------------------------------------------
 const PORT = process.env.PORT || 5000;
+
 if (process.env.NODE_ENV !== 'test') {
-  app.listen(PORT, '0.0.0.0', () => {
+  const server = app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 SS Dental Care API running on port ${PORT}`);
-    // Start watcher to detect new Supabase entries and send email for new ones
-    startWatcher(10000);
-    // Flush any previously queued DB inserts that failed before last restart
+    startOutboxWorker(15000);
+    startReminderScheduler(15 * 60 * 1000);
     processDbQueue();
   });
+
+  const handleShutdown = (signal) => {
+    console.log(`\n🛑 Received ${signal}. Shutting down services gracefully...`);
+    stopOutboxWorker();
+    stopReminderScheduler();
+    server.close(() => {
+      console.log('✅ HTTP server closed. Process terminating.');
+      process.exit(0);
+    });
+  };
+
+  process.on('SIGTERM', () => handleShutdown('SIGTERM'));
+  process.on('SIGINT', () => handleShutdown('SIGINT'));
 }
 
 module.exports = app;
-

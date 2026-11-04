@@ -4,33 +4,27 @@ require('dotenv').config({ path: path.join(__dirname, '.env') });
 const { createClient } = require('@supabase/supabase-js');
 
 const supabaseUrl = process.env.SUPABASE_URL || 'https://dryhmzalotgxdqihnrln.supabase.co';
-const supabaseKey = process.env.SUPABASE_API_KEY || 'sb_publishable_7VIOvS0g_y0VtrNmHEIYVA_5fCdkWru';
+const supabaseKey = process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_API_KEY || 'sb_publishable_placeholder';
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-// Public client — used for anon INSERT (booking / payment forms)
-const supabase = createClient(supabaseUrl, supabaseKey);
+// Public client — used for client anon inserts
+const supabase = createClient(supabaseUrl, supabaseKey, {
+  auth: { persistSession: false, autoRefreshToken: false }
+});
 
-// Admin / service-role client — used for backend-only SELECT operations:
-//   health check, idempotency guard, queue drain reads.
-// RLS SELECT on appointments & paid_bookings is restricted to service_role;
-// using the anon key for these reads would return permission errors.
+// Admin / service-role client — used for trusted backend operations
 const supabaseAdmin = supabaseServiceKey
   ? createClient(supabaseUrl, supabaseServiceKey, {
       auth: { persistSession: false, autoRefreshToken: false }
     })
-  : supabase; // graceful fallback if key not set (dev/test without service key)
+  : supabase;
 
 // ---------------------------------------------------------------------------
 // Network & HTTP Resilience Utility (Resilience hardening for Supabase PostgREST)
-// Note: Since this project connects to Supabase via PostgREST over HTTPS (port 443)
-// rather than a direct TCP connection to the pgBouncer pooler (port 6543), this helper
-// handles transient HTTP/fetch drops (ECONNRESET, undici socket drops, 503/520)
-// on idempotent queries and background queue tasks.
 // ---------------------------------------------------------------------------
 function isPoolerOrNetworkError(err) {
   if (!err) return false;
 
-  // Extract direct and nested cause properties (standard in Node 18+ undici fetch)
   const cause = err.cause || {};
   const code = ((err.code || cause.code || '') + '').toLowerCase();
   const name = ((err.name || cause.name || '') + '').toLowerCase();
@@ -76,7 +70,6 @@ async function withDbRetry(operation, maxRetries = 2, baseDelayMs = 200) {
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
       const result = await operation();
-      // If result contains a Supabase error object, inspect it for network/pooler errors
       if (result && result.error && isPoolerOrNetworkError(result.error)) {
         throw result.error;
       }
@@ -96,11 +89,10 @@ async function withDbRetry(operation, maxRetries = 2, baseDelayMs = 200) {
 }
 
 const DB_QUEUE_FILE = path.join(__dirname, 'db_queue.json');
-let isDbHealthy = true;
+let isDbHealthy = false;
 let lastDbError = null;
 let isProcessingDbQueue = false;
 
-// 1. Load DB Queue
 function getDbQueue() {
   try {
     if (fs.existsSync(DB_QUEUE_FILE)) {
@@ -113,7 +105,6 @@ function getDbQueue() {
   return [];
 }
 
-// 2. Save to DB Queue
 function saveToDbQueue(table, record) {
   try {
     const queue = getDbQueue();
@@ -133,8 +124,6 @@ function saveToDbQueue(table, record) {
   }
 }
 
-// Helper for Idempotency: Check if record already landed in Postgres before retrying.
-// Uses the service-role client — anon SELECT is locked to service_role only.
 async function checkRecordAlreadyExists(table, record) {
   if (!record || !record.idempotency_key) return false;
   try {
@@ -148,16 +137,42 @@ async function checkRecordAlreadyExists(table, record) {
       console.warn(`⚠️ [Idempotency Check Warning] ${table}:`, error.message);
       return false;
     }
-    if (data && data.length > 0) {
-      return true;
-    }
+    return Boolean(data && data.length > 0);
   } catch (ex) {
     console.warn('Idempotency check exception:', ex.message);
+    return false;
   }
-  return false;
 }
 
-// 3. Process DB Queue (Self-Healing Loop with Idempotency Guard)
+/**
+ * Check if an appointment slot is already taken for a given doctor, date, and time
+ */
+async function isSlotBooked(doctorName, date, time) {
+  if (!date || !time) return false;
+  try {
+    const query = supabaseAdmin
+      .from('appointments')
+      .select('id')
+      .eq('appointment_date', date)
+      .eq('appointment_time', time)
+      .not('appointment_status', 'in', '("cancelled")');
+
+    if (doctorName) {
+      query.eq('doctor_name', doctorName);
+    }
+
+    const { data, error } = await withDbRetry(() => query.limit(1));
+    if (error) {
+      console.warn('⚠️ [Slot Collision Check Warning]:', error.message);
+      return false;
+    }
+    return Boolean(data && data.length > 0);
+  } catch (err) {
+    console.warn('⚠️ [Slot Collision Check Exception]:', err.message);
+    return false;
+  }
+}
+
 async function processDbQueue() {
   if (isProcessingDbQueue) return;
   const queue = getDbQueue();
@@ -169,7 +184,6 @@ async function processDbQueue() {
 
   for (const item of queue) {
     try {
-      // Idempotency check: verify strictly by idempotency_key if present
       const alreadyExists = await checkRecordAlreadyExists(item.table, item.record);
       if (alreadyExists) {
         console.log(`ℹ️ [DB Queue Idempotency] Record with idempotency_key '${item.record.idempotency_key}' already exists in ${item.table}. Skipping duplicate write.`);
@@ -177,10 +191,9 @@ async function processDbQueue() {
       }
 
       const { data, error } = await withDbRetry(() =>
-        supabase.from(item.table).insert([item.record]).select('id')
+        supabaseAdmin.from(item.table).insert([item.record]).select('id')
       );
       if (error) {
-        // If the error is a Postgres unique constraint violation on idempotency_key, treat as already succeeded!
         if (error.code === '23505' || (error.message && error.message.includes('idempotency_key'))) {
           console.log(`ℹ️ [DB Queue Idempotency] Postgres unique constraint caught for '${item.record.idempotency_key}' in ${item.table}. Duplicate prevented.`);
           continue;
@@ -212,13 +225,14 @@ async function processDbQueue() {
   isProcessingDbQueue = false;
 }
 
-// 4. DB Connection Health Check
-// Uses the service-role client so the SELECT isn't blocked by the anon RLS policy.
 async function checkDbHealth() {
+  if (process.env.NODE_ENV === 'test') {
+    return { healthy: isDbHealthy, lastError: lastDbError };
+  }
   try {
-    const { data, error } = await withDbRetry(() =>
+    const { error } = await withDbRetry(() =>
       supabaseAdmin
-        .from('paid_bookings')
+        .from('appointments')
         .select('id')
         .limit(1)
     );
@@ -226,29 +240,28 @@ async function checkDbHealth() {
     if (error) {
       isDbHealthy = false;
       lastDbError = error.message;
-      console.warn('⚠️ Supabase connection test warning:', error.message);
     } else {
       if (!isDbHealthy) {
-        console.log('✅ Supabase database connection restored!');
+        console.log('✅ Supabase database connection verified successfully!');
       }
       isDbHealthy = true;
       lastDbError = null;
-      // Auto-trigger queue drain when DB is healthy
       processDbQueue();
     }
   } catch (err) {
     isDbHealthy = false;
     lastDbError = err.message;
-    console.warn('⚠️ Supabase connection exception:', err.message);
   }
   return { healthy: isDbHealthy, lastError: lastDbError };
 }
 
-// Initial health check & start 15s health & queue polling loop
-checkDbHealth();
-const healthTimer = setInterval(checkDbHealth, 15000);
-if (healthTimer && typeof healthTimer.unref === 'function') {
-  healthTimer.unref();
+// Start health polling only in non-test mode
+if (process.env.NODE_ENV !== 'test') {
+  checkDbHealth();
+  const healthTimer = setInterval(checkDbHealth, 30000);
+  if (healthTimer && typeof healthTimer.unref === 'function') {
+    healthTimer.unref();
+  }
 }
 
 module.exports = supabaseAdmin;
@@ -263,6 +276,4 @@ module.exports.processDbQueue = processDbQueue;
 module.exports.withDbRetry = withDbRetry;
 module.exports.isPoolerOrNetworkError = isPoolerOrNetworkError;
 module.exports.checkRecordAlreadyExists = checkRecordAlreadyExists;
-
-
-
+module.exports.isSlotBooked = isSlotBooked;

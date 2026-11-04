@@ -16,6 +16,7 @@ out/
 .DS_Store
 Thumbs.db
 
-# Runtime Queues
+# Runtime Queues & Backups
 apps/api/*queue*.json
 apps/api/processed_watcher_ids.json
+apps/api/backups/

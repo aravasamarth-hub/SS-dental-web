@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -244,7 +244,7 @@ function BookingsPage() {
             console.log("[Supabase Direct] Successfully saved booking to Supabase " + targetTable + " table:", data);
           }
         } catch (dbErr) {
-          console.warn('⚠️ Supabase insert exception:', dbErr);
+          console.warn('âš ï¸ Supabase insert exception:', dbErr);
         }
       }
     } catch (err) {
@@ -534,8 +534,8 @@ function BookingsPage() {
                         Book Your Visit
                       </h2>
                       <div className="flex items-center gap-4">
-                        <span className="text-lg text-muted-foreground line-through font-medium">₹500.00</span>
-                        <span className="text-3xl font-extrabold text-accent">₹250.00</span>
+                        <span className="text-lg text-muted-foreground line-through font-medium">â‚¹500.00</span>
+                        <span className="text-3xl font-extrabold text-accent">â‚¹250.00</span>
                       </div>
                     </div>
 
@@ -585,14 +585,14 @@ function BookingsPage() {
                     <div className="lg:col-span-6 space-y-6">
                       <div className="space-y-2">
                         <h3 className="text-3xl font-bold text-foreground">Book Your Visit</h3>
-                        <p className="text-lg text-accent font-semibold italic">&ldquo;Starting from ₹250&rdquo;</p>
+                        <p className="text-lg text-accent font-semibold italic">&ldquo;Starting from â‚¹250&rdquo;</p>
                       </div>
 
                       <div className="space-y-4">
                         <h4 className="text-xl font-bold text-foreground">Dental Consultation</h4>
                         <ul className="space-y-4 text-muted-foreground list-disc pl-5 leading-relaxed">
                           <li>
-                            Book your dental visit instantly via WhatsApp. Quick response, expert care, and personalized treatment—all in one place.
+                            Book your dental visit instantly via WhatsApp. Quick response, expert care, and personalized treatmentâ€”all in one place.
                           </li>
                           <li>
                             Get expert dental consultation tailored to your needs. We assess your oral health, explain treatment options clearly, and guide you toward the most effective and affordable solution.
@@ -656,7 +656,7 @@ function BookingsPage() {
                           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                             <div className="space-y-1.5 max-w-md">
                               <h4 className="font-extrabold text-base text-foreground flex items-center gap-2">
-                                <span>💳</span> Pay Custom Amount
+                                <span>ðŸ’³</span> Pay Custom Amount
                               </h4>
                               <p className="text-xs text-muted-foreground leading-relaxed">
                                 Pay custom treatment amounts, consulting fees, or bills as advised by our dental clinic doctor.
@@ -682,7 +682,7 @@ function BookingsPage() {
                           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                             <div className="space-y-1.5 max-w-md">
                               <h4 className="font-extrabold text-base text-foreground flex items-center gap-2">
-                                <span>🏥</span> Services & Treatment Pages
+                                <span>ðŸ¥</span> Services & Treatment Pages
                               </h4>
                               <p className="text-xs text-muted-foreground leading-relaxed">
                                 Complete payments for specific root canals, dental implants, aligners, braces, or checkup packages.
@@ -795,7 +795,7 @@ function BookingsPage() {
                             <Label htmlFor="checkout-phone">Phone number *</Label>
                             <div className="flex gap-2">
                               <div className="flex items-center gap-1 bg-muted px-3 border rounded-md text-xs text-muted-foreground font-medium flex-shrink-0">
-                                🇮🇳 +91
+                                ðŸ‡®ðŸ‡³ +91
                               </div>
                               <Input
                                 id="checkout-phone"
@@ -909,7 +909,7 @@ function BookingsPage() {
                           </p>
                         </div>
                       </div>
-                      <span className="font-extrabold text-foreground text-sm">₹250.00</span>
+                      <span className="font-extrabold text-foreground text-sm">â‚¹250.00</span>
                     </div>
 
                     {/* Discount Input */}
@@ -935,21 +935,21 @@ function BookingsPage() {
                     <div className="space-y-3 pt-2 text-sm">
                       <div className="flex justify-between items-center text-muted-foreground">
                         <span>Subtotal</span>
-                        <span>₹250.00</span>
+                        <span>â‚¹250.00</span>
                       </div>
                       {discountApplied && (
                         <div className="flex justify-between items-center text-emerald-600 font-medium">
                           <span>Discount (SMILE50)</span>
-                          <span>-₹125.00</span>
+                          <span>-â‚¹125.00</span>
                         </div>
                       )}
                       <div className="flex justify-between items-center text-muted-foreground">
-                        <span>Shipping/Fees</span>
-                        <span>₹0.00</span>
+                        <span>Clinic Registration & Fee</span>
+                        <span className="text-emerald-600 font-medium">Free (₹0.00)</span>
                       </div>
                       <div className="flex justify-between items-center pt-3 border-t border-border/60 text-lg font-extrabold text-foreground">
                         <span>Total</span>
-                        <span>₹{price.toFixed(2)}</span>
+                        <span>â‚¹{price.toFixed(2)}</span>
                       </div>
                     </div>
                   </div>
@@ -1225,3 +1225,5 @@ function BookingsPage() {
 }
 
 export default BookingsPage;
+
+

@@ -21,3 +21,7 @@ out/
 # OS Files
 .DS_Store
 Thumbs.db
+# Secrets & Environment Gating
+*.env
+apps/api/.env
+apps/web/.env
