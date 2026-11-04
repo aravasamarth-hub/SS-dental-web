@@ -13,6 +13,7 @@ const { z } = require('zod');
 // Database module (Supabase client + resilience helpers)
 const {
   supabaseAdmin,
+  checkDbHealth,
   getDbHealthStatus,
   saveToDbQueue,
   processDbQueue,
@@ -178,16 +179,20 @@ const formatDate = (dateVal) => {
 // ---------------------------------------------------------------------------
 // 1. Health & Diagnostics Endpoint
 // ---------------------------------------------------------------------------
-app.get('/api/health', (req, res) => {
-  const dbHealth = getDbHealthStatus();
+app.get('/api/health', async (req, res) => {
+  const dbHealth = await checkDbHealth();
   const isBrevoConfigured = Boolean(process.env.BREVO_API_KEY && process.env.BREVO_SENDER_EMAIL);
   const isRazorpayConfigured = Boolean(process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET);
 
   res.json({
-    status: 'ok',
+    status: dbHealth.healthy ? 'ok' : 'degraded',
     service: 'SS Dental Care Production API',
     timestamp: new Date().toISOString(),
-    database: dbHealth,
+    database: {
+      healthy: dbHealth.healthy,
+      lastError: dbHealth.lastError,
+      pendingQueueCount: getDbHealthStatus().pendingQueueCount
+    },
     integrations: {
       brevoEmail: isBrevoConfigured ? 'configured' : 'missing_credentials',
       razorpay: isRazorpayConfigured ? 'configured' : 'missing_credentials',
